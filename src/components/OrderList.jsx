@@ -1,0 +1,945 @@
+import React, { useState, useEffect } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db } from '../db';
+import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
+import { getDeadlineInfo } from '../utils';
+import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square } from 'lucide-react';
+import AddOrder from './AddOrder';
+import CalendarView from './CalendarView';
+import SellItem from './SellItem';
+import ReconciliationModal from './ReconciliationModal';
+
+// 輔助函數：解析角色陣列，相容舊字串格式
+const getItemRoles = (item) => {
+  if (item.roles && Array.isArray(item.roles)) {
+    return item.roles;
+  }
+  const charStr = item.character || item.role || '';
+  return charStr ? charStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+};
+
+export default function OrderList({ onOrderClick }) {
+  const [viewMode, setViewMode] = useState('list'); // 'list' | 'gallery'
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [listType, setListType] = useState('expenses'); // 'expenses' | 'incomes'
+  const [selectedSaleToEdit, setSelectedSaleToEdit] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTag, setActiveTag] = useState(null);
+  const [isReconOpen, setIsReconOpen] = useState(false);
+  const [selectedBuyer, setSelectedBuyer] = useState('');
+
+  // 批次選取狀態
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+
+  // 安全防護：當過濾條件、分頁 Tab 或檢視模式改變時，自動清空選取狀態
+  useEffect(() => {
+    setSelectedIds([]);
+    setIsSelectMode(false);
+  }, [searchQuery, activeTag, selectedBuyer, listType, viewMode]);
+
+  // 刪除整筆訂單與級聯刪除邏輯
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm('確定要刪除這筆訂單嗎？此操作將會一併刪除底下的所有物品與售出紀錄，且無法復原！')) return;
+    
+    try {
+      await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+        // 1. 撈出這筆訂單底下的所有物品 ID
+        const currentItems = await db.items.where({ order_id: orderId }).toArray();
+        const itemIds = currentItems.map(item => item.id);
+        
+        // 2. 刪除這些物品對應的售出紀錄 (sales)
+        if (itemIds.length > 0) {
+          await db.sales.where('item_id').anyOf(itemIds).delete();
+        }
+        
+        // 3. 刪除這些物品 (items)
+        await db.items.where({ order_id: orderId }).delete();
+        
+        // 4. 刪除父訂單本身 (orders)
+        await db.orders.delete(orderId);
+      });
+    } catch (error) {
+      console.error('刪除訂單失敗:', error);
+      alert('刪除失敗，請重試');
+    }
+  };
+
+  // 即時監聽 IndexedDB
+  const orders = useLiveQuery(() => db.orders.orderBy('created_at').reverse().toArray());
+  const items = useLiveQuery(() => db.items.toArray());
+  const sales = useLiveQuery(() => db.sales.toArray());
+  const customTags = useLiveQuery(() => db.custom_tags.orderBy('sort_order').toArray()) || [];
+
+  const tagsToRender = customTags.length > 0 ? Array.from(new Set(customTags.map(t => t.name))) : DEFAULT_TAGS;
+ 
+  // 載入中狀態
+  if (orders === undefined || items === undefined || sales === undefined) {
+    return (
+      <div className="p-4 h-full flex items-center justify-center">
+        <span className="text-gray-400 font-medium">載入中...</span>
+      </div>
+    );
+  }
+
+  const uniqueBuyers = Array.from(
+    new Set(
+      sales
+        ? sales.map(sale => sale.buyer_id).filter(id => id && id.trim() !== '')
+        : []
+    )
+  );
+
+  // 1. 處理搜尋與標籤過濾邏輯
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+
+  const filteredOrders = orders.filter((order) => {
+    // 取得該訂單下的所有物品
+    const orderItems = items.filter(item => item.order_id === order.id);
+
+    // 標籤過濾
+    if (activeTag) {
+      const orderTags = order.tags || [];
+      const hasTagInOrder = orderTags.includes(activeTag);
+      const hasTagInItems = orderItems.some(item => item.tag === activeTag);
+      if (!hasTagInOrder && !hasTagInItems) {
+        return false;
+      }
+    }
+
+    // 關鍵字搜尋
+    if (normalizedQuery) {
+      const titleMatch = order.title && order.title.toLowerCase().includes(normalizedQuery);
+      const sourceMatch = order.source && order.source.toLowerCase().includes(normalizedQuery);
+      const itemsMatch = orderItems.some(item => {
+        const nameMatch = item.name && item.name.toLowerCase().includes(normalizedQuery);
+        const itemRoles = getItemRoles(item);
+        const rolesMatch = itemRoles.some(r => r.toLowerCase().includes(normalizedQuery));
+        return nameMatch || rolesMatch;
+      });
+      return titleMatch || sourceMatch || itemsMatch;
+    }
+
+    return true;
+  });
+
+  const filteredSales = sales.filter((sale) => {
+    const item = items.find(i => i.id === sale.item_id);
+    const order = item ? orders.find(o => o.id === item.order_id) : null;
+
+    // 標籤過濾
+    if (activeTag) {
+      const hasTagInItem = item && item.tag === activeTag;
+      const hasTagInOrder = order && order.tags && order.tags.includes(activeTag);
+      if (!hasTagInItem && !hasTagInOrder) {
+        return false;
+      }
+    }
+
+    // 買家篩選
+    if (selectedBuyer) {
+      if (sale.buyer_id !== selectedBuyer) {
+        return false;
+      }
+    }
+
+    // 關鍵字搜尋
+    if (normalizedQuery) {
+      const buyerMatch = sale.buyer_id && sale.buyer_id.toLowerCase().includes(normalizedQuery);
+      const itemNameMatch = item && item.name && item.name.toLowerCase().includes(normalizedQuery);
+      const itemCharMatch = item && getItemRoles(item).some(r => r.toLowerCase().includes(normalizedQuery));
+      return buyerMatch || itemNameMatch || itemCharMatch;
+    }
+
+    return true;
+  });
+
+  // 整理 Gallery 需要的項目，並反轉陣列（最新的在前）
+  const galleryItems = items.slice().reverse();
+
+  // 切換選取項目
+  const toggleSelection = (id) => {
+    setSelectedIds(prev => 
+      prev.includes(id) 
+        ? prev.filter(x => x !== id) 
+        : [...prev, id]
+    );
+  };
+
+  // 全選當前過濾後的清單
+  const handleSelectAll = () => {
+    if (listType === 'expenses') {
+      const allIds = filteredOrders.map(o => o.id);
+      setSelectedIds(allIds);
+    } else {
+      const allIds = filteredSales.map(s => s.id);
+      setSelectedIds(allIds);
+    }
+  };
+
+  // 動態加總金額
+  const totalSelectedAmount = selectedIds.reduce((sum, id) => {
+    if (listType === 'expenses') {
+      const o = orders.find(x => x.id === id);
+      if (!o) return sum;
+      // 優先使用 total_amount_twd，相容舊資料
+      return sum + (o.total_amount_twd !== undefined 
+        ? o.total_amount_twd 
+        : Math.round(o.total_amount * (o.exchange_rate || 1)));
+    } else {
+      const s = sales.find(x => x.id === id);
+      if (!s) return sum;
+      return sum + s.price;
+    }
+  }, 0);
+
+  return (
+    <div className="p-4 space-y-4 max-w-5xl mx-auto">
+      {/* 標題與 Toggle 區 */}
+      <header className="flex justify-between items-end mt-2 px-1 mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
+            {viewMode === 'list' ? '訂單清單' : viewMode === 'gallery' ? '收藏圖牆' : '收支日曆'}
+          </h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">所有的週邊敗家紀錄</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl flex gap-0.5 transition-colors">
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              title="清單模式"
+            >
+              <List size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('gallery')}
+              className={`p-1.5 rounded-lg transition-all ${viewMode === 'gallery' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              title="圖牆模式"
+            >
+              <LayoutGrid size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`p-1.5 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              title="日曆模式"
+            >
+              <Calendar size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 內容區 */}
+      {viewMode === 'list' ? (
+        // --- 列表模式 ---
+        <div className="space-y-4">
+          {/* 支出 / 收入 雙分頁 Tab */}
+          <div className="flex bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-2xl transition-colors">
+            <button
+              onClick={() => setListType('expenses')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
+                listType === 'expenses' 
+                  ? 'bg-primary text-white shadow-sm shadow-primary/20' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              支出 (Expenses)
+            </button>
+            <button
+              onClick={() => setListType('incomes')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
+                listType === 'incomes' 
+                  ? 'bg-secondary text-white shadow-sm shadow-secondary/20' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              收入 (Incomes)
+            </button>
+          </div>
+
+          {/* 搜尋與標籤過濾 */}
+          <div className="space-y-2">
+            {/* 搜尋與按鈕組合 */}
+            <div className="flex gap-2 items-center">
+              <div className="relative flex-1">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                  <Search size={18} />
+                </span>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={listType === 'expenses' ? "搜尋訂單名稱、來源、商品、角色..." : "搜尋買家暱稱、商品名稱..."}
+                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+
+              {listType === 'incomes' && !isSelectMode && (
+                <button
+                  type="button"
+                  onClick={() => setIsReconOpen(true)}
+                  className="px-3 py-2.5 bg-secondary text-white font-bold text-xs rounded-xl shadow-sm shadow-secondary/20 hover:bg-secondary-dark transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 animate-in fade-in"
+                  title="生成買家對帳單"
+                >
+                  <span>🧾 對帳單</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSelectMode(!isSelectMode);
+                  setSelectedIds([]);
+                }}
+                className={`px-3 py-2.5 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 ${
+                  isSelectMode
+                    ? 'bg-gray-750 text-gray-200 border border-gray-600 shadow-sm'
+                    : listType === 'expenses'
+                      ? 'bg-primary-light/50 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light hover:bg-primary-light dark:hover:bg-primary-dark/30 shadow-sm shadow-primary/5'
+                      : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-450 hover:bg-emerald-100 dark:hover:bg-emerald-950/30 shadow-sm shadow-emerald-500/5'
+                }`}
+              >
+                <span>{isSelectMode ? '🚫 取消' : '☑️ 選取'}</span>
+              </button>
+            </div>
+
+            {listType === 'incomes' && uniqueBuyers.length > 0 && (
+              <div className="flex items-center gap-2 mt-2 px-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 shrink-0">買家篩選：</span>
+                <div className="relative flex-1">
+                  <select
+                    value={selectedBuyer}
+                    onChange={(e) => setSelectedBuyer(e.target.value)}
+                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl px-3 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100"
+                  >
+                    <option value="">全部買家</option>
+                    {uniqueBuyers.map(buyer => (
+                      <option key={buyer} value={buyer}>{buyer}</option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 dark:text-gray-500">
+                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 標籤過濾器 (橫向滑動) */}
+            <div 
+              className="flex gap-1.5 overflow-x-auto py-1 -mx-4 px-4 scrollbar-none" 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <button
+                onClick={() => setActiveTag(null)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                  activeTag === null
+                    ? 'bg-primary text-white shadow-sm shadow-primary/20'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                全部
+              </button>
+              {tagsToRender.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTag === tag
+                      ? 'bg-primary text-white shadow-sm shadow-primary/20'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {listType === 'expenses' ? (
+            // 支出分頁 (Orders)
+            orders.length === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+                  <PackageOpen size={32} />
+                </div>
+                <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無訂單</h3>
+                <p className="text-sm text-gray-400 dark:text-gray-400">點擊右下角的 + 號<br/>開始記錄你的第一筆週邊吧！</p>
+              </div>
+            ) : filteredOrders.length === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+                  <Search size={32} />
+                </div>
+                <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的紀錄</h3>
+                <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字或標籤篩選</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+                {filteredOrders.map((order) => {
+                  const orderItems = items.filter(item => item.order_id === order.id);
+                  const isDaily = order.order_type === 'daily' || orderItems.length === 0;
+                  const isSelected = selectedIds.includes(order.id);
+
+                  if (isDaily) {
+                    return (
+                      <div 
+                        key={order.id} 
+                        onClick={() => {
+                          if (isSelectMode) {
+                            toggleSelection(order.id);
+                          } else {
+                            onOrderClick && onOrderClick(order.id);
+                          }
+                        }}
+                        className={`px-4 py-3.5 rounded-2xl shadow-sm border flex justify-between items-center transition-all duration-200 cursor-pointer ${
+                          isSelected 
+                            ? 'bg-primary-light/10 border-primary shadow-sm dark:bg-primary-dark/10' 
+                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.98]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* 圓圈 Checkbox */}
+                          {isSelectMode && (
+                            <div 
+                              className="shrink-0 mr-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSelection(order.id)}
+                                className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
+                              />
+                            </div>
+                          )}
+
+                          {/* 左側標籤 */}
+                          {order.tags && order.tags[0] ? (
+                            <span className="text-xs bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2.5 py-1 rounded-xl font-bold shrink-0">
+                              {order.tags[0]}
+                            </span>
+                          ) : (
+                            <span className="text-xs bg-gray-100 dark:bg-gray-750 text-gray-500 dark:text-gray-400 px-2.5 py-1 rounded-xl font-bold shrink-0">
+                              無標籤
+                            </span>
+                          )}
+                          {/* 名稱 */}
+                          <span className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
+                            {order.title || order.source || '日常支出'}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 shrink-0">
+                          {/* 支付方式 Icon */}
+                          <span 
+                            className="text-xs" 
+                            title={`支付方式: ${order.payment_method || '現金'}`}
+                          >
+                            {PAYMENT_METHOD_ICONS[order.payment_method || '現金'] || '💵'}
+                          </span>
+                          {/* 金額 */}
+                          <span className="font-black text-gray-800 dark:text-gray-100 text-sm">
+                            NT$ {Math.round(order.total_amount).toLocaleString()}
+                          </span>
+                          
+                          {/* 操作按鈕 (編輯 & 刪除，選取模式下隱藏) */}
+                          {!isSelectMode && (
+                            <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
+                              <button
+                                onClick={() => {
+                                  onOrderClick && onOrderClick(order.id);
+                                }}
+                                className="text-gray-400 hover:text-primary-dark dark:hover:text-primary p-1.5 rounded-lg transition-colors hover:bg-primary-light/30 dark:hover:bg-gray-700/50"
+                                title="編輯記帳"
+                              >
+                                <Pencil size={15} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteOrder(order.id)}
+                                className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                                title="刪除記帳"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div 
+                      key={order.id} 
+                      onClick={() => {
+                        if (isSelectMode) {
+                          toggleSelection(order.id);
+                        } else {
+                          onOrderClick && onOrderClick(order.id);
+                        }
+                      }}
+                      className={`p-4 rounded-2xl shadow-sm border flex justify-between items-center transition-all duration-200 cursor-pointer ${
+                        isSelected 
+                          ? 'bg-primary-light/10 border-primary shadow-sm dark:bg-primary-dark/10' 
+                          : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.98]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0 pr-2">
+                        {/* 圓圈 Checkbox */}
+                        {isSelectMode && (
+                          <div 
+                            className="shrink-0 mr-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelection(order.id)}
+                              className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
+                            />
+                          </div>
+                        )}
+
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base truncate">
+                            {order.title || order.source}
+                          </h3>
+                          {order.title && order.source && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-0.5 truncate">
+                              來源：{order.source}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-2 mt-1 flex-wrap">
+                            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                              {(() => {
+                                const curr = CURRENCIES.find(c => c.code === order.currency);
+                                const symbol = curr ? curr.symbol : (order.exchange_rate === 5.5 || order.exchange_rate === 0.23 ? '¥' : '$');
+                                return `${symbol}${order.total_amount}`;
+                              })()}
+                            </span>
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">(結匯匯率: {order.exchange_rate})</span>
+                            <span 
+                              className="text-[9px] font-bold text-gray-500 dark:text-gray-405 flex items-center gap-0.5 bg-gray-50 dark:bg-gray-750 px-1.5 py-0.5 rounded border border-gray-150/45 dark:border-gray-700/30 transition-colors"
+                              title={`支付方式: ${order.payment_method || 'ATM/轉帳'}`}
+                            >
+                              <span>{PAYMENT_METHOD_ICONS[order.payment_method || 'ATM/轉帳'] || '🏦'}</span>
+                              <span className="scale-90 origin-left">{order.payment_method || 'ATM/轉帳'}</span>
+                            </span>
+                          </div>
+                          {/* 訂單分類標籤 */}
+                          {order.tags && order.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {order.tags.map(t => (
+                                <span 
+                                  key={t} 
+                                  className="text-[9px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded font-bold shrink-0"
+                                >
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        {(() => {
+                          const statusInfo = getStatusStyle(order.status);
+                          return (
+                            <span 
+                              className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1 shadow-sm transition-all ${statusInfo.color}`}
+                            >
+                              <span>{statusInfo.dot}</span>
+                              <span>{statusInfo.label}</span>
+                            </span>
+                          );
+                        })()}
+                        {order.status === '已喊單' && order.payment_deadline && (() => {
+                          const deadlineInfo = getDeadlineInfo(order.payment_deadline);
+                          if (!deadlineInfo) return null;
+                          return (
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all border ${deadlineInfo.colorClass}`}>
+                              {deadlineInfo.text}
+                            </span>
+                          );
+                        })()}
+                        {/* 操作按鈕 (編輯 & 刪除，選取模式下隱藏) */}
+                        {!isSelectMode && (
+                          <div className="flex gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingOrder(order);
+                              }}
+                              className="text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary p-1.5 rounded-lg transition-colors hover:bg-primary-light/30 dark:hover:bg-gray-700/50"
+                              title="編輯訂單"
+                            >
+                              <Pencil size={16} />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteOrder(order.id);
+                              }}
+                              className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                              title="刪除訂單"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : (
+            // 收入分頁 (Sales)
+            (() => {
+              const sortedFilteredSales = [...filteredSales].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+              return sales.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-300 dark:text-emerald-500 rounded-full flex items-center justify-center mb-4">
+                    <DollarSign size={32} />
+                  </div>
+                  <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無回血收入</h3>
+                  <p className="text-sm text-gray-400 dark:text-gray-400">當你在訂單內將物品售出後<br/>回血紀錄就會顯示於此！</p>
+                </div>
+              ) : sortedFilteredSales.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                  <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+                    <Search size={32} />
+                  </div>
+                  <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的紀錄</h3>
+                  <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字或標籤篩選</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+                  {sortedFilteredSales.map((sale) => {
+                    const item = items.find(i => i.id === sale.item_id);
+                    const order = orders.find(o => o.id === item?.order_id);
+                    const saleDate = sale.created_at ? sale.created_at.slice(0, 10) : '';
+                    const isSelected = selectedIds.includes(sale.id);
+
+                    return (
+                      <div
+                        key={sale.id}
+                        onClick={() => {
+                          if (isSelectMode) {
+                            toggleSelection(sale.id);
+                          }
+                        }}
+                        className={`p-4 rounded-2xl shadow-sm border flex justify-between items-center transition-all duration-200 ${
+                          isSelectMode ? 'cursor-pointer' : ''
+                        } ${
+                          isSelected 
+                            ? 'bg-secondary-light/10 border-secondary shadow-sm dark:bg-secondary-dark/10' 
+                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* 圓圈 Checkbox */}
+                          {isSelectMode && (
+                            <div 
+                              className="shrink-0 mr-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSelection(sale.id)}
+                                className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-secondary focus:ring-secondary accent-secondary cursor-pointer"
+                              />
+                            </div>
+                          )}
+
+                          {/* 圖片預覽 */}
+                          {sale.image ? (
+                            <img src={sale.image} alt={item?.name} className="w-11 h-11 object-cover rounded-xl border border-gray-100 dark:border-gray-700 shrink-0" />
+                          ) : item?.image ? (
+                            <img src={item.image} alt={item.name} className="w-11 h-11 object-cover rounded-xl border border-gray-100 dark:border-gray-700 shrink-0" />
+                          ) : (
+                            <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 dark:text-emerald-450 rounded-xl flex items-center justify-center shrink-0">
+                              <DollarSign size={20} />
+                            </div>
+                          )}
+                          <div className="min-w-0">
+                            <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">{item?.name || '未知物品'}</h3>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold mt-1 flex flex-wrap gap-x-2 gap-y-0.5">
+                              <span>數量: {sale.quantity} 件</span>
+                              {sale.buyer_id && <span className="text-gray-500 dark:text-gray-400">| {sale.buyer_id}</span>}
+                              {saleDate && <span>| {saleDate}</span>}
+                            </p>
+                            {order && (
+                              <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 mt-1">
+                                來自訂單: {order.source}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end shrink-0 gap-1.5 ml-2">
+                          <span className="text-base font-black text-secondary-dark dark:text-secondary">
+                            +NT$ {sale.price.toLocaleString()}
+                          </span>
+                          {/* 操作按鈕 (編輯 & 刪除，選取模式下隱藏) */}
+                          {!isSelectMode && (
+                            <div className="flex gap-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (item) {
+                                    const itemSales = sales.filter(s => s.item_id === item.id);
+                                    const soldQty = itemSales.reduce((sum, s) => sum + s.quantity, 0);
+                                    const remainingQty = Math.max(0, item.quantity - soldQty);
+                                    
+                                    setSelectedSaleToEdit({
+                                      sale,
+                                      item,
+                                      remainingQty
+                                    });
+                                  }
+                                }}
+                                className="text-gray-400 dark:text-gray-500 hover:text-secondary-dark dark:hover:text-secondary p-1.5 rounded-lg transition-colors hover:bg-emerald-50 dark:hover:bg-gray-700/50"
+                                title="編輯紀錄"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  if (window.confirm('確定要刪除這筆售出紀錄嗎？這將會恢復該物品的剩餘庫存。')) {
+                                    try {
+                                      await db.sales.delete(sale.id);
+                                    } catch (error) {
+                                      console.error('刪除售出紀錄失敗:', error);
+                                      alert('刪除失敗，請重試');
+                                    }
+                                  }
+                                }}
+                                className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                                title="刪除紀錄"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()
+          )}
+        </div>
+      ) : viewMode === 'gallery' ? (
+        // --- 圖牆模式 ---
+        galleryItems.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+              <ImageIcon size={32} />
+            </div>
+            <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">圖牆空空如也</h3>
+            <p className="text-sm text-gray-400 dark:text-gray-400">新增物品時，就會顯示在這裡喔！</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-24">
+            {galleryItems.map(item => (
+              <div 
+                key={item.id}
+                onClick={() => setSelectedItem(item)}
+                className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
+              >
+                {item.image ? (
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover animate-in fade-in" />
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-300 dark:text-indigo-500">
+                    <ImageIcon size={32} className="mb-2 opacity-50" />
+                    <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{item.tag || '物品'}</span>
+                  </div>
+                )}
+                {/* 遮罩標籤 */}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
+                  <h4 className="text-white text-xs font-bold truncate">{item.name}</h4>
+                  {(() => {
+                    const itemRoles = getItemRoles(item);
+                    return itemRoles.length > 0 && (
+                      <p className="text-white/80 text-[10px] truncate">
+                        🏷 {itemRoles.join(', ')}
+                      </p>
+                    );
+                  })()}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : (
+        // --- 日曆模式 ---
+        <CalendarView onOrderClick={onOrderClick} />
+      )}
+
+      {/* 底部玻璃質感懸浮對帳/總計條 */}
+      {isSelectMode && (
+        <div className="fixed bottom-20 md:bottom-8 left-1/2 md:left-[calc(50%+128px)] -translate-x-1/2 w-full max-w-md px-4 z-50 animate-in slide-in-from-bottom-5 duration-300">
+          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/80 rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between gap-4 transition-colors">
+            <div className="min-w-0">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">
+                已選取對帳項目
+              </span>
+              <div className="flex items-baseline gap-1.5 mt-0.5">
+                <span className="text-sm font-black text-gray-800 dark:text-gray-100">
+                  {selectedIds.length} 筆
+                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  合計 NT$
+                </span>
+                <span className={`text-base font-black ${listType === 'expenses' ? 'text-primary dark:text-primary-light' : 'text-secondary-dark dark:text-secondary'}`}>
+                  {totalSelectedAmount.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {/* 全選/取消全選按鈕 */}
+              <button
+                type="button"
+                onClick={() => {
+                  const currentFilteredListSize = listType === 'expenses' ? filteredOrders.length : filteredSales.length;
+                  if (selectedIds.length === currentFilteredListSize && currentFilteredListSize > 0) {
+                    setSelectedIds([]);
+                  } else {
+                    handleSelectAll();
+                  }
+                }}
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-lg transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
+              >
+                {(() => {
+                  const currentFilteredListSize = listType === 'expenses' ? filteredOrders.length : filteredSales.length;
+                  return selectedIds.length === currentFilteredListSize && currentFilteredListSize > 0 ? '❌ 取消全選' : '🤝 全選當前';
+                })()}
+              </button>
+
+              {/* 關閉選取模式 */}
+              <button
+                type="button"
+                onClick={() => {
+                  setIsSelectMode(false);
+                  setSelectedIds([]);
+                }}
+                className="p-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
+                title="關閉選取"
+              >
+                <X size={15} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 物品詳細資訊 Modal */}
+      {selectedItem && (
+        <div className="fixed inset-0 z-[100] bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300 relative max-h-[85vh] md:max-h-[90vh] md:max-w-xl flex flex-col border-t md:border dark:border-gray-800">
+            <button 
+              onClick={() => setSelectedItem(null)}
+              className="absolute top-4 right-4 p-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md text-gray-500 dark:text-gray-400 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-10 animate-in fade-in"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="overflow-y-auto flex-1 p-6 pb-safe space-y-6">
+              {/* 大圖展示 */}
+              <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/80 flex items-center justify-center relative">
+                {selectedItem.image ? (
+                  <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover absolute inset-0" />
+                ) : (
+                  <div className="flex flex-col items-center text-gray-300 dark:text-gray-500">
+                    <ImageIcon size={64} className="mb-3" />
+                    <span className="font-medium text-gray-400 dark:text-gray-500">{selectedItem.tag || '無圖片'}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* 資訊區塊 */}
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    {selectedItem.tag && (
+                      <span className="text-[10px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-md font-bold shrink-0">
+                        {selectedItem.tag}
+                      </span>
+                    )}
+                    <h2 className="text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">{selectedItem.name}</h2>
+                  </div>
+                  {(() => {
+                    const itemRoles = getItemRoles(selectedItem);
+                    if (itemRoles.length === 0) return null;
+                    return (
+                      <div className="flex flex-wrap gap-1.5 mt-2 items-center">
+                        <span className="text-xs font-bold text-gray-400 dark:text-gray-500 shrink-0">角色：</span>
+                        <div className="flex flex-wrap gap-1">
+                          {itemRoles.map((role, idx) => (
+                            <span 
+                              key={idx} 
+                              className="bg-primary/10 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-full text-xs font-bold"
+                            >
+                              {role}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl border border-gray-100 dark:border-gray-700/60 transition-colors">
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-0.5">外幣單價</p>
+                    <p className="text-base font-bold text-gray-800 dark:text-gray-200">{selectedItem.price}</p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl border border-gray-100 dark:border-gray-700/60 transition-colors">
+                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-0.5">總數量</p>
+                    <p className="text-base font-bold text-gray-800 dark:text-gray-200">{selectedItem.quantity} 件</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 編輯訂單表單 Modal */}
+      {editingOrder && (
+        <AddOrder existingOrder={editingOrder} onClose={() => setEditingOrder(null)} />
+      )}
+
+      {/* 編輯售出紀錄 Modal */}
+      {selectedSaleToEdit && (
+        <SellItem
+          item={selectedSaleToEdit.item}
+          remainingQty={selectedSaleToEdit.remainingQty}
+          existingSale={selectedSaleToEdit.sale}
+          onClose={() => setSelectedSaleToEdit(null)}
+        />
+      )}
+
+      {/* 買家對帳單 Modal */}
+      {isReconOpen && (
+        <ReconciliationModal onClose={() => setIsReconOpen(false)} />
+      )}
+    </div>
+  );
+}
