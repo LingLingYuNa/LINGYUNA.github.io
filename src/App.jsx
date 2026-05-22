@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import BottomNav from './components/BottomNav';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -17,6 +17,41 @@ function App() {
   const [quickAddOrderId, setQuickAddOrderId] = useState(null);
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [isFabVisible, setIsFabVisible] = useState(true);
+  const lastScrollTop = useRef(0);
+
+  // 當切換分頁或進入/離開訂單詳情時，重置加號球為顯示狀態
+  useEffect(() => {
+    setIsFabVisible(true);
+  }, [currentTab, selectedOrderId]);
+
+  const handleScroll = (e) => {
+    const target = e.currentTarget;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+    
+    // 如果接近底部（剩餘可滾動距離小於 20px），強制顯示加號球，方便點擊
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 20;
+    if (isAtBottom) {
+      setIsFabVisible(true);
+      lastScrollTop.current = scrollTop;
+      return;
+    }
+    
+    // 滑動距離小於 10px 時忽略，避免微小抖動頻繁觸發 re-render
+    if (Math.abs(scrollTop - lastScrollTop.current) < 10) {
+      return;
+    }
+    
+    if (scrollTop > lastScrollTop.current && scrollTop > 50) {
+      setIsFabVisible(false); // 向下滑動隱藏
+    } else {
+      setIsFabVisible(true);  // 向上滑動顯示
+    }
+    
+    lastScrollTop.current = scrollTop;
+  };
 
   // 攔截訂單點擊：如果是日常記帳 (daily)，則開啟 QuickAddModal 編輯；若是週邊訂單則進入明細小票頁
   const handleOrderClick = async (orderId) => {
@@ -48,7 +83,10 @@ function App() {
       />
       
       {/* 主要內容區 */}
-      <main className="flex-1 h-full overflow-y-auto md:ml-64 md:p-8 md:min-h-screen md:bg-gray-50 md:dark:bg-gray-950">
+      <main 
+        onScroll={handleScroll}
+        className="flex-1 h-full overflow-y-auto md:ml-64 md:p-8 md:min-h-screen md:bg-gray-50 md:dark:bg-gray-950"
+      >
         {selectedOrderId ? (
           <OrderDetail 
             orderId={selectedOrderId} 
@@ -76,10 +114,14 @@ function App() {
         )}
       </main>
 
-      {/* 懸浮新增按鈕 (FAB) - 在手機版 relative/absolute bottom-24，在電腦版 fixed bottom-8 */}
+      {/* 懸浮新增按鈕 (FAB) - 在手機版隨滑動變換位置/隱藏，在電腦版固定右下角 */}
       <button 
         onClick={() => setIsAddOrderOpen(true)}
-        className="absolute md:fixed bottom-24 md:bottom-8 right-5 md:right-8 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 hover:-translate-y-1 transition-all z-40"
+        className={`absolute md:fixed bottom-24 md:bottom-8 right-5 md:right-8 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 md:hover:-translate-y-1 transition-all duration-300 transform z-40 ${
+          isFabVisible 
+            ? 'translate-y-0 opacity-100 scale-100' 
+            : 'translate-y-28 md:translate-y-0 opacity-0 md:opacity-100 scale-75 md:scale-100 pointer-events-none md:pointer-events-auto'
+        }`}
       >
         <Plus size={28} strokeWidth={2.5} />
       </button>
