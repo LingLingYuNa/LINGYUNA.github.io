@@ -4,11 +4,16 @@ import { db } from '../db';
 import TagManager from './TagManager';
 import TagRoleManager from './TagRoleManager';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive, getGoogleTokenClient } from '../utils/googleDriveSync';
+import { calculateOrderTotalTWD } from '../utils';
+import * as XLSX from 'xlsx';
 
 export default function Tools() {
   const fileInputRef = useRef(null);
+  const excelInputRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isExportingExcel, setIsExportingExcel] = useState(false);
+  const [isImportingExcel, setIsImportingExcel] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [isTagRoleManagerOpen, setIsTagRoleManagerOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -263,6 +268,256 @@ export default function Tools() {
     reader.readAsText(file);
   };
 
+  // 匯出為 Excel 報表
+  const handleExportExcel = async () => {
+    setIsExportingExcel(true);
+    try {
+      const orders = await db.orders.toArray();
+      const items = await db.items.toArray();
+
+      const flattenData = [];
+      for (const order of orders) {
+        const orderItems = items.filter(item => item.order_id === order.id);
+        
+        // 取得格式化日期 YYYY-MM-DD (優先以 created_at 解析日期，以防 date 為空)
+        const orderDate = order.created_at ? order.created_at.split('T')[0] : '';
+
+        if (orderItems.length === 0) {
+          // 生活記帳模式或無物品的訂單
+          flattenData.push({
+            '訂單日期': orderDate,
+            '訂單名稱': order.title || '',
+            '支付方式': order.payment_method || '',
+            '手續費%': order.handling_fee_percent || 0,
+            '服務費%': order.service_fee_percent || 0,
+            '運費': order.shipping_fee || 0,
+            '折扣': order.discount_amount || 0,
+            '訂單總金額': order.total_amount || 0,
+            '物品名稱': '',
+            '角色': '',
+            '數量': '',
+            '外幣單價': '',
+            '物品標籤': '',
+            // 智慧還原輔助欄位
+            '幣別': order.currency || 'TWD',
+            '匯率': order.exchange_rate || 1,
+            '物流狀態': order.status || '',
+            '訂單來源': order.source || ''
+          });
+        } else {
+          for (const item of orderItems) {
+            flattenData.push({
+              '訂單日期': orderDate,
+              '訂單名稱': order.title || '',
+              '支付方式': order.payment_method || '',
+              '手續費%': order.handling_fee_percent || 0,
+              '服務費%': order.service_fee_percent || 0,
+              '運費': order.shipping_fee || 0,
+              '折扣': order.discount_amount || 0,
+              '訂單總金額': order.total_amount || 0,
+              '物品名稱': item.name || '',
+              '角色': item.roles ? item.roles.join(', ') : (item.character || item.role || ''),
+              '數量': item.quantity || 0,
+              '外幣單價': item.price || 0,
+              '物品標籤': item.tags ? item.tags.join(', ') : (item.tag || ''),
+              // 智慧還原輔助欄位
+              '幣別': order.currency || 'TWD',
+              '匯率': order.exchange_rate || 1,
+              '物流狀態': order.status || '',
+              '訂單來源': order.source || ''
+            });
+          }
+        }
+      }
+
+      // 產生 Sheet
+      const worksheet = XLSX.utils.json_to_sheet(flattenData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, '財務報表');
+
+      // 打包並下載
+      XLSX.writeFile(workbook, `CollectTrack_財務報表_${getFormattedDate()}.xlsx`);
+      alert('📊 Excel 報表匯出成功！');
+    } catch (error) {
+      console.error('Excel 匯出失敗:', error);
+      alert('❌ Excel 匯出失敗：\n' + (error.message || '發生未知錯誤'));
+    } finally {
+      setIsExportingExcel(false);
+    }
+  };
+
+  // 觸發 Excel 檔案選擇
+  const triggerExcelImport = () => {
+    if (excelInputRef.current) {
+      excelInputRef.current.click();
+    }
+  };
+
+  // 讀取並匯入 Excel 報表
+  const handleImportExcel = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const data = event.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const excelRows = XLSX.utils.sheet_to_json(worksheet);
+
+        if (excelRows.length === 0) {
+          throw new Error('Excel 檔案內無任何資料列');
+        }
+
+        // 基本欄位格式防呆驗證
+        const firstRow = excelRows[0];
+        if (!('訂單名稱' in firstRow) || !('訂單日期' in firstRow)) {
+          throw new Error('匯入的 Excel 欄位格式不符，必須包含「訂單名稱」與「訂單日期」欄位');
+        }
+
+        // 1. 反向群組化 (Group By Order)
+        const ordersMap = new Map();
+
+        for (const row of excelRows) {
+          const title = (row['訂單名稱'] || '').toString().trim() || '未命名訂單';
+          const rawDate = row['訂單日期'] || '';
+          
+          // 解析 Excel 日期 (相容數值天數與字串格式)
+          let dateStr = '';
+          if (rawDate) {
+            if (typeof rawDate === 'number') {
+              const dateObj = XLSX.SSF.parse_date_code(rawDate);
+              const pad = (n) => n.toString().padStart(2, '0');
+              dateStr = `${dateObj.y}-${pad(dateObj.m)}-${pad(dateObj.d)}`;
+            } else {
+              dateStr = rawDate.toString().trim().replace(/\//g, '-').split(' ')[0].split('T')[0];
+            }
+          } else {
+            dateStr = new Date().toISOString().split('T')[0];
+          }
+
+          const key = `${title}_${dateStr}`;
+
+          if (!ordersMap.has(key)) {
+            ordersMap.set(key, {
+              title,
+              created_at: new Date(dateStr).toISOString(),
+              payment_method: row['支付方式'] || '現金',
+              handling_fee_percent: Number(row['手續費%']) || 0,
+              service_fee_percent: Number(row['服務費%']) || 0,
+              shipping_fee: Number(row['運費']) || 0,
+              discount_amount: Number(row['折扣']) || 0,
+              total_amount: Number(row['訂單總金額']) || 0,
+              // 讀取輔助欄位，若無則套用預設值
+              currency: row['幣別'] || 'TWD',
+              exchange_rate: Number(row['匯率']) || 1,
+              status: row['物流狀態'] || '已喊單',
+              source: row['訂單來源'] || 'Excel 匯入',
+              tag_category: 'general', // 預設生活模式，底下如果有物品會被改為 anime
+              tags: [],
+              items: []
+            });
+          }
+
+          const orderGroup = ordersMap.get(key);
+
+          // 若物品名稱不為空，則加入子物品
+          const itemName = row['物品名稱'] ? row['物品名稱'].toString().trim() : '';
+          if (itemName) {
+            orderGroup.tag_category = 'anime'; // 自動切換為週邊模式
+            
+            // 解析角色與物品標籤 (相容逗號分隔字串)
+            const rawRoles = row['角色'] || '';
+            const rawTags = row['物品標籤'] || '';
+
+            const roles = rawRoles 
+              ? rawRoles.toString().split(',').map(s => s.trim()).filter(Boolean) 
+              : [];
+            const tags = rawTags 
+              ? rawTags.toString().split(',').map(s => s.trim()).filter(Boolean) 
+              : [];
+
+            orderGroup.items.push({
+              name: itemName,
+              roles,
+              character: roles.join(', '),
+              tags,
+              quantity: Number(row['數量']) || 1,
+              price: Number(row['外幣單價']) || 0,
+              weight: 0,
+              image: '',
+            });
+          }
+        }
+
+        const parsedOrders = Array.from(ordersMap.values());
+        const totalItemsCount = parsedOrders.reduce((sum, o) => sum + o.items.length, 0);
+
+        // 2. 雙重警告防呆確認
+        const confirmMsg = `📊 讀取 Excel 成功！\n\n共解析出：\n- ${parsedOrders.length} 筆訂單\n- ${totalItemsCount} 筆子物品\n\n確定要將這些資料匯入系統中嗎？`;
+        
+        if (!window.confirm(confirmMsg)) return;
+
+        // 第二階段：確認是覆蓋還是追加
+        const cleanConfirm = window.confirm(
+          `⚠️ 請選擇資料匯入方式：\n\n- 按【確定 (OK)】：將【清空並覆蓋】目前所有舊資料（警告：舊資料將永久遺失！）。\n- 按【取消 (Cancel)】：將【追加】至現有資料庫中（新舊資料會合併共存）。`
+        );
+
+        setIsImportingExcel(true);
+
+        await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+          if (cleanConfirm) {
+            // 清空舊資料
+            await db.orders.clear();
+            await db.items.clear();
+            await db.sales.clear();
+          }
+
+          // 寫入資料
+          for (const order of parsedOrders) {
+            const itemsList = order.items;
+            
+            // 重新計算外幣總額 (如果是週邊模式，由子物品單價加總)
+            if (order.tag_category === 'anime' && itemsList.length > 0) {
+              order.total_amount = itemsList.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
+            }
+            
+            // 重新計算台幣總額 (含運費、折扣、手續費、服務費)
+            order.total_amount_twd = calculateOrderTotalTWD(order, itemsList);
+
+            // 移除暫存 items 欄位
+            const orderItems = order.items;
+            delete order.items;
+            
+            // 寫入訂單，取得 order_id
+            const orderId = await db.orders.add(order);
+
+            // 寫入關聯的物品
+            for (const item of orderItems) {
+              item.order_id = orderId;
+              await db.items.add({
+                ...item,
+                created_at: new Date().toISOString()
+              });
+            }
+          }
+        });
+
+        alert('✅ Excel 報表智慧還原匯入成功！系統將自動重新整理。');
+        window.location.reload();
+      } catch (error) {
+        console.error('Excel 匯入失敗:', error);
+        alert('❌ Excel 匯入失敗：\n' + (error.message || '檔案解析或寫入資料庫失敗'));
+      } finally {
+        setIsImportingExcel(false);
+        if (excelInputRef.current) excelInputRef.current.value = '';
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
+
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-200">
       {/* 標題區 */}
@@ -296,7 +551,7 @@ export default function Tools() {
               {/* 匯出按鈕 */}
               <button 
                 onClick={handleExport}
-                disabled={isExporting || isImporting}
+                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
                 className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
               >
                 <div className="flex flex-col text-left">
@@ -311,12 +566,48 @@ export default function Tools() {
               {/* 匯入按鈕 */}
               <button 
                 onClick={triggerImport}
-                disabled={isExporting || isImporting}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors disabled:opacity-50"
+                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
+                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
               >
                 <div className="flex flex-col text-left">
                   <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">匯入還原資料</span>
                   <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">從之前的備份檔還原或合併資料</span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Upload size={20} strokeWidth={2.5} />
+                </div>
+              </button>
+
+              {/* 匯出為 Excel 報表 (.xlsx) */}
+              <button 
+                onClick={handleExportExcel}
+                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
+                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
+              >
+                <div className="flex flex-col text-left">
+                  <span className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
+                    {isExportingExcel && <RefreshCw size={14} className="animate-spin text-blue-500" />}
+                    📊 匯出為 Excel 報表 (.xlsx)
+                  </span>
+                  <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">將訂單與物品攤平為 Excel 表格下載</span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                  <Download size={20} strokeWidth={2.5} />
+                </div>
+              </button>
+
+              {/* 匯入 Excel 報表 (.xlsx) */}
+              <button 
+                onClick={triggerExcelImport}
+                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
+                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors disabled:opacity-50"
+              >
+                <div className="flex flex-col text-left">
+                  <span className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
+                    {isImportingExcel && <RefreshCw size={14} className="animate-spin text-emerald-500" />}
+                    📥 匯入 Excel 報表 (.xlsx)
+                  </span>
+                  <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">自編輯好的 Excel 報表智慧還原資料</span>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <Upload size={20} strokeWidth={2.5} />
@@ -329,6 +620,15 @@ export default function Tools() {
                 accept=".json" 
                 ref={fileInputRef} 
                 onChange={handleImport} 
+                className="hidden" 
+              />
+
+              {/* 隱藏的 Excel 上傳 input */}
+              <input 
+                type="file" 
+                accept=".xlsx, .xls" 
+                ref={excelInputRef} 
+                onChange={handleImportExcel} 
                 className="hidden" 
               />
             </div>
