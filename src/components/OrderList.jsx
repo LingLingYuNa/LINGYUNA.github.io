@@ -28,6 +28,7 @@ export default function OrderList({ onOrderClick }) {
   const [activeTag, setActiveTag] = useState(null);
   const [isReconOpen, setIsReconOpen] = useState(false);
   const [selectedBuyer, setSelectedBuyer] = useState('');
+  const [zoomImage, setZoomImage] = useState(null);
 
   // 批次選取狀態
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -38,6 +39,21 @@ export default function OrderList({ onOrderClick }) {
     setSelectedIds([]);
     setIsSelectMode(false);
   }, [searchQuery, activeTag, selectedBuyer, listType, viewMode]);
+
+  // 監聽鍵盤 ESC 鍵以關閉圖片放大 Lightbox
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setZoomImage(null);
+      }
+    };
+    if (zoomImage) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [zoomImage]);
 
   // 刪除整筆訂單與級聯刪除邏輯
   const handleDeleteOrder = async (orderId) => {
@@ -919,7 +935,8 @@ export default function OrderList({ onOrderClick }) {
                     <img 
                       src={selectedItem.image} 
                       alt={selectedItem.name} 
-                      className="w-full h-full object-cover absolute inset-0" 
+                      className="w-full h-full object-contain absolute inset-0 cursor-zoom-in" 
+                      onClick={() => setZoomImage(selectedItem.image)}
                       onError={(e) => {
                         e.currentTarget.classList.add('hidden');
                         e.currentTarget.nextSibling.classList.remove('hidden');
@@ -1018,6 +1035,27 @@ export default function OrderList({ onOrderClick }) {
       {/* 買家對帳單 Modal */}
       {isReconOpen && (
         <ReconciliationModal onClose={() => setIsReconOpen(false)} />
+      )}
+
+      {/* 圖片全螢幕放大 Lightbox */}
+      {zoomImage && (
+        <div 
+          onClick={() => setZoomImage(null)}
+          className="fixed inset-0 z-[120] bg-black/90 md:bg-neutral-900/95 flex items-center justify-center cursor-zoom-out animate-in fade-in duration-200"
+        >
+          <button
+            onClick={() => setZoomImage(null)}
+            className="absolute top-4 right-4 p-2.5 bg-black/50 text-white/80 hover:text-white rounded-full hover:bg-black/70 transition-colors z-10"
+            title="關閉放大"
+          >
+            <X size={24} />
+          </button>
+          <img 
+            src={zoomImage} 
+            alt="全螢幕放大圖片" 
+            className="max-w-full max-h-[90vh] w-auto h-auto m-auto object-contain select-none shadow-2xl transition-transform animate-in zoom-in-95 duration-200" 
+          />
+        </div>
       )}
     </div>
   );
