@@ -145,7 +145,6 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         roles: roles,
         character: roles.join(', '),
         tags: selectedTags,
-        tag: selectedTags[0] || '',
         quantity: Number(quantity),
         price: Number(price),
         weight: Number(weight) || 0,
@@ -153,7 +152,15 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       };
 
       if (existingItem) {
-        await db.items.update(existingItem.id, itemData);
+        const updatedItem = {
+          ...existingItem,
+          ...itemData,
+        };
+        // 兼容性覆寫：從資料庫物件中刪除舊有的單一字串欄位
+        delete updatedItem.tag;
+        delete updatedItem.role;
+        
+        await db.items.put(updatedItem);
       } else {
         await db.items.add({
           ...itemData,

@@ -75,7 +75,7 @@ export default function TagRoleManager({ onClose }) {
               : (item.tag ? [item.tag] : []);
             if (currentTags.includes(oldName) || item.tag === oldName) {
               item.tags = currentTags.map(t => t === oldName ? trimmedNew : t);
-              item.tag = item.tags[0] || '';
+              delete item.tag;
             }
           });
           // 3. 更新 custom_tags 表的預設標籤（若存在）
@@ -96,9 +96,7 @@ export default function TagRoleManager({ onClose }) {
             if (currentRoles.includes(oldName) || item.role === oldName) {
               item.roles = currentRoles.map(r => r === oldName ? trimmedNew : r);
               item.character = item.roles.join(', ');
-              if (item.role === oldName) {
-                item.role = trimmedNew;
-              }
+              delete item.role;
             }
           });
         });
@@ -137,7 +135,7 @@ export default function TagRoleManager({ onClose }) {
               : (item.tag ? [item.tag] : []);
             if (currentTags.includes(name) || item.tag === name) {
               item.tags = currentTags.filter(t => t !== name);
-              item.tag = item.tags[0] || '';
+              delete item.tag;
             }
           });
           // 3. 刪除 custom_tags 表中同名的預設標籤（若存在）
@@ -155,9 +153,7 @@ export default function TagRoleManager({ onClose }) {
             if (currentRoles.includes(name) || item.role === name) {
               item.roles = currentRoles.filter(r => r !== name);
               item.character = item.roles.join(', ');
-              if (item.role === name) {
-                item.role = '';
-              }
+              delete item.role;
             }
           });
         });
