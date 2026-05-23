@@ -102,7 +102,12 @@ export default function OrderList({ onOrderClick }) {
     if (activeTag) {
       const orderTags = order.tags || [];
       const hasTagInOrder = orderTags.includes(activeTag);
-      const hasTagInItems = orderItems.some(item => item.tag === activeTag);
+      const hasTagInItems = orderItems.some(item => {
+        const itemTags = item.tags && Array.isArray(item.tags)
+          ? item.tags
+          : (item.tag ? [item.tag] : []);
+        return itemTags.includes(activeTag);
+      });
       if (!hasTagInOrder && !hasTagInItems) {
         return false;
       }
@@ -130,7 +135,10 @@ export default function OrderList({ onOrderClick }) {
 
     // 標籤過濾
     if (activeTag) {
-      const hasTagInItem = item && item.tag === activeTag;
+      const itemTags = item && item.tags && Array.isArray(item.tags)
+        ? item.tags
+        : (item && item.tag ? [item.tag] : []);
+      const hasTagInItem = itemTags.includes(activeTag);
       const hasTagInOrder = order && order.tags && order.tags.includes(activeTag);
       if (!hasTagInItem && !hasTagInOrder) {
         return false;
@@ -667,9 +675,37 @@ export default function OrderList({ onOrderClick }) {
 
                           {/* 圖片預覽 */}
                           {sale.image ? (
-                            <img src={sale.image} alt={item?.name} className="w-11 h-11 object-cover rounded-xl border border-gray-100 dark:border-gray-700 shrink-0" />
+                            <div className="relative w-11 h-11 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                              <img 
+                                src={sale.image} 
+                                alt={item?.name} 
+                                className="w-full h-full object-cover" 
+                                onError={(e) => {
+                                  e.currentTarget.classList.add('hidden');
+                                  e.currentTarget.nextSibling.classList.remove('hidden');
+                                  e.currentTarget.nextSibling.classList.add('flex');
+                                }}
+                              />
+                              <div className="hidden w-full h-full bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400 items-center justify-center">
+                                <ImageIcon size={20} />
+                              </div>
+                            </div>
                           ) : item?.image ? (
-                            <img src={item.image} alt={item.name} className="w-11 h-11 object-cover rounded-xl border border-gray-100 dark:border-gray-700 shrink-0" />
+                            <div className="relative w-11 h-11 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                              <img 
+                                src={item.image} 
+                                alt={item.name} 
+                                className="w-full h-full object-cover" 
+                                onError={(e) => {
+                                  e.currentTarget.classList.add('hidden');
+                                  e.currentTarget.nextSibling.classList.remove('hidden');
+                                  e.currentTarget.nextSibling.classList.add('flex');
+                                }}
+                              />
+                              <div className="hidden w-full h-full bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400 items-center justify-center">
+                                <ImageIcon size={20} />
+                              </div>
+                            </div>
                           ) : (
                             <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 dark:text-emerald-450 rounded-xl flex items-center justify-center shrink-0">
                               <DollarSign size={20} />
@@ -763,11 +799,26 @@ export default function OrderList({ onOrderClick }) {
                 className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
               >
                 {item.image ? (
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover animate-in fade-in" />
+                  <div className="w-full h-full relative">
+                    <img 
+                      src={item.image} 
+                      alt={item.name} 
+                      className="w-full h-full object-cover animate-in fade-in" 
+                      onError={(e) => {
+                        e.currentTarget.classList.add('hidden');
+                        e.currentTarget.nextSibling.classList.remove('hidden');
+                        e.currentTarget.nextSibling.classList.add('flex');
+                      }}
+                    />
+                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                      <ImageIcon size={32} className="mb-2 opacity-50" />
+                      <span className="text-xs font-bold text-red-400 dark:text-red-300">圖片失效</span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-300 dark:text-indigo-500">
                     <ImageIcon size={32} className="mb-2 opacity-50" />
-                    <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{item.tag || '物品'}</span>
+                    <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{(item.tags && item.tags[0]) || item.tag || '物品'}</span>
                   </div>
                 )}
                 {/* 遮罩標籤 */}
@@ -864,11 +915,26 @@ export default function OrderList({ onOrderClick }) {
               {/* 大圖展示 */}
               <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/80 flex items-center justify-center relative">
                 {selectedItem.image ? (
-                  <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover absolute inset-0" />
+                  <div className="w-full h-full relative">
+                    <img 
+                      src={selectedItem.image} 
+                      alt={selectedItem.name} 
+                      className="w-full h-full object-cover absolute inset-0" 
+                      onError={(e) => {
+                        e.currentTarget.classList.add('hidden');
+                        e.currentTarget.nextSibling.classList.remove('hidden');
+                        e.currentTarget.nextSibling.classList.add('flex');
+                      }}
+                    />
+                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                      <ImageIcon size={64} className="mb-3" />
+                      <span className="font-medium text-red-400 dark:text-red-300">圖片連結失效</span>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center text-gray-300 dark:text-gray-500">
                     <ImageIcon size={64} className="mb-3" />
-                    <span className="font-medium text-gray-400 dark:text-gray-500">{selectedItem.tag || '無圖片'}</span>
+                    <span className="font-medium text-gray-400 dark:text-gray-500">{(selectedItem.tags && selectedItem.tags[0]) || selectedItem.tag || '無圖片'}</span>
                   </div>
                 )}
               </div>
@@ -877,11 +943,24 @@ export default function OrderList({ onOrderClick }) {
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    {selectedItem.tag && (
-                      <span className="text-[10px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-md font-bold shrink-0">
-                        {selectedItem.tag}
-                      </span>
-                    )}
+                    {(() => {
+                      const itemTags = selectedItem.tags && Array.isArray(selectedItem.tags)
+                        ? selectedItem.tags
+                        : (selectedItem.tag ? [selectedItem.tag] : []);
+                      if (itemTags.length === 0) return null;
+                      return (
+                        <div className="flex flex-wrap gap-1 shrink-0">
+                          {itemTags.map((t, idx) => (
+                            <span 
+                              key={idx} 
+                              className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-md font-bold"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
                     <h2 className="text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">{selectedItem.name}</h2>
                   </div>
                   {(() => {

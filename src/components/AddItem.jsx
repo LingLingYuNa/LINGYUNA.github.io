@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { X, Image as ImageIcon } from 'lucide-react';
 import { db } from '../db';
 import { DEFAULT_TAGS } from '../constants';
 import { compressImage, calculateOrderTotalTWD } from '../utils';
@@ -13,21 +14,101 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     (existingItem?.character ? [existingItem.character] : (existingItem?.role ? [existingItem.role] : []))
   );
   const [roleInput, setRoleInput] = useState('');
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   
   const [quantity, setQuantity] = useState(existingItem?.quantity || 1);
   const [price, setPrice] = useState(existingItem?.price || '');
   const [weight, setWeight] = useState(existingItem?.weight || '');
-  const [selectedTag, setSelectedTag] = useState(existingItem?.tag || '');
-  const [image, setImage] = useState(existingItem?.image || '');
+  const [selectedTags, setSelectedTags] = useState(
+    existingItem?.tags || (existingItem?.tag ? [existingItem.tag] : [])
+  );
+  const [tagInput, setTagInput] = useState('');
+  const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
+  const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
+  const [imageUrl, setImageUrl] = useState(isUrl(existingItem?.image) ? existingItem.image : '');
+  const [image, setImage] = useState(!isUrl(existingItem?.image) ? existingItem?.image || '' : '');
   const [isSaving, setIsSaving] = useState(false);
 
-  const handleAddRole = (e) => {
-    if (e) e.preventDefault();
-    const trimmed = roleInput.trim();
+  const dbCustomTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([])) || [];
+  const dbItems = useLiveQuery(() => db.items.toArray()) || [];
+
+  // 合併並去重標籤
+  const availableTags = React.useMemo(() => {
+    const tagsSet = new Set(DEFAULT_TAGS);
+    
+    dbCustomTags.forEach(t => {
+      if (t.name) tagsSet.add(t.name.trim());
+    });
+    
+    dbItems.forEach(item => {
+      if (item.tag) {
+        tagsSet.add(item.tag.trim());
+      }
+      if (Array.isArray(item.tags)) {
+        item.tags.forEach(t => {
+          if (t) tagsSet.add(t.trim());
+        });
+      }
+    });
+    
+    return Array.from(tagsSet).filter(t => t !== '');
+  }, [dbCustomTags, dbItems]);
+
+  const filteredAvailableTags = availableTags.filter(tag => 
+    !selectedTags.includes(tag) && 
+    tag.toLowerCase().includes(tagInput.toLowerCase())
+  );
+
+  const handleAddTag = (tagToAdd) => {
+    const trimmed = tagToAdd.trim();
+    if (trimmed && !selectedTags.includes(trimmed)) {
+      setSelectedTags([...selectedTags, trimmed]);
+    }
+    setTagInput('');
+    setIsTagDropdownOpen(false);
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setSelectedTags(selectedTags.filter(t => t !== tagToRemove));
+  };
+
+  // 提取所有已存在的角色作為選項
+  const availableRoles = React.useMemo(() => {
+    const rolesSet = new Set();
+    
+    dbItems.forEach(item => {
+      const itemRoles = Array.isArray(item.roles)
+        ? item.roles
+        : (item.character ? item.character.split(',').map(s => s.trim()).filter(Boolean) : (item.role ? [item.role] : []));
+      
+      itemRoles.forEach(r => {
+        if (r) rolesSet.add(r.trim());
+      });
+    });
+    
+    return Array.from(rolesSet).filter(r => r !== '');
+  }, [dbItems]);
+
+  const filteredAvailableRoles = availableRoles.filter(role => 
+    !roles.includes(role) && 
+    role.toLowerCase().includes(roleInput.toLowerCase())
+  );
+
+  const handleAddRole = (roleToAddOrEvent) => {
+    let roleToAdd = '';
+    if (typeof roleToAddOrEvent === 'string') {
+      roleToAdd = roleToAddOrEvent;
+    } else {
+      if (roleToAddOrEvent) roleToAddOrEvent.preventDefault();
+      roleToAdd = roleInput;
+    }
+
+    const trimmed = roleToAdd.trim();
     if (trimmed && !roles.includes(trimmed)) {
       setRoles([...roles, trimmed]);
-      setRoleInput('');
     }
+    setRoleInput('');
+    setIsRoleDropdownOpen(false);
   };
 
   const handleRemoveRole = (indexToRemove) => {
@@ -40,10 +121,16 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       try {
         const compressed = await compressImage(file);
         setImage(compressed);
+        setImageUrl(''); // 選擇本地檔案時，清空網址輸入框
       } catch (error) {
         console.error('圖片壓縮失敗:', error);
       }
     }
+  };
+
+  const handleClearImage = () => {
+    setImage('');
+    setImageUrl('');
   };
 
   const handleSave = async (e) => {
@@ -57,11 +144,12 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         name,
         roles: roles,
         character: roles.join(', '),
-        tag: selectedTag,
+        tags: selectedTags,
+        tag: selectedTags[0] || '',
         quantity: Number(quantity),
         price: Number(price),
         weight: Number(weight) || 0,
-        image,
+        image: image || imageUrl || '',
       };
 
       if (existingItem) {
@@ -116,40 +204,172 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         </div>
 
         <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-6">
-          {/* 智慧分類標籤 (單選) */}
+          {/* 分類標籤 (多選與動態載入) */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">分類標籤</label>
-            <div className="flex flex-wrap gap-2">
-              {DEFAULT_TAGS.map(tag => (
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={tagInput}
+                    onChange={(e) => {
+                      setTagInput(e.target.value);
+                      setIsTagDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsTagDropdownOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (tagInput.trim()) {
+                          handleAddTag(tagInput.trim());
+                        }
+                      }
+                    }}
+                    placeholder="輸入新標籤或選擇下拉推薦..."
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+                  {tagInput && (
+                    <button
+                      type="button"
+                      onClick={() => setTagInput('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
                 <button
-                  key={tag}
                   type="button"
-                  onClick={() => setSelectedTag(tag === selectedTag ? '' : tag)}
-                  className={`text-xs px-3.5 py-1.5 rounded-full font-medium transition-all border ${
-                    selectedTag === tag 
-                      ? 'bg-primary text-white border-primary shadow-sm' 
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary-dark hover:bg-primary-light/30'
-                  }`}
+                  onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
+                  className="px-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-300 rounded-xl transition-all flex items-center justify-center font-semibold text-xs"
                 >
-                  {tag}
+                  選擇 ({filteredAvailableTags.length})
                 </button>
-              ))}
+              </div>
+
+              {/* 下拉選單列表 */}
+              {isTagDropdownOpen && filteredAvailableTags.length > 0 && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsTagDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 right-0 mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl z-50 py-1 transition-all">
+                    {filteredAvailableTags.map((tag) => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleAddTag(tag)}
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-light/40 dark:hover:bg-gray-755 transition-colors font-medium"
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* 已選擇的標籤 */}
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {selectedTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-full text-xs font-semibold border border-blue-100 dark:border-blue-800"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTag(tag)}
+                      className="hover:bg-blue-100 dark:hover:bg-blue-900/60 rounded-full p-0.5 transition-colors text-blue-500 dark:text-blue-455"
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* 照片上傳 */}
-          <div className="space-y-2">
+          {/* 照片上傳與 URL 貼上 */}
+          <div className="space-y-3">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">照片 (選填)</label>
-            <div className="flex items-center gap-4">
-              {image && (
-                <img src={image} alt="預覽" className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm shrink-0" />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-light/50 dark:file:bg-gray-700 file:text-primary-dark dark:file:text-gray-300 hover:file:bg-primary-light dark:hover:file:bg-gray-600 transition-colors w-full"
-              />
+            <div className="flex gap-4 items-start">
+              {/* 預覽區塊 */}
+              <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm transition-all group">
+                {image ? (
+                  <img src={image} alt="本地預覽" className="w-full h-full object-cover" />
+                ) : imageUrl ? (
+                  <div className="w-full h-full relative">
+                    <img 
+                      src={imageUrl} 
+                      alt="網址預覽" 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.classList.add('hidden');
+                        e.currentTarget.nextSibling.classList.remove('hidden');
+                        e.currentTarget.nextSibling.classList.add('flex');
+                      }}
+                    />
+                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                      <X size={16} />
+                    </div>
+                  </div>
+                ) : (
+                  <ImageIcon className="text-gray-400 dark:text-gray-600" size={24} />
+                )}
+                
+                {/* 懸浮清除按鈕 */}
+                {(image || imageUrl) && (
+                  <button
+                    type="button"
+                    onClick={handleClearImage}
+                    className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="清除照片"
+                  >
+                    <X size={20} />
+                  </button>
+                )}
+              </div>
+
+              {/* 上傳與輸入區塊 */}
+              <div className="flex-1 space-y-2">
+                {/* 檔案上傳按鈕 */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  onClick={() => setImageUrl('')}
+                  className="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border file:border-gray-250 dark:file:border-gray-650 file:text-xs file:font-semibold file:bg-gray-50 dark:file:bg-gray-800 file:text-gray-700 dark:text-gray-300 hover:file:bg-gray-100 dark:hover:file:bg-gray-750 transition-colors w-full cursor-pointer"
+                />
+                
+                {/* 網址輸入框 */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={imageUrl}
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      if (e.target.value) {
+                        setImage(''); // 貼上網址時，清除本地選擇的 base64 圖片
+                      }
+                    }}
+                    placeholder="🔗 或直接貼上圖片網址 (Image URL)..."
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+                  {imageUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                    >
+                      <X size={12} />
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
@@ -166,30 +386,74 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             />
           </div>
 
-          {/* 角色 */}
+          {/* 角色 (多選與動態載入) */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">角色 (選填)</label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={roleInput}
-                onChange={(e) => setRoleInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleAddRole(e);
-                  }
-                }}
-                placeholder="例如：五條悟、夏油傑..."
-                className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              />
-              <button
-                type="button"
-                onClick={handleAddRole}
-                className="px-4 bg-primary-light dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-primary hover:bg-primary/10 dark:hover:bg-primary/10 text-primary-dark dark:text-primary-light text-sm font-medium rounded-xl transition-all shrink-0"
-              >
-                新增
-              </button>
+            <div className="relative">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={roleInput}
+                    onChange={(e) => {
+                      setRoleInput(e.target.value);
+                      setIsRoleDropdownOpen(true);
+                    }}
+                    onFocus={() => setIsRoleDropdownOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (roleInput.trim()) {
+                          handleAddRole(roleInput.trim());
+                        }
+                      }
+                    }}
+                    placeholder="輸入新角色或選擇下拉推薦..."
+                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  />
+                  {roleInput && (
+                    <button
+                      type="button"
+                      onClick={() => setRoleInput('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                    >
+                      <X size={14} />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                  className="px-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-300 rounded-xl transition-all flex items-center justify-center font-semibold text-xs"
+                >
+                  選擇 ({filteredAvailableRoles.length})
+                </button>
+              </div>
+
+              {/* 下拉選單列表 */}
+              {isRoleDropdownOpen && filteredAvailableRoles.length > 0 && (
+                <>
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setIsRoleDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 right-0 mt-1.5 max-h-48 overflow-y-auto bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl shadow-xl z-50 py-1 transition-all">
+                    {filteredAvailableRoles.map((role) => (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => handleAddRole(role)}
+                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-primary-light/40 dark:hover:bg-gray-755 transition-colors font-medium"
+                      >
+                        {role}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
+
+            {/* 已選擇的角色 Pill Badges */}
             {roles.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {roles.map((role, index) => (

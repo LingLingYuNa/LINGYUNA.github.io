@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Download, Upload, Settings, ShieldAlert, DatabaseBackup, Tags, Cloud, RefreshCw, LogOut } from 'lucide-react';
 import { db } from '../db';
 import TagManager from './TagManager';
+import TagRoleManager from './TagRoleManager';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive, getGoogleTokenClient } from '../utils/googleDriveSync';
 
 export default function Tools() {
@@ -9,6 +10,7 @@ export default function Tools() {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
+  const [isTagRoleManagerOpen, setIsTagRoleManagerOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
   });
@@ -425,23 +427,40 @@ export default function Tools() {
 
         {/* 右欄：標籤管理與系統設定 */}
         <div className="space-y-6">
-          {/* 標籤管理 */}
+          {/* 標籤與角色管理 */}
           <section className="space-y-3">
             <h3 className="px-1 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
               <Tags size={18} className="text-gray-500" />
-              標籤管理
+              標籤與角色管理
             </h3>
+            
+            {/* 全域標籤與角色對齊管理 */}
+            <button 
+              type="button"
+              onClick={() => setIsTagRoleManagerOpen(true)}
+              className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-750"
+            >
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">🏷️ 標籤與角色管理中心</span>
+                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">全域修改/刪除已使用之標籤與角色</span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                <Tags size={20} strokeWidth={2.5} />
+              </div>
+            </button>
+
+            {/* 原本的自訂標籤面板 */}
             <button 
               type="button"
               onClick={() => setIsTagManagerOpen(true)}
               className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-750"
             >
               <div className="flex flex-col text-left">
-                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">標籤大師管理面板</span>
-                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">自訂分類標籤與排序順序</span>
+                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">自訂快速標籤清單</span>
+                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">設定記帳常用標籤之排列順序</span>
               </div>
               <div className="w-10 h-10 rounded-full bg-primary-light dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light flex items-center justify-center">
-                <Tags size={20} strokeWidth={2.5} />
+                <Settings size={20} strokeWidth={2.5} />
               </div>
             </button>
           </section>
@@ -478,6 +497,11 @@ export default function Tools() {
       {/* 標籤管理面版 Modal */}
       {isTagManagerOpen && (
         <TagManager onClose={() => setIsTagManagerOpen(false)} />
+      )}
+
+      {/* 全域標籤與角色管理中心 Modal */}
+      {isTagRoleManagerOpen && (
+        <TagRoleManager onClose={() => setIsTagRoleManagerOpen(false)} />
       )}
     </div>
   );

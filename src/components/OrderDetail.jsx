@@ -382,11 +382,24 @@ export default function OrderDetail({ orderId, onBack }) {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          {item.tag && (
-                            <span className="text-[10px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-md font-bold shrink-0">
-                              {item.tag}
-                            </span>
-                          )}
+                          {(() => {
+                            const itemTags = item.tags && Array.isArray(item.tags)
+                              ? item.tags
+                              : (item.tag ? [item.tag] : []);
+                            if (itemTags.length === 0) return null;
+                            return (
+                              <div className="flex flex-wrap gap-1 shrink-0">
+                                {itemTags.map((t, idx) => (
+                                  <span 
+                                    key={idx} 
+                                    className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-md font-bold"
+                                  >
+                                    {t}
+                                  </span>
+                                ))}
+                              </div>
+                            );
+                          })()}
                           <span className="font-bold text-gray-800 dark:text-gray-100 text-base">{item.name}</span>
                         </div>
                         {(() => {
