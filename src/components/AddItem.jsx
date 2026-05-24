@@ -216,7 +216,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">分類標籤</label>
             <div className="relative">
               <div className="flex gap-2">
-                <div className="relative flex-1">
+                <div className="flex flex-1 relative">
                   <input
                     type="text"
                     value={tagInput}
@@ -233,23 +233,30 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         }
                       }
                     }}
-                    placeholder="輸入新標籤或選擇下拉推薦..."
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    placeholder="輸入新標籤..."
+                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-l-xl pl-4 pr-10 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                   {tagInput && (
                     <button
                       type="button"
                       onClick={() => setTagInput('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                      className="absolute right-[88px] top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full z-10"
                     >
                       <X size={14} />
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => handleAddTag(tagInput)}
+                    className="px-4 bg-primary hover:bg-primary-dark text-white rounded-r-xl font-bold text-sm transition-colors shrink-0"
+                  >
+                    ➕ 新增
+                  </button>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsTagDropdownOpen(!isTagDropdownOpen)}
-                  className="px-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-300 rounded-xl transition-all flex items-center justify-center font-semibold text-xs"
+                  className="px-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-300 rounded-xl transition-all flex items-center justify-center font-semibold text-xs shrink-0"
                 >
                   選擇 ({filteredAvailableTags.length})
                 </button>
@@ -398,7 +405,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">角色 (選填)</label>
             <div className="relative">
               <div className="flex gap-2">
-                <div className="relative flex-1">
+                <div className="flex flex-1 relative">
                   <input
                     type="text"
                     value={roleInput}
@@ -415,23 +422,30 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         }
                       }
                     }}
-                    placeholder="輸入新角色或選擇下拉推薦..."
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    placeholder="輸入新角色..."
+                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-l-xl pl-4 pr-10 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                   />
                   {roleInput && (
                     <button
                       type="button"
                       onClick={() => setRoleInput('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                      className="absolute right-[88px] top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full z-10"
                     >
                       <X size={14} />
                     </button>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => handleAddRole(roleInput)}
+                    className="px-4 bg-primary hover:bg-primary-dark text-white rounded-r-xl font-bold text-sm transition-colors shrink-0"
+                  >
+                    ➕ 新增
+                  </button>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-                  className="px-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-300 rounded-xl transition-all flex items-center justify-center font-semibold text-xs"
+                  className="px-3 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-500 dark:text-gray-300 rounded-xl transition-all flex items-center justify-center font-semibold text-xs shrink-0"
                 >
                   選擇 ({filteredAvailableRoles.length})
                 </button>
