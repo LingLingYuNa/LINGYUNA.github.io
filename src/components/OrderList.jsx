@@ -18,7 +18,7 @@ const getItemRoles = (item) => {
   return charStr ? charStr.split(',').map(s => s.trim()).filter(Boolean) : [];
 };
 
-export default function OrderList({ onOrderClick }) {
+export default function OrderList({ onOrderClick, currentTab }) {
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'gallery'
   const [selectedItem, setSelectedItem] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
@@ -33,6 +33,28 @@ export default function OrderList({ onOrderClick }) {
   // 批次選取狀態
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
+
+  // 智慧清理：當切換分頁離開「清單」時，強制清理所有彈窗狀態以防殘留
+  useEffect(() => {
+    if (currentTab && currentTab !== 'list') {
+      setSelectedItem(null);
+      setEditingOrder(null);
+      setSelectedSaleToEdit(null);
+      setIsReconOpen(false);
+      setZoomImage(null);
+    }
+  }, [currentTab]);
+
+  // 防呆機制：當此元件被卸載 (Unmount) 時，也一併執行狀態清理
+  useEffect(() => {
+    return () => {
+      setSelectedItem(null);
+      setEditingOrder(null);
+      setSelectedSaleToEdit(null);
+      setIsReconOpen(false);
+      setZoomImage(null);
+    };
+  }, []);
 
   // 安全防護：當過濾條件、分頁 Tab 或檢視模式改變時，自動清空選取狀態
   useEffect(() => {

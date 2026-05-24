@@ -20,10 +20,27 @@ function App() {
   const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollTop = useRef(0);
 
+  // 統一處理分頁切換並清除所有彈窗與詳情狀態
+  const handleTabChange = (tab) => {
+    setCurrentTab(tab);
+    setSelectedOrderId(null);
+    setIsAddOrderOpen(false);
+    setIsQuickAddOpen(false);
+    setQuickAddOrderId(null);
+  };
+
   // 當切換分頁或進入/離開訂單詳情時，重置加號球為顯示狀態
   useEffect(() => {
     setIsFabVisible(true);
   }, [currentTab, selectedOrderId]);
+
+  // 防呆機制：當分頁切換時，自動關閉所有全域彈窗與詳情小票
+  useEffect(() => {
+    setSelectedOrderId(null);
+    setIsAddOrderOpen(false);
+    setIsQuickAddOpen(false);
+    setQuickAddOrderId(null);
+  }, [currentTab]);
 
   const handleScroll = (e) => {
     const target = e.currentTarget;
@@ -76,10 +93,7 @@ function App() {
       {/* 電腦版左側邊欄 */}
       <Sidebar 
         currentTab={currentTab} 
-        onTabChange={(tab) => {
-          setCurrentTab(tab);
-          setSelectedOrderId(null); // 切換分頁時自動返回列表，避免卡在詳情頁
-        }} 
+        onTabChange={handleTabChange} 
       />
       
       {/* 主要內容區 */}
@@ -105,6 +119,7 @@ function App() {
             )}
             {currentTab === 'list' && (
               <OrderList 
+                currentTab={currentTab}
                 onOrderClick={handleOrderClick} 
               />
             )}
@@ -127,7 +142,7 @@ function App() {
       </button>
 
       {/* 底部導覽列 */}
-      <BottomNav currentTab={currentTab} onTabChange={setCurrentTab} />
+      <BottomNav currentTab={currentTab} onTabChange={handleTabChange} />
 
       {/* 新增訂單彈窗 */}
       {isAddOrderOpen && (
