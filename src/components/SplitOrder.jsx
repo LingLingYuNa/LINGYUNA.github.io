@@ -8,6 +8,12 @@ export default function SplitOrder() {
   const [shippingNTD, setShippingNTD] = useState('');
   const [exchangeRate, setExchangeRate] = useState(EXCHANGE_RATES.RMB);
 
+  // 重量分攤狀態
+  const [itemWeight, setItemWeight] = useState('0.5');
+  const [totalWeight, setTotalWeight] = useState('5.0');
+  const [totalShipping, setTotalShipping] = useState('100');
+  const [shippingExchangeRate, setShippingExchangeRate] = useState('5.5');
+
   const calculateCosts = () => {
     const totalQty = Number(quantity) || 1;
     const fTotal = Number(foreignTotal) || 0;
@@ -30,12 +36,22 @@ export default function SplitOrder() {
 
   const { totalNTD, rawCostPerItem, suggestedPrice } = calculateCosts();
 
+  // 重量分攤即時計算邏輯
+  const iw = Number(itemWeight) || 0;
+  const tw = Number(totalWeight) || 0;
+  const ts = Number(totalShipping) || 0;
+  const er = Number(shippingExchangeRate) || 0;
+
+  const weightRatio = tw > 0 ? (iw / tw) * 100 : 0;
+  const sharedForeignFee = tw > 0 ? (iw / tw) * ts : 0;
+  const finalTwdFee = sharedForeignFee * er;
+
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32">
       {/* 標題區 */}
       <header className="px-1 mt-2 mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">分攤計算機</h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">快速試算盲盒或團購的單件合理建議價</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">🧮 專屬計算機</h1>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">快速試算盲盒、團購分攤與集運運費重量分攤</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
@@ -139,6 +155,118 @@ export default function SplitOrder() {
                 </span>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 重量分攤試算器 */}
+      <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/80 space-y-5 transition-colors mt-6 animate-in fade-in duration-305">
+        <div className="flex items-center gap-2 pb-1.5 border-b border-gray-100 dark:border-gray-700/60">
+          <span className="text-lg">⚖️</span>
+          <h2 className="text-base font-bold text-gray-800 dark:text-gray-200">集運運費重量分攤試算</h2>
+        </div>
+
+        {/* 輸入區 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* 單件物品重量 */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 dark:text-gray-400">單件物品重量</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={itemWeight}
+              onChange={(e) => setItemWeight(e.target.value)}
+              placeholder="0.5"
+              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-100"
+            />
+          </div>
+
+          {/* 集運總重量 */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 dark:text-gray-400">集運總重量</label>
+            <input
+              type="number"
+              min="0.01"
+              step="0.01"
+              value={totalWeight}
+              onChange={(e) => setTotalWeight(e.target.value)}
+              placeholder="5.0"
+              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-100"
+            />
+          </div>
+
+          {/* 集運總運費 */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 dark:text-gray-400">集運總運費 (外幣)</label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={totalShipping}
+              onChange={(e) => setTotalShipping(e.target.value)}
+              placeholder="100"
+              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-100"
+            />
+          </div>
+
+          {/* 運費匯率 */}
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 dark:text-gray-400">運費匯率</label>
+            <input
+              type="number"
+              min="0.0001"
+              step="0.0001"
+              value={shippingExchangeRate}
+              onChange={(e) => setShippingExchangeRate(e.target.value)}
+              placeholder="5.5"
+              className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-100"
+            />
+          </div>
+        </div>
+
+        {/* 結果區 */}
+        <div className="bg-gray-50 dark:bg-gray-900/60 border border-gray-100 dark:border-gray-800 rounded-2xl p-4 space-y-4">
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">重量佔比</span>
+              <span className="text-base font-black text-primary-dark dark:text-primary-light">
+                {weightRatio.toFixed(1)}%
+              </span>
+            </div>
+            <div className="space-y-0.5 border-x border-gray-200 dark:border-gray-700">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">分攤外幣</span>
+              <span className="text-base font-black text-gray-700 dark:text-gray-300">
+                {sharedForeignFee.toFixed(2)}
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">最終台幣運費</span>
+              <span className="text-lg font-black text-emerald-650 dark:text-emerald-450">
+                NT$ {Math.round(finalTwdFee).toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          {/* 進度條 */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 dark:text-gray-500">
+              <span>包裹重量佔比進度條</span>
+              <span>{weightRatio.toFixed(1)}% / 100%</span>
+            </div>
+            <div className="w-full bg-gray-200 dark:bg-gray-700 h-3 rounded-full overflow-hidden">
+              <div 
+                className="bg-blue-500 h-full rounded-full transition-all duration-300"
+                style={{ width: `${Math.min(100, weightRatio)}%` }}
+              />
+            </div>
+          </div>
+
+          {/* 動態算式展示 */}
+          <div className="text-center pt-1.5 border-t border-gray-150/40 dark:border-gray-800">
+            <code className="text-xs text-gray-500 dark:text-gray-400 font-mono block select-all bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-lg">
+              ({iw.toFixed(2)} / {tw.toFixed(2)}) * {ts.toFixed(2)} * {er.toFixed(4)} = {Math.round(finalTwdFee)} 台幣
+            </code>
           </div>
         </div>
       </div>

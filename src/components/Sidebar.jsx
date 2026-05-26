@@ -1,11 +1,11 @@
 import React from 'react';
-import { Home, List, Scissors, Wrench, Package } from 'lucide-react';
+import { Home, List, Calculator, Wrench, Package } from 'lucide-react';
 
 export default function Sidebar({ currentTab, onTabChange }) {
   const menuItems = [
     { id: 'home', name: '總覽頁面', icon: Home },
     { id: 'list', name: '資產清單', icon: List },
-    { id: 'scissors', name: '代購拆單', icon: Scissors },
+    { id: 'scissors', name: '🧮 計算機', icon: Calculator },
     { id: 'wrench', name: '系統工具', icon: Wrench },
   ];
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, List, Scissors, Wrench } from 'lucide-react';
+import { Home, List, Calculator, Wrench } from 'lucide-react';
 
 export default function BottomNav({ currentTab, onTabChange }) {
   // 輔助函式：判斷按鈕是否為目前選取狀態，給予對應的樣式
@@ -30,10 +30,10 @@ export default function BottomNav({ currentTab, onTabChange }) {
           <span className={`text-[10px] mt-1 ${currentTab === 'list' ? 'font-semibold' : 'font-medium'}`}>清單</span>
         </button>
         
-        {/* 拆單按鈕 */}
+        {/* 計算機按鈕 */}
         <button onClick={() => onTabChange('scissors')} className={getBtnClass('scissors')}>
-          <Scissors {...getIconProps('scissors')} />
-          <span className={`text-[10px] mt-1 ${currentTab === 'scissors' ? 'font-semibold' : 'font-medium'}`}>拆單</span>
+          <Calculator {...getIconProps('scissors')} />
+          <span className={`text-[10px] mt-1 ${currentTab === 'scissors' ? 'font-semibold' : 'font-medium'}`}>計算機</span>
         </button>
         
         {/* 工具按鈕 */}
