@@ -38,6 +38,15 @@ export default function AddOrder({ existingOrder, onClose }) {
     ? customTags.filter(t => t.category === tagCategory)
     : (tagCategory === 'anime' ? DEFAULT_TAGS.map((name, i) => ({ id: i, name, category: 'anime' })) : []);
 
+  // 取得當前訂單的子物品
+  const currentItems = useLiveQuery(
+    () => existingOrder ? db.items.where({ order_id: existingOrder.id }).toArray() : Promise.resolve([]),
+    [existingOrder]
+  ) || [];
+
+  // 計算週邊訂單的外幣總金額
+  const calculatedAmount = currentItems.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
+
   const handleCurrencyChange = (e) => {
     const newCode = e.target.value;
     setCurrency(newCode);
@@ -57,14 +66,14 @@ export default function AddOrder({ existingOrder, onClose }) {
 
   const handleSave = async (e) => {
     e.preventDefault();
-    if (!title || !source || !amount) return;
+    if (!title || !source || (tagCategory !== 'anime' && !amount)) return;
 
     setIsSaving(true);
     try {
       const orderData = {
         title,
         source,
-        total_amount: Number(amount),
+        total_amount: tagCategory === 'anime' ? calculatedAmount : Number(amount),
         currency,
         exchange_rate: Number(exchangeRate),
         status,
@@ -80,16 +89,13 @@ export default function AddOrder({ existingOrder, onClose }) {
       };
 
       // 取得子物品（如果是編輯模式的話）
-      let currentItems = [];
+      let dbItems = [];
       if (existingOrder) {
-        currentItems = await db.items.where({ order_id: existingOrder.id }).toArray();
-        if (tagCategory === 'anime' && currentItems.length > 0) {
-          orderData.total_amount = currentItems.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
-        }
+        dbItems = await db.items.where({ order_id: existingOrder.id }).toArray();
       }
 
       // 計算最終台幣總計
-      orderData.total_amount_twd = calculateOrderTotalTWD(orderData, currentItems);
+      orderData.total_amount_twd = calculateOrderTotalTWD(orderData, dbItems);
 
       if (existingOrder) {
         await db.orders.update(existingOrder.id, orderData);
@@ -263,13 +269,23 @@ export default function AddOrder({ existingOrder, onClose }) {
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">外幣總金額</label>
             <input
               type="number"
-              required
+              required={tagCategory !== 'anime'}
               step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="請輸入金額"
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              value={tagCategory === 'anime' ? calculatedAmount : amount}
+              onChange={tagCategory === 'anime' ? undefined : (e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
+              disabled={tagCategory === 'anime'}
+              placeholder={tagCategory === 'anime' ? "由物品自動計算" : "請輸入金額"}
+              className={`w-full border rounded-xl px-4 py-3 text-sm transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
+                tagCategory === 'anime'
+                  ? 'bg-gray-100 dark:bg-gray-850 border-gray-200 dark:border-gray-705 cursor-not-allowed text-gray-400 dark:text-gray-500'
+                  : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
+              }`}
             />
+            {tagCategory === 'anime' && (
+              <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">
+                💡 總金額將由物品清單自動計算
+              </p>
+            )}
           </div>
 
           {/* 幣別與匯率 */}
@@ -455,7 +471,7 @@ export default function AddOrder({ existingOrder, onClose }) {
           </button>
           <button 
             onClick={handleSave}
-            disabled={isSaving || !title || !source || !amount}
+            disabled={isSaving || !title || !source || (tagCategory !== 'anime' && !amount)}
             className="flex-1 py-3.5 px-4 bg-primary text-white rounded-xl font-semibold shadow-sm shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors disabled:opacity-50 disabled:shadow-none"
           >
             {isSaving ? '儲存中...' : (existingOrder ? '儲存變更' : '儲存')}
