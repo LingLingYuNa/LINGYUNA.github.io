@@ -135,7 +135,7 @@ export default function CalendarView({ onOrderClick }) {
   const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
   return (
-    <div className="space-y-4 pb-24">
+    <div className="space-y-4 pb-32">
       {/* 日曆主卡片 */}
       <div className="bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/80 transition-colors">
         {/* 月份切換標頭 */}

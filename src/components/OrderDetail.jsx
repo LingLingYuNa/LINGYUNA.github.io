@@ -208,7 +208,7 @@ export default function OrderDetail({ orderId, onBack }) {
 
       {/* 主要內容區 */}
       {viewMode === 'edit' ? (
-        <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-24">
+        <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-32">
         
         {/* 父訂單摘要區塊 */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/80 relative overflow-hidden transition-colors">
@@ -519,7 +519,7 @@ export default function OrderDetail({ orderId, onBack }) {
         </section>
       </div>
       ) : (
-        <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-start pb-24 bg-gray-100 dark:bg-gray-900 transition-colors">
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-start pb-32 bg-gray-100 dark:bg-gray-900 transition-colors">
           <ReceiptView order={order} items={items} />
         </div>
       )}

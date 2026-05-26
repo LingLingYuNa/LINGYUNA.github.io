@@ -31,7 +31,7 @@ export default function SplitOrder() {
   const { totalNTD, rawCostPerItem, suggestedPrice } = calculateCosts();
 
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8">
+    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32">
       {/* 標題區 */}
       <header className="px-1 mt-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">分攤計算機</h1>

@@ -129,7 +129,6 @@ function App() {
         )}
       </main>
 
-      {/* 懸浮新增按鈕 (FAB) - 在手機版隨滑動變換位置/隱藏，在電腦版固定右下角 */}
       <button 
         onClick={() => setIsAddOrderOpen(true)}
         className={`absolute md:fixed bottom-24 md:bottom-8 right-5 md:right-8 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 md:hover:-translate-y-1 transition-all duration-300 transform z-40 ${

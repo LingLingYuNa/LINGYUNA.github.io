@@ -94,7 +94,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
   );
 
   return (
-    <div className="p-4 space-y-6 max-w-5xl mx-auto">
+    <div className="p-4 space-y-6 max-w-5xl mx-auto pb-32">
       {/* 標題與月份區塊 */}
       <header className="flex justify-between items-end mt-2 px-1">
         <div>

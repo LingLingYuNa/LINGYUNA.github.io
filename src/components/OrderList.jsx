@@ -432,7 +432,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字或標籤篩選</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-32">
                 {filteredOrders.map((order) => {
                   const orderItems = items.filter(item => item.order_id === order.id);
                   const isDaily = order.order_type === 'daily' || orderItems.length === 0;
@@ -672,7 +672,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字或標籤篩選</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-32">
                   {sortedFilteredSales.map((sale) => {
                     const item = items.find(i => i.id === sale.item_id);
                     const order = orders.find(o => o.id === item?.order_id);
@@ -829,7 +829,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
             <p className="text-sm text-gray-400 dark:text-gray-400">新增物品時，就會顯示在這裡喔！</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-24">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32">
             {galleryItems.map(item => (
               <div 
                 key={item.id}

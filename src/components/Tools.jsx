@@ -519,7 +519,7 @@ export default function Tools() {
   };
 
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-200">
+    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-200 pb-32">
       {/* 標題區 */}
       <header className="px-1 mt-2 mb-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">系統工具</h1>
