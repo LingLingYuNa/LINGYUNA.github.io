@@ -350,11 +350,20 @@ export default function OrderDetail({ orderId, onBack }) {
 
         {/* 子物品清單區塊 */}
         <section>
-          <div className="flex items-center justify-between px-1 mb-3 mt-1">
-            <h3 className="font-bold text-gray-800 dark:text-gray-200 text-base">包含物品</h3>
-            <span className="text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-0.5 rounded-full transition-colors">
-              共 {items?.length || 0} 項
-            </span>
+          <div className="flex justify-between items-center mb-4 px-1 mt-1">
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-gray-800 dark:text-gray-200 text-base">包含物品</h3>
+              <span className="text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2.5 py-0.5 rounded-full transition-colors">
+                共 {items?.length || 0} 項
+              </span>
+            </div>
+            <button
+              onClick={() => setIsAddItemOpen(true)}
+              className="px-3 py-1.5 text-xs bg-primary text-white rounded-xl shadow-sm hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
+            >
+              <Plus size={14} strokeWidth={2.5} />
+              <span>新增物品</span>
+            </button>
           </div>
           
           {!items || items.length === 0 ? (
@@ -524,15 +533,7 @@ export default function OrderDetail({ orderId, onBack }) {
         </div>
       )}
 
-      {/* FAB: 新增子物品 */}
-      {viewMode === 'edit' && (
-        <button 
-          onClick={() => setIsAddItemOpen(true)}
-          className="absolute bottom-20 md:bottom-6 right-5 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40 hover:bg-primary-dark active:bg-primary-dark hover:-translate-y-1 transition-all z-40"
-        >
-          <Plus size={28} strokeWidth={2.5} />
-        </button>
-      )}
+
 
       {/* 新增子物品表單 Modal */}
       {isAddItemOpen && (
