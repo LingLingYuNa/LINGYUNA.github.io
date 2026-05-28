@@ -528,7 +528,7 @@ export default function OrderDetail({ orderId, onBack }) {
       {viewMode === 'edit' && (
         <button 
           onClick={() => setIsAddItemOpen(true)}
-          className="absolute bottom-6 right-5 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40 hover:bg-primary-dark active:bg-primary-dark hover:-translate-y-1 transition-all z-40"
+          className="absolute bottom-20 md:bottom-6 right-5 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/40 hover:bg-primary-dark active:bg-primary-dark hover:-translate-y-1 transition-all z-40"
         >
           <Plus size={28} strokeWidth={2.5} />
         </button>

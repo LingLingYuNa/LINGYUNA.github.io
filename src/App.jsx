@@ -129,19 +129,16 @@ function App() {
         )}
       </main>
 
+      {/* 電腦版懸浮新增按鈕 (FAB) - 在手機版隱藏，在電腦版固定右下角 */}
       <button 
         onClick={() => setIsAddOrderOpen(true)}
-        className={`absolute md:fixed bottom-24 md:bottom-8 right-5 md:right-8 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 md:hover:-translate-y-1 transition-all duration-300 transform z-40 ${
-          isFabVisible 
-            ? 'translate-y-0 opacity-100 scale-100' 
-            : 'translate-y-28 md:translate-y-0 opacity-0 md:opacity-100 scale-75 md:scale-100 pointer-events-none md:pointer-events-auto'
-        }`}
+        className="hidden md:flex md:fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 hover:-translate-y-1 transition-all duration-300 transform z-40"
       >
         <Plus size={28} strokeWidth={2.5} />
       </button>
 
       {/* 底部導覽列 */}
-      <BottomNav currentTab={currentTab} onTabChange={handleTabChange} />
+      <BottomNav currentTab={currentTab} onTabChange={handleTabChange} onAddClick={() => setIsAddOrderOpen(true)} />
 
       {/* 新增訂單彈窗 */}
       {isAddOrderOpen && (
