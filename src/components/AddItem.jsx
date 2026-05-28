@@ -210,7 +210,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-6">
+        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 pb-32 md:pb-5 space-y-6">
           {/* 分類標籤 (多選與動態載入) */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">分類標籤</label>

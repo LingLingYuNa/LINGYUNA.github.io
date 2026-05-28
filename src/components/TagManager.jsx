@@ -113,7 +113,7 @@ export default function TagManager({ onClose }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[60] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* 點擊背景關閉 (手機版) */}
@@ -165,7 +165,7 @@ export default function TagManager({ onClose }) {
       </div>
 
       {/* 主要內容滾動區 */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      <div className="flex-1 overflow-y-auto p-5 pb-32 md:pb-5 space-y-4">
         
         {/* 新增標籤輸入框 */}
         <form onSubmit={handleAddTag} className="flex gap-2">

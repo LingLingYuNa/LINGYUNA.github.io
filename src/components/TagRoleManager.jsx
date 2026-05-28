@@ -169,7 +169,7 @@ export default function TagRoleManager({ onClose }) {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
+      className="fixed inset-0 z-[60] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors">
@@ -213,7 +213,7 @@ export default function TagRoleManager({ onClose }) {
         </div>
 
         {/* 標籤/角色列表區 */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-3">
+        <div className="flex-1 overflow-y-auto p-5 pb-32 md:pb-5 space-y-3">
           {currentList.length === 0 ? (
             <div className="text-center text-gray-400 py-10 font-medium text-sm">
               目前系統中尚未有已記錄的{activeTab === 'tags' ? '標籤' : '角色'}

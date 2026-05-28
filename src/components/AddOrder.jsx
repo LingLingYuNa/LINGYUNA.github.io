@@ -118,7 +118,7 @@ export default function AddOrder({ existingOrder, onClose }) {
     // 全螢幕彈出層 (Mobile-First) + 電腦版置中卡片
     <div 
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-      className="fixed inset-0 z-50 bg-gray-50 dark:bg-gray-900 md:bg-gray-950/60 md:backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors"
+      className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-900 md:bg-gray-950/60 md:backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors"
     >
       <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         {/* Header */}
@@ -132,7 +132,7 @@ export default function AddOrder({ existingOrder, onClose }) {
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 space-y-5">
+        <form onSubmit={handleSave} className="flex-1 overflow-y-auto p-5 pb-32 md:pb-5 space-y-5">
           
           {/* 訂單名稱 + 聯想詞彙 */}
           <div className="space-y-1.5 relative">
