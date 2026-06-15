@@ -830,49 +830,67 @@ export default function OrderList({ onOrderClick, currentTab }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32">
-            {galleryItems.map(item => (
-              <div 
-                key={item.id}
-                onClick={() => setSelectedItem(item)}
-                className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
-              >
-                {item.image ? (
-                  <div className="w-full h-full relative">
-                    <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-full h-full object-cover animate-in fade-in" 
-                      onError={(e) => {
-                        e.currentTarget.classList.add('hidden');
-                        e.currentTarget.nextSibling.classList.remove('hidden');
-                        e.currentTarget.nextSibling.classList.add('flex');
-                      }}
-                    />
-                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+            {galleryItems.map(item => {
+              const associatedOrder = orders?.find(o => o.id === item.order_id);
+              const currencySymbol = associatedOrder 
+                ? (CURRENCIES.find(c => c.code === associatedOrder.currency)?.symbol || '$')
+                : '$';
+              const totalForeignPrice = Number(item.price) * Number(item.quantity);
+              const exchangeRate = associatedOrder ? Number(associatedOrder.exchange_rate) : 1;
+              const totalTWDPrice = Math.round(totalForeignPrice * exchangeRate);
+
+              return (
+                <div 
+                  key={item.id}
+                  onClick={() => setSelectedItem(item)}
+                  className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
+                >
+                  {item.image ? (
+                    <div className="w-full h-full relative">
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-full h-full object-cover animate-in fade-in" 
+                        onError={(e) => {
+                          e.currentTarget.classList.add('hidden');
+                          e.currentTarget.nextSibling.classList.remove('hidden');
+                          e.currentTarget.nextSibling.classList.add('flex');
+                        }}
+                      />
+                      <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                        <ImageIcon size={32} className="mb-2 opacity-50" />
+                        <span className="text-xs font-bold text-red-400 dark:text-red-300">圖片失效</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-300 dark:text-indigo-500">
                       <ImageIcon size={32} className="mb-2 opacity-50" />
-                      <span className="text-xs font-bold text-red-400 dark:text-red-300">圖片失效</span>
+                      <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{(item.tags && item.tags[0]) || item.tag || '物品'}</span>
+                    </div>
+                  )}
+                  {/* 遮罩標籤 */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/60 to-transparent p-3 pt-12">
+                    <h4 className="text-white text-xs font-black truncate">{item.name}</h4>
+                    {(() => {
+                      const itemRoles = getItemRoles(item);
+                      return itemRoles.length > 0 && (
+                        <p className="text-white/80 text-[10px] truncate">
+                          🏷 {itemRoles.join(', ')}
+                        </p>
+                      );
+                    })()}
+                    {/* 數量與總金額 */}
+                    <div className="flex justify-between items-center mt-1 text-[9px] text-white/90 font-bold">
+                      <span>x{item.quantity}</span>
+                      <span>
+                        {currencySymbol}{totalForeignPrice.toLocaleString()}
+                        {associatedOrder && associatedOrder.currency !== 'TWD' && ` (NT$ ${totalTWDPrice.toLocaleString()})`}
+                      </span>
                     </div>
                   </div>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-300 dark:text-indigo-500">
-                    <ImageIcon size={32} className="mb-2 opacity-50" />
-                    <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{(item.tags && item.tags[0]) || item.tag || '物品'}</span>
-                  </div>
-                )}
-                {/* 遮罩標籤 */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 pt-8">
-                  <h4 className="text-white text-xs font-bold truncate">{item.name}</h4>
-                  {(() => {
-                    const itemRoles = getItemRoles(item);
-                    return itemRoles.length > 0 && (
-                      <p className="text-white/80 text-[10px] truncate">
-                        🏷 {itemRoles.join(', ')}
-                      </p>
-                    );
-                  })()}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )
       ) : (
