@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Image as ImageIcon } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { CURRENCIES, STATUS_COLORS, DEFAULT_TAGS, ORDER_STATUSES, PAYMENT_METHODS } from '../constants';
-import { calculateOrderTotalTWD } from '../utils';
+import { calculateOrderTotalTWD, compressImage } from '../utils';
 
 export default function AddOrder({ existingOrder, onClose }) {
   const [title, setTitle] = useState(existingOrder?.title || existingOrder?.source || '');
@@ -25,6 +25,38 @@ export default function AddOrder({ existingOrder, onClose }) {
   const [remittanceFee, setRemittanceFee] = useState(existingOrder?.remittance_fee || 0);
   const [shippingFee, setShippingFee] = useState(existingOrder?.shipping_fee || existingOrder?.global_shipping_fee || 0);
   const [discountAmount, setDiscountAmount] = useState(existingOrder?.discount_amount || existingOrder?.discount || 0);
+
+  const [paymentProof, setPaymentProof] = useState(existingOrder?.payment_proof || '');
+  const [proofUrlInput, setProofUrlInput] = useState('');
+  const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
+
+  const handleProofChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const compressed = await compressImage(file);
+        setPaymentProof(compressed);
+        setProofUrlInput('');
+      } catch (error) {
+        console.error('憑證圖片壓縮失敗:', error);
+      }
+      e.target.value = '';
+    }
+  };
+
+  const handleAddProofUrl = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = proofUrlInput.trim();
+    if (trimmed) {
+      setPaymentProof(trimmed);
+      setProofUrlInput('');
+    }
+  };
+
+  const handleClearProof = () => {
+    setPaymentProof('');
+    setProofUrlInput('');
+  };
 
 
   // 歷史數據用來做關聯建議
@@ -86,6 +118,7 @@ export default function AddOrder({ existingOrder, onClose }) {
         remittance_fee: Number(remittanceFee) || 0,
         shipping_fee: Number(shippingFee) || 0,
         discount_amount: Number(discountAmount) || 0,
+        payment_proof: paymentProof || '',
       };
 
       // 取得子物品（如果是編輯模式的話）
@@ -392,6 +425,97 @@ export default function AddOrder({ existingOrder, onClose }) {
               placeholder="請輸入物流單號 (選填)"
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
+          </div>
+
+          {/* 匯款憑證 */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">匯款憑證 (選填)</label>
+            <div className="flex gap-4 items-start">
+              {/* 預覽區塊 */}
+              <div className="w-24 h-16 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm transition-all group">
+                {paymentProof ? (
+                  <div className="w-full h-full relative">
+                    {isUrl(paymentProof) ? (
+                      <img 
+                        src={paymentProof} 
+                        alt="憑證網址預覽" 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.classList.add('hidden');
+                          e.currentTarget.nextSibling.classList.remove('hidden');
+                          e.currentTarget.nextSibling.classList.add('flex');
+                        }}
+                      />
+                    ) : (
+                      <img src={paymentProof} alt="憑證本地預覽" className="w-full h-full object-cover" />
+                    )}
+                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                      <X size={16} />
+                    </div>
+                  </div>
+                ) : (
+                  <ImageIcon className="text-gray-400 dark:text-gray-650" size={24} />
+                )}
+                
+                {/* 懸浮清除按鈕 */}
+                {paymentProof && (
+                  <button
+                    type="button"
+                    onClick={handleClearProof}
+                    className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="清除憑證"
+                  >
+                    <X size={20} />
+                  </button>
+                )}
+              </div>
+
+              {/* 上傳與輸入區塊 */}
+              <div className="flex-1 space-y-2">
+                {/* 檔案上傳按鈕 */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleProofChange}
+                  className="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border file:border-gray-250 dark:file:border-gray-650 file:text-xs file:font-semibold file:bg-gray-50 dark:file:bg-gray-800 file:text-gray-700 dark:text-gray-300 hover:file:bg-gray-100 dark:hover:file:bg-gray-750 transition-colors w-full cursor-pointer"
+                />
+                
+                {/* 網址輸入 */}
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={proofUrlInput}
+                      onChange={(e) => setProofUrlInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddProofUrl();
+                        }
+                      }}
+                      placeholder="🔗 貼上憑證圖片網址..."
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    />
+                    {proofUrlInput && (
+                      <button
+                        type="button"
+                        onClick={() => setProofUrlInput('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddProofUrl}
+                    className="px-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-colors shrink-0"
+                  >
+                    ➕ 加入
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* 進階費用與折扣 (選填) */}

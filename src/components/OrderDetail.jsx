@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil } from 'lucide-react';
+import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload } from 'lucide-react';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, getStatusStyle, PAYMENT_METHODS } from '../constants';
 import AddItem from './AddItem';
 import SellItem from './SellItem';
 import AddOrder from './AddOrder';
-import { getDeadlineInfo, calculateOrderTotalTWD } from '../utils';
+import { getDeadlineInfo, calculateOrderTotalTWD, compressImage } from '../utils';
 
 // 輔助函數：解析角色陣列，相容舊字串格式
 const getItemRoles = (item) => {
@@ -24,6 +24,20 @@ export default function OrderDetail({ orderId, onBack }) {
   const [selectedItemToSell, setSelectedItemToSell] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
   const [viewMode, setViewMode] = useState('edit'); // 'edit' | 'receipt'
+  const [zoomImage, setZoomImage] = useState(null);
+
+  const handleDirectUploadProof = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const compressed = await compressImage(file);
+        await handleUpdateOrder({ payment_proof: compressed });
+      } catch (error) {
+        console.error('憑證直接上傳壓縮失敗:', error);
+      }
+      e.target.value = '';
+    }
+  };
 
   // 監聽單一父訂單與關聯的子物品
   const order = useLiveQuery(() => db.orders.get(orderId), [orderId]);
@@ -304,6 +318,57 @@ export default function OrderDetail({ orderId, onBack }) {
                 </>
               ) : (
                 <span className="text-xs text-gray-400 dark:text-gray-500 italic">尚未填寫</span>
+              )}
+            </div>
+          </div>
+
+          {/* 匯款憑證 */}
+          <div className="flex justify-between items-center text-sm mt-3 pt-3 border-t border-gray-50 dark:border-gray-700/50 relative z-10">
+            <div className="text-gray-500 dark:text-gray-400 font-medium">匯款憑證</div>
+            <div className="flex items-center gap-3">
+              {order.payment_proof ? (
+                <div className="flex items-center gap-2 group relative">
+                  <div 
+                    onClick={() => setZoomImage(order.payment_proof)}
+                    className="w-14 h-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 overflow-hidden cursor-zoom-in relative group"
+                  >
+                    <img 
+                      src={order.payment_proof} 
+                      alt="憑證縮圖" 
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.classList.add('hidden');
+                        e.currentTarget.nextSibling.classList.remove('hidden');
+                        e.currentTarget.nextSibling.classList.add('flex');
+                      }}
+                    />
+                    <div className="hidden w-full h-full items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-500">
+                      <X size={12} />
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (window.confirm('確定要刪除此匯款憑證嗎？')) {
+                        handleUpdateOrder({ payment_proof: '' });
+                      }
+                    }}
+                    className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-full transition-colors"
+                    title="刪除憑證"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ) : (
+                <label className="px-3 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95">
+                  <Upload size={13} />
+                  <span>上傳憑證</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleDirectUploadProof}
+                    className="hidden"
+                  />
+                </label>
               )}
             </div>
           </div>
@@ -891,6 +956,16 @@ function ReceiptView({ order, items }) {
       </div>
 
       </div>
+
+      {/* 全螢幕 Lightbox 放大憑證圖 */}
+      {zoomImage && (
+        <div 
+          onClick={() => setZoomImage(null)}
+          className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+        >
+          <img src={zoomImage} alt="放大圖片" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+        </div>
+      )}
     </div>
   );
 }

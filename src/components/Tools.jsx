@@ -303,7 +303,8 @@ export default function Tools() {
             '幣別': order.currency || 'TWD',
             '匯率': order.exchange_rate || 1,
             '物流狀態': order.status || '',
-            '訂單來源': order.source || ''
+            '訂單來源': order.source || '',
+            '匯款憑證': order.payment_proof || ''
           });
         } else {
           for (const item of orderItems) {
@@ -326,7 +327,8 @@ export default function Tools() {
               '幣別': order.currency || 'TWD',
               '匯率': order.exchange_rate || 1,
               '物流狀態': order.status || '',
-              '訂單來源': order.source || ''
+              '訂單來源': order.source || '',
+              '匯款憑證': order.payment_proof || ''
             });
           }
         }
@@ -417,6 +419,7 @@ export default function Tools() {
               exchange_rate: Number(row['匯率']) || 1,
               status: row['物流狀態'] || '已喊單',
               source: row['訂單來源'] || 'Excel 匯入',
+              payment_proof: row['匯款憑證'] || '',
               tag_category: 'general', // 預設生活模式，底下如果有物品會被改為 anime
               tags: [],
               items: []
