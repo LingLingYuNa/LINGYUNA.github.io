@@ -22,7 +22,7 @@ export default function AddOrder({ existingOrder, onClose }) {
   
   // 進階費用與折扣狀態
   const [handlingFeePercent, setHandlingFeePercent] = useState(existingOrder?.handling_fee_percent || 0);
-  const [serviceFeePercent, setServiceFeePercent] = useState(existingOrder?.service_fee_percent || 0);
+  const [remittanceFee, setRemittanceFee] = useState(existingOrder?.remittance_fee || 0);
   const [shippingFee, setShippingFee] = useState(existingOrder?.shipping_fee || existingOrder?.global_shipping_fee || 0);
   const [discountAmount, setDiscountAmount] = useState(existingOrder?.discount_amount || existingOrder?.discount || 0);
 
@@ -83,7 +83,7 @@ export default function AddOrder({ existingOrder, onClose }) {
         payment_deadline: paymentDeadline || null,
         payment_method: paymentMethod || (tagCategory === 'general' ? '現金' : 'ATM/轉帳'),
         handling_fee_percent: Number(handlingFeePercent) || 0,
-        service_fee_percent: Number(serviceFeePercent) || 0,
+        remittance_fee: Number(remittanceFee) || 0,
         shipping_fee: Number(shippingFee) || 0,
         discount_amount: Number(discountAmount) || 0,
       };
@@ -415,16 +415,15 @@ export default function AddOrder({ existingOrder, onClose }) {
                 />
               </div>
               
-              {/* 服務費 (%) */}
+              {/* 匯款手續費 (台幣) */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">服務費 (%)</label>
+                <label className="text-xs font-semibold text-gray-600 dark:text-gray-300">匯款手續費 (台幣)</label>
                 <input
                   type="number"
                   min="0"
-                  step="0.1"
-                  value={serviceFeePercent || ''}
+                  value={remittanceFee || ''}
                   placeholder="0"
-                  onChange={(e) => setServiceFeePercent(e.target.value)}
+                  onChange={(e) => setRemittanceFee(e.target.value)}
                   className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
                 />
               </div>

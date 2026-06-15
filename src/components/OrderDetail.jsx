@@ -585,11 +585,10 @@ function ReceiptView({ order, items }) {
 
   // 新增/相容之進階費用計算
   const handlingFeePercent = Number(order.handling_fee_percent) || 0;
-  const serviceFeePercent = Number(order.service_fee_percent) || 0;
+  const remittanceFee = Number(order.remittance_fee) || 0;
   
-  // 計算手續費與服務費金額
+  // 計算手續費金額
   const handlingFeeAmount = Math.round(baseAmount * (handlingFeePercent / 100));
-  const serviceFeeAmount = Math.round(baseAmount * (serviceFeePercent / 100));
   
   // 各項費用 (相容舊欄位)
   const shippingFee = Number(order.shipping_fee) || Number(order.global_shipping_fee) || 0;
@@ -598,7 +597,7 @@ function ReceiptView({ order, items }) {
   // 如果資料庫中已有 total_amount_twd，直接使用，否則跑計算公式做為 fallback
   const totalCost = order.total_amount_twd !== undefined 
     ? order.total_amount_twd 
-    : Math.round(baseAmount + handlingFeeAmount + serviceFeeAmount + shippingFee - discountAmount);
+    : Math.round(baseAmount + handlingFeeAmount + remittanceFee + shippingFee - discountAmount);
 
   // 支付方式分配計算，預設為 ATM/轉帳
   const currentPaymentMethod = order.payment_method || 'ATM/轉帳';
@@ -791,10 +790,10 @@ function ReceiptView({ order, items }) {
               <span className="font-semibold">NT$ {handlingFeeAmount}</span>
             </div>
           )}
-          {(serviceFeePercent > 0 || serviceFeeAmount > 0) && (
+          {order.remittance_fee > 0 && (
             <div className="flex justify-between">
-              <span>服務費 ({serviceFeePercent}%)</span>
-              <span className="font-semibold">NT$ {serviceFeeAmount}</span>
+              <span>匯款手續費</span>
+              <span className="font-semibold">NT$ {order.remittance_fee}</span>
             </div>
           )}
           {shippingFee > 0 && (

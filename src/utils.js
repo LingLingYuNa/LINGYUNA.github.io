@@ -89,15 +89,14 @@ export const calculateOrderTotalTWD = (order, items = []) => {
 
   // 2. 稅費與折價百分比/金額
   const handlingFeePercent = Number(order.handling_fee_percent) || 0;
-  const serviceFeePercent = Number(order.service_fee_percent) || 0;
+  const remittanceFee = Number(order.remittance_fee) || 0;
   const shippingFee = Number(order.shipping_fee) || Number(order.global_shipping_fee) || 0;
   const discountAmount = Number(order.discount_amount) || Number(order.discount) || 0;
 
   const handlingFee = baseAmount * (handlingFeePercent / 100);
-  const serviceFee = baseAmount * (serviceFeePercent / 100);
 
   // 3. 最終台幣總計
-  const totalTWD = baseAmount + handlingFee + serviceFee + shippingFee - discountAmount;
+  const totalTWD = baseAmount + handlingFee + remittanceFee + shippingFee - discountAmount;
   return Math.round(totalTWD);
 };
 
