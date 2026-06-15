@@ -21,6 +21,7 @@ const getItemRoles = (item) => {
 export default function OrderList({ onOrderClick, currentTab }) {
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'gallery'
   const [selectedItem, setSelectedItem] = useState(null);
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [editingOrder, setEditingOrder] = useState(null);
   const [listType, setListType] = useState('expenses'); // 'expenses' | 'incomes'
   const [selectedSaleToEdit, setSelectedSaleToEdit] = useState(null);
@@ -29,6 +30,13 @@ export default function OrderList({ onOrderClick, currentTab }) {
   const [isReconOpen, setIsReconOpen] = useState(false);
   const [selectedBuyer, setSelectedBuyer] = useState('');
   const [zoomImage, setZoomImage] = useState(null);
+
+  const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
+
+  // 當選擇的物品改變時，重設圖片輪播的 active 索引
+  useEffect(() => {
+    setActiveImgIndex(0);
+  }, [selectedItem]);
 
   // 批次選取狀態
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -968,33 +976,112 @@ export default function OrderList({ onOrderClick, currentTab }) {
             </button>
             
             <div className="overflow-y-auto flex-1 p-6 pb-safe space-y-6">
-              {/* 大圖展示 */}
-              <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/80 flex items-center justify-center relative">
-                {selectedItem.image ? (
-                  <div className="w-full h-full relative">
-                    <img 
-                      src={selectedItem.image} 
-                      alt={selectedItem.name} 
-                      className="w-full h-full object-contain absolute inset-0 cursor-zoom-in" 
-                      onClick={() => setZoomImage(selectedItem.image)}
-                      onError={(e) => {
-                        e.currentTarget.classList.add('hidden');
-                        e.currentTarget.nextSibling.classList.remove('hidden');
-                        e.currentTarget.nextSibling.classList.add('flex');
-                      }}
-                    />
-                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
-                      <ImageIcon size={64} className="mb-3" />
-                      <span className="font-medium text-red-400 dark:text-red-300">圖片連結失效</span>
+              {/* 大圖展示與輪播 */}
+              {(() => {
+                const itemImages = selectedItem.images && Array.isArray(selectedItem.images)
+                  ? selectedItem.images
+                  : (selectedItem.image ? [selectedItem.image] : []);
+                
+                return (
+                  <div className="space-y-3">
+                    <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/80 flex items-center justify-center relative group">
+                      {itemImages.length > 0 ? (
+                        <div className="w-full h-full relative">
+                          {isUrl(itemImages[activeImgIndex]) ? (
+                            <img 
+                              src={itemImages[activeImgIndex]} 
+                              alt={`${selectedItem.name}-${activeImgIndex}`} 
+                              className="w-full h-full object-contain absolute inset-0 cursor-zoom-in" 
+                              onClick={() => setZoomImage(itemImages[activeImgIndex])}
+                              onError={(e) => {
+                                e.currentTarget.classList.add('hidden');
+                                e.currentTarget.nextSibling.classList.remove('hidden');
+                                e.currentTarget.nextSibling.classList.add('flex');
+                              }}
+                            />
+                          ) : (
+                            <img 
+                              src={itemImages[activeImgIndex]} 
+                              alt={`${selectedItem.name}-${activeImgIndex}`} 
+                              className="w-full h-full object-contain absolute inset-0 cursor-zoom-in" 
+                              onClick={() => setZoomImage(itemImages[activeImgIndex])}
+                            />
+                          )}
+                          
+                          <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                            <ImageIcon size={64} className="mb-3" />
+                            <span className="font-medium text-red-400 dark:text-red-300">圖片連結失效</span>
+                          </div>
+
+                          {/* 左右切換按鈕 */}
+                          {itemImages.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveImgIndex(prev => prev === 0 ? itemImages.length - 1 : prev - 1);
+                                }}
+                                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-sm transition-colors z-10 flex items-center justify-center"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setActiveImgIndex(prev => prev === itemImages.length - 1 ? 0 : prev + 1);
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-sm transition-colors z-10 flex items-center justify-center"
+                              >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                              </button>
+                            </>
+                          )}
+
+                          {/* 頁碼小標籤 */}
+                          {itemImages.length > 1 && (
+                            <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-bold backdrop-blur-sm z-10">
+                              {activeImgIndex + 1} / {itemImages.length}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center text-gray-300 dark:text-gray-500">
+                          <ImageIcon size={64} className="mb-3" />
+                          <span className="font-medium text-gray-400 dark:text-gray-550">
+                            {(selectedItem.tags && selectedItem.tags[0]) || selectedItem.tag || '無圖片'}
+                          </span>
+                        </div>
+                      )}
                     </div>
+
+                    {/* 縮圖導覽列 */}
+                    {itemImages.length > 1 && (
+                      <div className="flex gap-2 overflow-x-auto py-1 scrollbar-none justify-center">
+                        {itemImages.map((img, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActiveImgIndex(idx)}
+                            className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-gray-50 dark:bg-gray-800 ${
+                              idx === activeImgIndex 
+                                ? 'border-primary scale-105 shadow-sm' 
+                                : 'border-gray-200 dark:border-gray-700 opacity-60 hover:opacity-100'
+                            }`}
+                          >
+                            <img src={img} alt={`縮圖-${idx}`} className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  <div className="flex flex-col items-center text-gray-300 dark:text-gray-500">
-                    <ImageIcon size={64} className="mb-3" />
-                    <span className="font-medium text-gray-400 dark:text-gray-500">{(selectedItem.tags && selectedItem.tags[0]) || selectedItem.tag || '無圖片'}</span>
-                  </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* 資訊區塊 */}
               <div className="space-y-4">

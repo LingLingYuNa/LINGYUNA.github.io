@@ -298,6 +298,7 @@ export default function Tools() {
             '數量': '',
             '外幣單價': '',
             '物品標籤': '',
+            '圖片': '',
             // 智慧還原輔助欄位
             '幣別': order.currency || 'TWD',
             '匯率': order.exchange_rate || 1,
@@ -320,6 +321,7 @@ export default function Tools() {
               '數量': item.quantity || 0,
               '外幣單價': item.price || 0,
               '物品標籤': item.tags ? item.tags.join(', ') : (item.tag || ''),
+              '圖片': item.images ? item.images.join(' || ') : (item.image || ''),
               // 智慧還原輔助欄位
               '幣別': order.currency || 'TWD',
               '匯率': order.exchange_rate || 1,
@@ -428,15 +430,19 @@ export default function Tools() {
           if (itemName) {
             orderGroup.tag_category = 'anime'; // 自動切換為週邊模式
             
-            // 解析角色與物品標籤 (相容逗號分隔字串)
+            // 解析角色、物品標籤與圖片
             const rawRoles = row['角色'] || '';
             const rawTags = row['物品標籤'] || '';
+            const rawImages = row['圖片'] || '';
 
             const roles = rawRoles 
               ? rawRoles.toString().split(',').map(s => s.trim()).filter(Boolean) 
               : [];
             const tags = rawTags 
               ? rawTags.toString().split(',').map(s => s.trim()).filter(Boolean) 
+              : [];
+            const images = rawImages
+              ? rawImages.toString().split(' || ').map(s => s.trim()).filter(Boolean)
               : [];
 
             orderGroup.items.push({
@@ -447,7 +453,8 @@ export default function Tools() {
               quantity: Number(row['數量']) || 1,
               price: Number(row['外幣單價']) || 0,
               weight: 0,
-              image: '',
+              image: images[0] || '',
+              images: images,
             });
           }
         }

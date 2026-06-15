@@ -25,8 +25,11 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   const [tagInput, setTagInput] = useState('');
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
-  const [imageUrl, setImageUrl] = useState(isUrl(existingItem?.image) ? existingItem.image : '');
-  const [image, setImage] = useState(!isUrl(existingItem?.image) ? existingItem?.image || '' : '');
+  const [images, setImages] = useState(
+    existingItem?.images || 
+    (existingItem?.image ? [existingItem.image] : [])
+  );
+  const [urlInput, setUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   const dbCustomTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([])) || [];
@@ -116,21 +119,34 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   };
 
   const handleImageChange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
       try {
-        const compressed = await compressImage(file);
-        setImage(compressed);
-        setImageUrl(''); // 選擇本地檔案時，清空網址輸入框
+        const compressedList = [];
+        for (const file of files) {
+          const compressed = await compressImage(file);
+          compressedList.push(compressed);
+        }
+        setImages(prev => [...prev, ...compressedList]);
       } catch (error) {
         console.error('圖片壓縮失敗:', error);
       }
+      // 重置 input value 以免重複選擇同一張圖不觸發 onChange
+      e.target.value = '';
     }
   };
 
-  const handleClearImage = () => {
-    setImage('');
-    setImageUrl('');
+  const handleAddUrlImage = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = urlInput.trim();
+    if (trimmed) {
+      setImages(prev => [...prev, trimmed]);
+      setUrlInput('');
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove) => {
+    setImages(images.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSave = async (e) => {
@@ -148,7 +164,8 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         quantity: Number(quantity),
         price: Number(price),
         weight: Number(weight) || 0,
-        image: image || imageUrl || '',
+        image: images[0] || '',
+        images: images,
       };
 
       if (existingItem) {
@@ -309,79 +326,113 @@ export default function AddItem({ orderId, existingItem, onClose }) {
 
           {/* 照片上傳與 URL 貼上 */}
           <div className="space-y-3">
-            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">照片 (選填)</label>
-            <div className="flex gap-4 items-start">
-              {/* 預覽區塊 */}
-              <div className="w-16 h-16 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm transition-all group">
-                {image ? (
-                  <img src={image} alt="本地預覽" className="w-full h-full object-cover" />
-                ) : imageUrl ? (
-                  <div className="w-full h-full relative">
-                    <img 
-                      src={imageUrl} 
-                      alt="網址預覽" 
-                      className="w-full h-full object-cover" 
-                      onError={(e) => {
-                        e.currentTarget.classList.add('hidden');
-                        e.currentTarget.nextSibling.classList.remove('hidden');
-                        e.currentTarget.nextSibling.classList.add('flex');
-                      }}
-                    />
-                    <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
-                      <X size={16} />
-                    </div>
-                  </div>
-                ) : (
-                  <ImageIcon className="text-gray-400 dark:text-gray-600" size={24} />
-                )}
-                
-                {/* 懸浮清除按鈕 */}
-                {(image || imageUrl) && (
-                  <button
-                    type="button"
-                    onClick={handleClearImage}
-                    className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="清除照片"
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              照片 (選填，支援多張圖片)
+            </label>
+            
+            {/* 多圖滾動預覽區 */}
+            <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-250 dark:scrollbar-thumb-gray-700">
+              {images.length > 0 ? (
+                images.map((img, idx) => (
+                  <div 
+                    key={idx} 
+                    className="w-20 h-20 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm transition-all group"
                   >
-                    <X size={20} />
-                  </button>
-                )}
-              </div>
+                    {isUrl(img) ? (
+                      <div className="w-full h-full relative">
+                        <img 
+                          src={img} 
+                          alt={`網址預覽-${idx}`} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => {
+                            e.currentTarget.classList.add('hidden');
+                            e.currentTarget.nextSibling.classList.remove('hidden');
+                            e.currentTarget.nextSibling.classList.add('flex');
+                          }}
+                        />
+                        <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                          <X size={16} />
+                        </div>
+                      </div>
+                    ) : (
+                      <img src={img} alt={`本地預覽-${idx}`} className="w-full h-full object-cover" />
+                    )}
+                    
+                    {/* 懸浮移除單張照片按鈕 */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="移除照片"
+                    >
+                      <X size={20} />
+                    </button>
+                    
+                    {/* 標記第一張為封面 */}
+                    {idx === 0 && (
+                      <span className="absolute bottom-1 left-1 bg-primary text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                        封面
+                      </span>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-750 bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center shrink-0">
+                  <ImageIcon className="text-gray-400 dark:text-gray-655" size={24} />
+                  <span className="text-[10px] text-gray-400 dark:text-gray-550 mt-1">無照片</span>
+                </div>
+              )}
+            </div>
 
-              {/* 上傳與輸入區塊 */}
-              <div className="flex-1 space-y-2">
-                {/* 檔案上傳按鈕 */}
+            {/* 上傳與輸入區塊 */}
+            <div className="space-y-3">
+              {/* 檔案上傳按鈕 */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">上傳本地圖片：</span>
                 <input
                   type="file"
                   accept="image/*"
+                  multiple
                   onChange={handleImageChange}
-                  onClick={() => setImageUrl('')}
                   className="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border file:border-gray-250 dark:file:border-gray-650 file:text-xs file:font-semibold file:bg-gray-50 dark:file:bg-gray-800 file:text-gray-700 dark:text-gray-300 hover:file:bg-gray-100 dark:hover:file:bg-gray-750 transition-colors w-full cursor-pointer"
                 />
-                
-                {/* 網址輸入框 */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={imageUrl}
-                    onChange={(e) => {
-                      setImageUrl(e.target.value);
-                      if (e.target.value) {
-                        setImage(''); // 貼上網址時，清除本地選擇的 base64 圖片
-                      }
-                    }}
-                    placeholder="🔗 或直接貼上圖片網址 (Image URL)..."
-                    className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                  />
-                  {imageUrl && (
-                    <button
-                      type="button"
-                      onClick={() => setImageUrl('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
+              </div>
+              
+              {/* 網址輸入與加入按鈕 */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">新增外部圖片網址：</span>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddUrlImage();
+                        }
+                      }}
+                      placeholder="🔗 貼上圖片網址 (Image URL)..."
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    />
+                    {urlInput && (
+                      <button
+                        type="button"
+                        onClick={() => setUrlInput('')}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddUrlImage}
+                    className="px-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-colors shrink-0"
+                  >
+                    ➕ 加入
+                  </button>
                 </div>
               </div>
             </div>
