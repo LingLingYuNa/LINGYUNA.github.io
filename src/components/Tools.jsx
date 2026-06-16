@@ -3,6 +3,7 @@ import { Download, Upload, Settings, ShieldAlert, DatabaseBackup, Tags, Cloud, R
 import { db } from '../db';
 import TagManager from './TagManager';
 import TagRoleManager from './TagRoleManager';
+import IpRolesManager from './IpRolesManager';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive, getGoogleTokenClient } from '../utils/googleDriveSync';
 import { calculateOrderTotalTWD } from '../utils';
 import * as XLSX from 'xlsx';
@@ -16,6 +17,7 @@ export default function Tools() {
   const [isImportingExcel, setIsImportingExcel] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [isTagRoleManagerOpen, setIsTagRoleManagerOpen] = useState(false);
+  const [isIpRolesManagerOpen, setIsIpRolesManagerOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
   });
@@ -763,6 +765,23 @@ export default function Tools() {
               </div>
             </button>
 
+            {/* IP 常用角色推薦管理 */}
+            <button 
+              type="button"
+              onClick={() => setIsIpRolesManagerOpen(true)}
+              className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-750"
+            >
+              <div className="flex flex-col text-left">
+                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
+                  ⚙️ IP 常用角色推薦管理
+                </span>
+                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">編輯原神、崩鐵等 IP 常用推薦角色清單</span>
+              </div>
+              <div className="w-10 h-10 rounded-full bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+                <Settings size={20} strokeWidth={2.5} />
+              </div>
+            </button>
+
             {/* 原本的自訂標籤面板 */}
             <button 
               type="button"
@@ -816,6 +835,11 @@ export default function Tools() {
       {/* 全域標籤與角色管理中心 Modal */}
       {isTagRoleManagerOpen && (
         <TagRoleManager onClose={() => setIsTagRoleManagerOpen(false)} />
+      )}
+
+      {/* IP 常用角色推薦管理 Modal */}
+      {isIpRolesManagerOpen && (
+        <IpRolesManager onClose={() => setIsIpRolesManagerOpen(false)} />
       )}
     </div>
   );
