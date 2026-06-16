@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical } from 'lucide-react';
+import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical, Copy } from 'lucide-react';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, getStatusStyle, PAYMENT_METHODS } from '../constants';
 import AddItem from './AddItem';
@@ -164,6 +164,41 @@ export default function OrderDetail({ orderId, onBack }) {
         total_amount: newTotal,
         total_amount_twd: newTotalTWD
       });
+    }
+  };
+
+  // 複製物品並連動更新總金額
+  const handleCopyItem = async (item) => {
+    try {
+      const { id, ...copiedData } = item;
+      const newItem = {
+        ...copiedData,
+        name: `${item.name} - 複製`,
+        sort_order: localItems.length,
+        created_at: new Date().toISOString()
+      };
+      
+      await db.items.add(newItem);
+      
+      // 重新撈取該訂單所有的物品並計算總金額
+      const currentItems = await db.items.where({ order_id: orderId }).toArray();
+      const newTotal = currentItems.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
+      
+      const parentOrder = await db.orders.get(orderId);
+      if (parentOrder) {
+        const updatedOrder = {
+          ...parentOrder,
+          total_amount: newTotal
+        };
+        const newTotalTWD = calculateOrderTotalTWD(updatedOrder, currentItems);
+        await db.orders.update(orderId, { 
+          total_amount: newTotal,
+          total_amount_twd: newTotalTWD
+        });
+      }
+    } catch (error) {
+      console.error('複製物品失敗:', error);
+      alert('複製失敗，請重試');
     }
   };
 
@@ -649,6 +684,13 @@ export default function OrderDetail({ orderId, onBack }) {
                             title="編輯物品"
                           >
                             <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleCopyItem(item)}
+                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                            title="複製物品"
+                          >
+                            <Copy size={16} />
                           </button>
                           <button
                             onClick={() => handleDeleteItem(item.id)}
