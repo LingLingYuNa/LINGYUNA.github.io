@@ -1191,7 +1191,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
               {/* 資訊區塊 */}
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    {selectedItem.ip && (
+                      <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                        🎬 {selectedItem.ip}
+                      </span>
+                    )}
                     {(() => {
                       const itemTags = selectedItem.tags && Array.isArray(selectedItem.tags)
                         ? selectedItem.tags

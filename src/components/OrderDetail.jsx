@@ -455,7 +455,12 @@ export default function OrderDetail({ orderId, onBack }) {
                     {/* 上半部：物品基本資訊 */}
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          {item.ip && (
+                            <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                              🎬 {item.ip}
+                            </span>
+                          )}
                           {(() => {
                             const itemTags = item.tags && Array.isArray(item.tags)
                               ? item.tags

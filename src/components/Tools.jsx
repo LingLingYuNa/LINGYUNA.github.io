@@ -293,6 +293,7 @@ export default function Tools() {
             '運費': order.shipping_fee || 0,
             '折扣': order.discount_amount || 0,
             '訂單總金額': order.total_amount || 0,
+            'IP': '',
             '物品名稱': '',
             '角色': '',
             '數量': '',
@@ -317,6 +318,7 @@ export default function Tools() {
               '運費': order.shipping_fee || 0,
               '折扣': order.discount_amount || 0,
               '訂單總金額': order.total_amount || 0,
+              'IP': item.ip || '',
               '物品名稱': item.name || '',
               '角色': item.roles ? item.roles.join(', ') : (item.character || item.role || ''),
               '數量': item.quantity || 0,
@@ -433,10 +435,11 @@ export default function Tools() {
           if (itemName) {
             orderGroup.tag_category = 'anime'; // 自動切換為週邊模式
             
-            // 解析角色、物品標籤與圖片
+            // 解析角色、物品標籤、圖片與 IP
             const rawRoles = row['角色'] || '';
             const rawTags = row['物品標籤'] || '';
             const rawImages = row['圖片'] || '';
+            const itemIP = row['IP'] ? row['IP'].toString().trim() : '';
 
             const roles = rawRoles 
               ? rawRoles.toString().split(',').map(s => s.trim()).filter(Boolean) 
@@ -450,6 +453,7 @@ export default function Tools() {
 
             orderGroup.items.push({
               name: itemName,
+              ip: itemIP,
               roles,
               character: roles.join(', '),
               tags,

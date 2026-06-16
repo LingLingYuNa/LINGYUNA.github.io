@@ -31,6 +31,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   );
   const [urlInput, setUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [ip, setIp] = useState(existingItem?.ip || '');
 
   const dbCustomTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([])) || [];
   const dbItems = useLiveQuery(() => db.items.toArray()) || [];
@@ -90,6 +91,16 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     });
     
     return Array.from(rolesSet).filter(r => r !== '');
+  }, [dbItems]);
+ 
+  const DEFAULT_IPS = ['原神', '崩壞•星穹鐵道'];
+  // 提取所有已存在的 IP 作為選項
+  const availableIPs = React.useMemo(() => {
+    const ipsSet = new Set(DEFAULT_IPS);
+    dbItems.forEach(item => {
+      if (item.ip) ipsSet.add(item.ip.trim());
+    });
+    return Array.from(ipsSet).filter(Boolean);
   }, [dbItems]);
 
   const filteredAvailableRoles = availableRoles.filter(role => 
@@ -158,6 +169,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       const itemData = {
         order_id: orderId,
         name,
+        ip, // 新增 IP 欄位
         roles: roles,
         character: roles.join(', '),
         tags: selectedTags,
@@ -435,6 +447,47 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* 作品 (IP) 快捷選擇與自訂輸入 */}
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">作品 (IP) (選填)</label>
+            {availableIPs.length > 0 && (
+              <div className="flex gap-2 flex-wrap pt-0.5">
+                {availableIPs.map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setIp(option)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                      ip === option
+                        ? 'bg-purple-100 dark:bg-purple-950/30 text-purple-800 dark:text-purple-350 border-purple-200 dark:border-purple-900 shadow-sm'
+                        : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-transparent hover:bg-gray-200 dark:hover:bg-gray-700/50'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="relative">
+              <input
+                type="text"
+                value={ip}
+                onChange={(e) => setIp(e.target.value)}
+                placeholder="或輸入自訂作品名稱..."
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              />
+              {ip && (
+                <button
+                  type="button"
+                  onClick={() => setIp('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                >
+                  <X size={12} />
+                </button>
+              )}
             </div>
           </div>
 
