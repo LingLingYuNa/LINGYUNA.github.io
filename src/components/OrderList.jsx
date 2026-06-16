@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
@@ -209,8 +209,44 @@ export default function OrderList({ onOrderClick, currentTab }) {
     return true;
   });
 
-  // 整理 Gallery 需要的項目，並反轉陣列（最新的在前）
-  const galleryItems = items.slice().reverse();
+  // 整理 Gallery 需要的項目，並進行標籤與搜尋關鍵字篩選
+  const filteredGalleryItems = useMemo(() => {
+    if (!items) return [];
+    let result = items.slice().reverse();
+
+    // 1. 標籤篩選
+    if (activeTag) {
+      result = result.filter(item => {
+        const itemTags = item.tags && Array.isArray(item.tags)
+          ? item.tags
+          : (item.tag ? [item.tag] : []);
+        const hasTagInItem = itemTags.includes(activeTag);
+
+        const associatedOrder = orders?.find(o => o.id === item.order_id);
+        const hasTagInOrder = associatedOrder && associatedOrder.tags && associatedOrder.tags.includes(activeTag);
+
+        return hasTagInItem || hasTagInOrder;
+      });
+    }
+
+    // 2. 關鍵字搜尋
+    if (normalizedQuery) {
+      result = result.filter(item => {
+        const nameMatch = item.name && item.name.toLowerCase().includes(normalizedQuery);
+        
+        const itemRoles = getItemRoles(item);
+        const rolesMatch = itemRoles.some(r => r.toLowerCase().includes(normalizedQuery));
+
+        const associatedOrder = orders?.find(o => o.id === item.order_id);
+        const orderTitleMatch = associatedOrder && associatedOrder.title && associatedOrder.title.toLowerCase().includes(normalizedQuery);
+        const orderSourceMatch = associatedOrder && associatedOrder.source && associatedOrder.source.toLowerCase().includes(normalizedQuery);
+
+        return nameMatch || rolesMatch || orderTitleMatch || orderSourceMatch;
+      });
+    }
+
+    return result;
+  }, [items, orders, activeTag, normalizedQuery]);
 
   // 切換選取項目
   const toggleSelection = (id) => {
@@ -828,79 +864,144 @@ export default function OrderList({ onOrderClick, currentTab }) {
         </div>
       ) : viewMode === 'gallery' ? (
         // --- 圖牆模式 ---
-        galleryItems.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
-            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
-              <ImageIcon size={32} />
-            </div>
-            <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">圖牆空空如也</h3>
-            <p className="text-sm text-gray-400 dark:text-gray-400">新增物品時，就會顯示在這裡喔！</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32">
-            {galleryItems.map(item => {
-              const associatedOrder = orders?.find(o => o.id === item.order_id);
-              const currencySymbol = associatedOrder 
-                ? (CURRENCIES.find(c => c.code === associatedOrder.currency)?.symbol || '$')
-                : '$';
-              const totalForeignPrice = Number(item.price) * Number(item.quantity);
-              const exchangeRate = associatedOrder ? Number(associatedOrder.exchange_rate) : 1;
-              const totalTWDPrice = Math.round(totalForeignPrice * exchangeRate);
-
-              return (
-                <div 
-                  key={item.id}
-                  onClick={() => setSelectedItem(item)}
-                  className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
+        <div className="space-y-4">
+          {/* 搜尋與標籤過濾 */}
+          <div className="space-y-2">
+            {/* 搜尋框 */}
+            <div className="relative">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                <Search size={18} />
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜尋商品名稱、角色、訂單名稱或來源..."
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                 >
-                  {item.image ? (
-                    <div className="w-full h-full relative">
-                      <img 
-                        src={item.image} 
-                        alt={item.name} 
-                        className="w-full h-full object-cover animate-in fade-in" 
-                        onError={(e) => {
-                          e.currentTarget.classList.add('hidden');
-                          e.currentTarget.nextSibling.classList.remove('hidden');
-                          e.currentTarget.nextSibling.classList.add('flex');
-                        }}
-                      />
-                      <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* 標籤過濾器 (橫向滑動) */}
+            <div 
+              className="flex gap-1.5 overflow-x-auto py-1 -mx-4 px-4 scrollbar-none" 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              <button
+                onClick={() => setActiveTag(null)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                  activeTag === null
+                    ? 'bg-primary text-white shadow-sm shadow-primary/20'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                全部
+              </button>
+              {tagsToRender.map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
+                    activeTag === tag
+                      ? 'bg-primary text-white shadow-sm shadow-primary/20'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                >
+                  {tag}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {items.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+                <ImageIcon size={32} />
+              </div>
+              <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">圖牆空空如也</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-400">新增物品時，就會顯示在這裡喔！</p>
+            </div>
+          ) : filteredGalleryItems.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+                <Search size={32} />
+              </div>
+              <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的物品</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字或標籤篩選</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32">
+              {filteredGalleryItems.map(item => {
+                const associatedOrder = orders?.find(o => o.id === item.order_id);
+                const currencySymbol = associatedOrder 
+                  ? (CURRENCIES.find(c => c.code === associatedOrder.currency)?.symbol || '$')
+                  : '$';
+                const totalForeignPrice = Number(item.price) * Number(item.quantity);
+                const exchangeRate = associatedOrder ? Number(associatedOrder.exchange_rate) : 1;
+                const totalTWDPrice = Math.round(totalForeignPrice * exchangeRate);
+
+                return (
+                  <div 
+                    key={item.id}
+                    onClick={() => setSelectedItem(item)}
+                    className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
+                  >
+                    {item.image ? (
+                      <div className="w-full h-full relative">
+                        <img 
+                          src={item.image} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover animate-in fade-in" 
+                          onError={(e) => {
+                            e.currentTarget.classList.add('hidden');
+                            e.currentTarget.nextSibling.classList.remove('hidden');
+                            e.currentTarget.nextSibling.classList.add('flex');
+                          }}
+                        />
+                        <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                          <ImageIcon size={32} className="mb-2 opacity-50" />
+                          <span className="text-xs font-bold text-red-400 dark:text-red-300">圖片失效</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-300 dark:text-indigo-500">
                         <ImageIcon size={32} className="mb-2 opacity-50" />
-                        <span className="text-xs font-bold text-red-400 dark:text-red-300">圖片失效</span>
+                        <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{(item.tags && item.tags[0]) || item.tag || '物品'}</span>
+                      </div>
+                    )}
+                    {/* 遮罩標籤 */}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/60 to-transparent p-3 pt-12">
+                      <h4 className="text-white text-xs font-black truncate">{item.name}</h4>
+                      {(() => {
+                        const itemRoles = getItemRoles(item);
+                        return itemRoles.length > 0 && (
+                          <p className="text-white/80 text-[10px] truncate">
+                            🏷 {itemRoles.join(', ')}
+                          </p>
+                        );
+                      })()}
+                      {/* 數量與總金額 */}
+                      <div className="flex justify-between items-center mt-1 text-[9px] text-white/90 font-bold">
+                        <span>x{item.quantity}</span>
+                        <span>
+                          {currencySymbol}{totalForeignPrice.toLocaleString()}
+                          {associatedOrder && associatedOrder.currency !== 'TWD' && ` (NT$ ${totalTWDPrice.toLocaleString()})`}
+                        </span>
                       </div>
                     </div>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-300 dark:text-indigo-500">
-                      <ImageIcon size={32} className="mb-2 opacity-50" />
-                      <span className="text-xs font-bold text-indigo-400 dark:text-indigo-300">{(item.tags && item.tags[0]) || item.tag || '物品'}</span>
-                    </div>
-                  )}
-                  {/* 遮罩標籤 */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/60 to-transparent p-3 pt-12">
-                    <h4 className="text-white text-xs font-black truncate">{item.name}</h4>
-                    {(() => {
-                      const itemRoles = getItemRoles(item);
-                      return itemRoles.length > 0 && (
-                        <p className="text-white/80 text-[10px] truncate">
-                          🏷 {itemRoles.join(', ')}
-                        </p>
-                      );
-                    })()}
-                    {/* 數量與總金額 */}
-                    <div className="flex justify-between items-center mt-1 text-[9px] text-white/90 font-bold">
-                      <span>x{item.quantity}</span>
-                      <span>
-                        {currencySymbol}{totalForeignPrice.toLocaleString()}
-                        {associatedOrder && associatedOrder.currency !== 'TWD' && ` (NT$ ${totalTWDPrice.toLocaleString()})`}
-                      </span>
-                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )
+                );
+              })}
+            </div>
+          )}
+        </div>
       ) : (
         // --- 日曆模式 ---
         <CalendarView onOrderClick={onOrderClick} />
