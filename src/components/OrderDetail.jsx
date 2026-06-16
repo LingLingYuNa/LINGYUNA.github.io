@@ -714,6 +714,16 @@ export default function OrderDetail({ orderId, onBack }) {
       {editingItem && (
         <AddItem orderId={orderId} existingItem={editingItem} onClose={() => setEditingItem(null)} />
       )}
+
+      {/* 全螢幕 Lightbox 放大憑證圖 */}
+      {zoomImage && (
+        <div 
+          onClick={() => setZoomImage(null)}
+          className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+        >
+          <img src={zoomImage} alt="放大圖片" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+        </div>
+      )}
     </div>
   );
 }
@@ -1048,15 +1058,6 @@ function ReceiptView({ order, items }) {
 
       </div>
 
-      {/* 全螢幕 Lightbox 放大憑證圖 */}
-      {zoomImage && (
-        <div 
-          onClick={() => setZoomImage(null)}
-          className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
-        >
-          <img src={zoomImage} alt="放大圖片" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
-        </div>
-      )}
-    </div>
-  );
-}
+      </div>
+    );
+  }
