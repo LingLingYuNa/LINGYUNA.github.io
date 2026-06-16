@@ -37,6 +37,54 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   const [tempRoleInput, setTempRoleInput] = useState('');
   const [tempTagInput, setTempTagInput] = useState('');
 
+  // IP 常用角色推薦對應表 states
+  const DEFAULT_IP_ROLES = {
+    '原神': ['鍾離', '胡桃', '魈', '×××'],
+    '崩壞•星穹鐵道': ['卡芙卡', '流螢', '黃泉', '000']
+  };
+
+  const [ipRolesMap, setIpRolesMap] = useState(() => {
+    const saved = localStorage.getItem('collecttrack_ip_roles_map');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('解析 IP-Roles 對應表失敗:', e);
+      }
+    }
+    return DEFAULT_IP_ROLES;
+  });
+
+  const [isEditingIpRoles, setIsEditingIpRoles] = useState(false);
+  const [editTargetIp, setEditTargetIp] = useState('原神');
+  const [editRolesInput, setEditRolesInput] = useState('');
+
+  const handleOpenEditIpRoles = () => {
+    const target = tempIp || '原神';
+    setEditTargetIp(target);
+    setEditRolesInput((ipRolesMap[target] || []).join(', '));
+    setIsEditingIpRoles(true);
+  };
+
+  const handleSaveIpRoles = () => {
+    const trimmedIp = editTargetIp.trim();
+    if (!trimmedIp) return;
+    
+    const parsedRoles = editRolesInput
+      .split(/[,，\s]+/)
+      .map(r => r.trim())
+      .filter(Boolean);
+      
+    const newMap = {
+      ...ipRolesMap,
+      [trimmedIp]: parsedRoles
+    };
+    
+    setIpRolesMap(newMap);
+    localStorage.setItem('collecttrack_ip_roles_map', JSON.stringify(newMap));
+    setIsEditingIpRoles(false);
+  };
+
   const dbCustomTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([])) || [];
   const dbItems = useLiveQuery(() => db.items.toArray()) || [];
 
@@ -104,6 +152,16 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       role.toLowerCase().includes(tempRoleInput.toLowerCase())
     );
   }, [availableRoles, tempRoles, tempRoleInput]);
+
+  // 基於當前選擇的 tempIp 與對應表，計算特定 IP 的推薦角色
+  const ipRecommendedRoles = React.useMemo(() => {
+    if (!tempIp) return [];
+    const list = ipRolesMap[tempIp] || [];
+    return list.filter(role => 
+      !tempRoles.includes(role) && 
+      role.toLowerCase().includes(tempRoleInput.toLowerCase())
+    );
+  }, [tempIp, ipRolesMap, tempRoles, tempRoleInput]);
 
   // 屬性設定彈跳視窗操作方法
   const handleOpenPropModal = () => {
@@ -588,23 +646,54 @@ export default function AddItem({ orderId, existingItem, onClose }) {
 
               {/* 2. 角色選擇區 */}
               <div className="space-y-2.5">
-                <h4 className="text-xs font-bold text-gray-455 dark:text-gray-500 uppercase tracking-wider">
-                  2. 角色 (選填)
-                </h4>
-                
-                {/* 角色推薦 Pills */}
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-450 dark:text-gray-500 uppercase tracking-wider">
+                    2. 角色選擇 (可多選)
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={handleOpenEditIpRoles}
+                    className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-lg"
+                  >
+                    ⚙️ 編輯常用推薦
+                  </button>
+                </div>
+
+                {/* 常用推薦角色 Pills */}
+                {tempIp && ipRecommendedRoles.length > 0 && (
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-pink-500 dark:text-pink-400 font-semibold">{tempIp} 推薦角色：</span>
+                    <div className="flex gap-1.5 flex-wrap pb-1">
+                      {ipRecommendedRoles.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => handleAddTempRole(role)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/40 border border-pink-100/50 dark:border-pink-900/50 transition-all"
+                        >
+                          + {role}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 全域已用角色推薦 Pills */}
                 {filteredAvailableRoles.length > 0 && (
-                  <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto pb-1 scrollbar-none">
-                    {filteredAvailableRoles.map((role) => (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => setTempRoles([...tempRoles, role])}
-                        className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-gray-50 dark:bg-gray-800/40 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 border border-transparent transition-all"
-                      >
-                        + {role}
-                      </button>
-                    ))}
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-550 font-semibold">歷史使用角色：</span>
+                    <div className="flex gap-1.5 flex-wrap max-h-24 overflow-y-auto pb-1 scrollbar-none">
+                      {filteredAvailableRoles.map((role) => (
+                        <button
+                          key={role}
+                          type="button"
+                          onClick={() => handleAddTempRole(role)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750 border border-transparent transition-all"
+                        >
+                          + {role}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -768,6 +857,93 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* 編輯 IP 常用角色推薦彈窗 */}
+      {isEditingIpRoles && (
+        <div 
+          onClick={(e) => { if (e.target === e.currentTarget) setIsEditingIpRoles(false); }}
+          className="fixed inset-0 z-[80] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white dark:bg-gray-900 w-full h-auto max-h-[70vh] md:w-full md:max-w-md md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-300 p-5 space-y-4 border border-gray-100 dark:border-gray-800"
+          >
+            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-850 pb-2">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
+                ⚙️ 編輯 IP 推薦角色
+              </h3>
+              <button 
+                type="button" 
+                onClick={() => setIsEditingIpRoles(false)}
+                className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-850"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* IP 名稱設定 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-450">作品名稱 (IP)</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={editTargetIp}
+                  onChange={(e) => setEditTargetIp(e.target.value)}
+                  placeholder="例如：原神"
+                  className="flex-1 bg-gray-55 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                />
+                
+                {/* 快速切換現有 IP */}
+                <select
+                  value={editTargetIp}
+                  onChange={(e) => {
+                    const selected = e.target.value;
+                    setEditTargetIp(selected);
+                    setEditRolesInput((ipRolesMap[selected] || []).join(', '));
+                  }}
+                  className="bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-750 rounded-xl px-2 py-2 text-xs focus:outline-none text-gray-800 dark:text-gray-150"
+                >
+                  <option value="" disabled>快速載入現有 IP...</option>
+                  {Object.keys(ipRolesMap).map(ipKey => (
+                    <option key={ipKey} value={ipKey}>{ipKey}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* 角色名單編輯 */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-500 dark:text-gray-450">
+                常用角色名單 (以逗號、中文逗號或空格分隔)
+              </label>
+              <textarea
+                value={editRolesInput}
+                onChange={(e) => setEditRolesInput(e.target.value)}
+                placeholder="例如：鍾離, 胡桃, 魈, ×××"
+                rows={4}
+                className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-550 resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsEditingIpRoles(false)}
+                className="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveIpRoles}
+                className="flex-1 py-2.5 px-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors text-xs"
+              >
+                儲存設定
+              </button>
+            </div>
           </div>
         </div>
       )}
