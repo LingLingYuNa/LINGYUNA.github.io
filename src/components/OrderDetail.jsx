@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical } from 'lucide-react';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, getStatusStyle, PAYMENT_METHODS } from '../constants';
 import AddItem from './AddItem';
@@ -50,6 +50,65 @@ export default function OrderDetail({ orderId, onBack }) {
   }, [order, onBack]);
 
   const items = useLiveQuery(() => db.items.where({ order_id: orderId }).toArray(), [orderId]);
+
+  // 物品拖曳排序狀態與 handlers
+  const [localItems, setLocalItems] = useState([]);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const [canDrag, setCanDrag] = useState(false);
+
+  useEffect(() => {
+    if (items) {
+      // 根據 sort_order 排序，若無 sort_order 則使用 id 排序
+      const sorted = [...items].sort((a, b) => {
+        const orderA = a.sort_order !== undefined ? a.sort_order : 0;
+        const orderB = b.sort_order !== undefined ? b.sort_order : 0;
+        if (orderA !== orderB) return orderA - orderB;
+        return (a.id || 0) - (b.id || 0);
+      });
+      setLocalItems(sorted);
+    }
+  }, [items]);
+
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+    setHoveredIndex(index);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setHoveredIndex(null);
+    setCanDrag(false);
+  };
+
+  const handleDrop = async (e, targetIndex) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+    const updated = [...localItems];
+    const [draggedItem] = updated.splice(draggedIndex, 1);
+    updated.splice(targetIndex, 0, draggedItem);
+    
+    // 即時更新本地 UI
+    setLocalItems(updated);
+
+    try {
+      await db.transaction('rw', db.items, async () => {
+        for (let i = 0; i < updated.length; i++) {
+          await db.items.update(updated[i].id, { sort_order: i });
+        }
+      });
+    } catch (error) {
+      console.error('更新排序失敗:', error);
+    }
+  };
 
   // 監聽此訂單下所有子物品的售出紀錄
   const sales = useLiveQuery(async () => {
@@ -441,7 +500,7 @@ export default function OrderDetail({ orderId, onBack }) {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {items.map(item => {
+              {localItems.map((item, index) => {
                 const stats = getItemStats(item);
                 const isSoldOut = stats.remainingQty <= 0;
                 
@@ -451,143 +510,172 @@ export default function OrderDetail({ orderId, onBack }) {
                 const finalTotalCost = Math.round(itemBaseCostNTD + allocatedShipping);
 
                 return (
-                  <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/80 flex flex-col transition-all hover:shadow-md">
-                    {/* 上半部：物品基本資訊 */}
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          {item.ip && (
-                            <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
-                              🎬 {item.ip}
-                            </span>
-                          )}
+                  <div 
+                    key={item.id} 
+                    draggable={canDrag}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className={`bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border flex gap-3 transition-all hover:shadow-md ${
+                      draggedIndex === index 
+                        ? 'opacity-40 border-dashed border-primary bg-primary/5 dark:bg-primary-dark/5' 
+                        : hoveredIndex === index 
+                          ? 'border-primary dark:border-primary-dark scale-[1.01] bg-primary-light/10 dark:bg-gray-750' 
+                          : 'border-gray-100 dark:border-gray-700/80'
+                    }`}
+                  >
+                    {/* 左側拖曳把手 */}
+                    <div 
+                      onMouseDown={() => setCanDrag(true)}
+                      onMouseUp={() => setCanDrag(false)}
+                      onTouchStart={() => setCanDrag(true)}
+                      onTouchEnd={() => setCanDrag(false)}
+                      className="flex items-center cursor-grab active:cursor-grabbing text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 shrink-0 px-0.5 select-none"
+                      title="拖曳排序"
+                    >
+                      <GripVertical size={20} />
+                    </div>
+
+                    {/* 右側主要的卡片內容 */}
+                    <div className="flex-1 flex flex-col min-w-0">
+                      {/* 上半部：物品基本資訊 */}
+                      <div className="flex justify-between items-start mb-2 gap-2">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {item.ip && (
+                              <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                                🎬 {item.ip}
+                              </span>
+                            )}
+                            {(() => {
+                              const itemTags = item.tags && Array.isArray(item.tags)
+                                ? item.tags
+                                : (item.tag ? [item.tag] : []);
+                              if (itemTags.length === 0) return null;
+                              return (
+                                <div className="flex flex-wrap gap-1 shrink-0">
+                                  {itemTags.map((t, idx) => (
+                                    <span 
+                                      key={idx} 
+                                      className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-md font-bold"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                            <span className="font-bold text-gray-800 dark:text-gray-100 text-base truncate">{item.name}</span>
+                          </div>
                           {(() => {
-                            const itemTags = item.tags && Array.isArray(item.tags)
-                              ? item.tags
-                              : (item.tag ? [item.tag] : []);
-                            if (itemTags.length === 0) return null;
+                            const itemRoles = getItemRoles(item);
+                            if (itemRoles.length === 0) return null;
                             return (
-                              <div className="flex flex-wrap gap-1 shrink-0">
-                                {itemTags.map((t, idx) => (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {itemRoles.map((role, idx) => (
                                   <span 
                                     key={idx} 
-                                    className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-md font-bold"
+                                    className="bg-primary/10 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center"
                                   >
-                                    {t}
+                                    🏷 {role}
                                   </span>
                                 ))}
                               </div>
                             );
                           })()}
-                          <span className="font-bold text-gray-800 dark:text-gray-100 text-base">{item.name}</span>
                         </div>
-                        {(() => {
-                          const itemRoles = getItemRoles(item);
-                          if (itemRoles.length === 0) return null;
-                          return (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {itemRoles.map((role, idx) => (
-                                <span 
-                                  key={idx} 
-                                  className="bg-primary/10 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center"
-                                >
-                                  🏷 {role}
-                                </span>
-                              ))}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                      <div className="text-right shrink-0">
-                        <div className="font-bold text-gray-800 dark:text-gray-200">
-                          {(() => {
-                            const curr = CURRENCIES.find(c => c.code === order.currency);
-                            const symbol = curr ? curr.symbol : (order.exchange_rate === 5.5 || order.exchange_rate === 0.23 ? '¥' : '$');
-                            return `${symbol}${item.price}`;
-                          })()}
-                        </div>
-                        <div className="flex gap-1.5 justify-end mt-1">
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded transition-colors">
-                            {item.quantity} 件
-                          </span>
-                          {(item.weight > 0) && (
+                        <div className="text-right shrink-0">
+                          <div className="font-bold text-gray-800 dark:text-gray-200">
+                            {(() => {
+                              const curr = CURRENCIES.find(c => c.code === order.currency);
+                              const symbol = curr ? curr.symbol : (order.exchange_rate === 5.5 || order.exchange_rate === 0.23 ? '¥' : '$');
+                              return `${symbol}${item.price}`;
+                            })()}
+                          </div>
+                          <div className="flex gap-1.5 justify-end mt-1">
                             <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded transition-colors">
-                              {item.weight}g
+                              {item.quantity} 件
                             </span>
-                          )}
+                            {(item.weight > 0) && (
+                              <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded transition-colors">
+                                {item.weight}g
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* 中段：成本精算分析 */}
-                    <div className="bg-gray-50/80 dark:bg-gray-900/60 rounded-xl p-3 my-2 flex justify-between items-center text-sm border border-gray-100/50 dark:border-gray-700/30 transition-colors">
-                      <div className="flex flex-col gap-0.5">
+                      {/* 中段：成本精算分析 */}
+                      <div className="bg-gray-50/80 dark:bg-gray-900/60 rounded-xl p-3 my-2 flex justify-between items-center text-sm border border-gray-100/50 dark:border-gray-700/30 transition-colors">
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold w-12">本體台幣</span>
+                            <span className="font-medium text-gray-700 dark:text-gray-300">NT$ {Math.round(itemBaseCostNTD).toLocaleString()}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-primary-dark dark:text-primary font-bold w-12">+ 分攤運費</span>
+                            <span className="font-medium text-primary-dark dark:text-primary">NT$ {Math.round(allocatedShipping).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div className="text-right border-l border-gray-200 dark:border-gray-700 pl-3">
+                          <div className="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-0.5">最終總成本</div>
+                          <div className="text-base font-black text-primary-dark dark:text-primary">NT$ {finalTotalCost.toLocaleString()}</div>
+                        </div>
+                      </div>
+
+                      {/* 下半部：庫存與回血狀態 */}
+                      <div className="pt-2 flex items-center justify-between">
+                        <div className="flex gap-4">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold mb-0.5">剩餘庫存</span>
+                            <span className={`text-sm font-black ${isSoldOut ? 'text-gray-300 dark:text-gray-600' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                              {stats.remainingQty}
+                            </span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold mb-0.5">已回血</span>
+                            <span className={`text-sm font-black ${stats.recoveredAmount > 0 ? 'text-secondary-dark dark:text-secondary' : 'text-gray-400 dark:text-gray-500'}`}>
+                              NT$ {stats.recoveredAmount.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* 動作按鈕區 */}
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold w-12">本體台幣</span>
-                          <span className="font-medium text-gray-700 dark:text-gray-300">NT$ {Math.round(itemBaseCostNTD).toLocaleString()}</span>
+                          <button
+                            onClick={() => setEditingItem(item)}
+                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                            title="編輯物品"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+                            title="刪除物品"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                          <button
+                            disabled={isSoldOut}
+                            onClick={() => setSelectedItemToSell({ item, stats })}
+                            className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
+                              isSoldOut 
+                                ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                                : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 active:bg-emerald-200'
+                            }`}
+                          >
+                            {isSoldOut ? (
+                              '已售罄'
+                            ) : (
+                              <>
+                                <DollarSign size={14} />
+                                售出
+                              </>
+                            )}
+                          </button>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-primary-dark dark:text-primary font-bold w-12">+ 分攤運費</span>
-                          <span className="font-medium text-primary-dark dark:text-primary">NT$ {Math.round(allocatedShipping).toLocaleString()}</span>
-                        </div>
-                      </div>
-                      <div className="text-right border-l border-gray-200 dark:border-gray-700 pl-3">
-                        <div className="text-[10px] text-gray-500 dark:text-gray-400 font-bold mb-0.5">最終總成本</div>
-                        <div className="text-base font-black text-primary-dark dark:text-primary">NT$ {finalTotalCost.toLocaleString()}</div>
-                      </div>
-                    </div>
-
-                    {/* 下半部：庫存與回血狀態 */}
-                    <div className="pt-2 flex items-center justify-between">
-                      <div className="flex gap-4">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold mb-0.5">剩餘庫存</span>
-                          <span className={`text-sm font-black ${isSoldOut ? 'text-gray-300 dark:text-gray-600' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                            {stats.remainingQty}
-                          </span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-400 dark:text-gray-500 font-bold mb-0.5">已回血</span>
-                          <span className={`text-sm font-black ${stats.recoveredAmount > 0 ? 'text-secondary-dark dark:text-secondary' : 'text-gray-400 dark:text-gray-500'}`}>
-                            NT$ {stats.recoveredAmount.toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* 動作按鈕區 */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => setEditingItem(item)}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
-                          title="編輯物品"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
-                          title="刪除物品"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                        <button
-                          disabled={isSoldOut}
-                          onClick={() => setSelectedItemToSell({ item, stats })}
-                          className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
-                            isSoldOut 
-                              ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                              : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 active:bg-emerald-200'
-                          }`}
-                        >
-                          {isSoldOut ? (
-                            '已售罄'
-                          ) : (
-                            <>
-                              <DollarSign size={14} />
-                              售出
-                            </>
-                          )}
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -599,11 +687,9 @@ export default function OrderDetail({ orderId, onBack }) {
       </div>
       ) : (
         <div className="flex-1 overflow-y-auto p-4 flex flex-col items-center justify-start pb-32 bg-gray-100 dark:bg-gray-900 transition-colors">
-          <ReceiptView order={order} items={items} />
+          <ReceiptView order={order} items={localItems} />
         </div>
       )}
-
-
 
       {/* 新增子物品表單 Modal */}
       {isAddItemOpen && (
