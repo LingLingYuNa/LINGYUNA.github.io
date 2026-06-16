@@ -120,6 +120,47 @@ export default function OrderList({ onOrderClick, currentTab }) {
 
   const tagsToRender = customTags.length > 0 ? Array.from(new Set(customTags.map(t => t.name))) : DEFAULT_TAGS;
  
+  // 整理 Gallery 需要的項目，並進行標籤與搜尋關鍵字篩選
+  const filteredGalleryItems = useMemo(() => {
+    if (!items) return [];
+    let result = items.slice().reverse();
+    const query = searchQuery.trim().toLowerCase();
+
+    // 1. 標籤篩選
+    if (activeTag) {
+      result = result.filter(item => {
+        const itemTags = item.tags && Array.isArray(item.tags)
+          ? item.tags
+          : (item.tag ? [item.tag] : []);
+        const hasTagInItem = itemTags.includes(activeTag);
+
+        const associatedOrder = orders?.find(o => o.id === item.order_id);
+        const orderTags = associatedOrder && Array.isArray(associatedOrder.tags) ? associatedOrder.tags : [];
+        const hasTagInOrder = orderTags.includes(activeTag);
+
+        return hasTagInItem || hasTagInOrder;
+      });
+    }
+
+    // 2. 關鍵字搜尋
+    if (query) {
+      result = result.filter(item => {
+        const nameMatch = item.name && item.name.toLowerCase().includes(query);
+        
+        const itemRoles = getItemRoles(item);
+        const rolesMatch = itemRoles.some(r => r.toLowerCase().includes(query));
+
+        const associatedOrder = orders?.find(o => o.id === item.order_id);
+        const orderTitleMatch = associatedOrder && associatedOrder.title && associatedOrder.title.toLowerCase().includes(query);
+        const orderSourceMatch = associatedOrder && associatedOrder.source && associatedOrder.source.toLowerCase().includes(query);
+
+        return nameMatch || rolesMatch || orderTitleMatch || orderSourceMatch;
+      });
+    }
+
+    return result;
+  }, [items, orders, activeTag, searchQuery]);
+
   // 載入中狀態
   if (orders === undefined || items === undefined || sales === undefined) {
     return (
@@ -209,44 +250,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
     return true;
   });
 
-  // 整理 Gallery 需要的項目，並進行標籤與搜尋關鍵字篩選
-  const filteredGalleryItems = useMemo(() => {
-    if (!items) return [];
-    let result = items.slice().reverse();
-
-    // 1. 標籤篩選
-    if (activeTag) {
-      result = result.filter(item => {
-        const itemTags = item.tags && Array.isArray(item.tags)
-          ? item.tags
-          : (item.tag ? [item.tag] : []);
-        const hasTagInItem = itemTags.includes(activeTag);
-
-        const associatedOrder = orders?.find(o => o.id === item.order_id);
-        const hasTagInOrder = associatedOrder && associatedOrder.tags && associatedOrder.tags.includes(activeTag);
-
-        return hasTagInItem || hasTagInOrder;
-      });
-    }
-
-    // 2. 關鍵字搜尋
-    if (normalizedQuery) {
-      result = result.filter(item => {
-        const nameMatch = item.name && item.name.toLowerCase().includes(normalizedQuery);
-        
-        const itemRoles = getItemRoles(item);
-        const rolesMatch = itemRoles.some(r => r.toLowerCase().includes(normalizedQuery));
-
-        const associatedOrder = orders?.find(o => o.id === item.order_id);
-        const orderTitleMatch = associatedOrder && associatedOrder.title && associatedOrder.title.toLowerCase().includes(normalizedQuery);
-        const orderSourceMatch = associatedOrder && associatedOrder.source && associatedOrder.source.toLowerCase().includes(normalizedQuery);
-
-        return nameMatch || rolesMatch || orderTitleMatch || orderSourceMatch;
-      });
-    }
-
-    return result;
-  }, [items, orders, activeTag, normalizedQuery]);
+  // (已將此 useMemo 移動至早期 Return 之前，以遵循 React Hooks 規則)
 
   // 切換選取項目
   const toggleSelection = (id) => {
