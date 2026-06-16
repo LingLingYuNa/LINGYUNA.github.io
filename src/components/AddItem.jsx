@@ -603,9 +603,18 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               
               {/* 1. 作品 (IP) 選擇區 */}
               <div className="space-y-2.5">
-                <h4 className="text-xs font-bold text-gray-450 dark:text-gray-500 uppercase tracking-wider">
-                  1. 作品 (IP)
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-450 dark:text-gray-500 uppercase tracking-wider">
+                    1. 作品 (IP)
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={handleOpenEditIpRoles}
+                    className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-lg"
+                  >
+                    ⚙️ 編輯推薦角色
+                  </button>
+                </div>
                 {availableIPs.length > 0 && (
                   <div className="flex gap-2 flex-wrap pb-1">
                     {availableIPs.map((option) => (
@@ -660,21 +669,36 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 </div>
 
                 {/* 常用推薦角色 Pills */}
-                {tempIp && ipRecommendedRoles.length > 0 && (
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-pink-500 dark:text-pink-400 font-semibold">{tempIp} 推薦角色：</span>
-                    <div className="flex gap-1.5 flex-wrap pb-1">
-                      {ipRecommendedRoles.map((role) => (
-                        <button
-                          key={role}
-                          type="button"
-                          onClick={() => handleAddTempRole(role)}
-                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/40 border border-pink-100/50 dark:border-pink-900/50 transition-all"
-                        >
-                          + {role}
-                        </button>
-                      ))}
+                {tempIp && (
+                  <div className="space-y-1 bg-pink-50/20 dark:bg-pink-950/5 p-2.5 rounded-xl border border-pink-100/40 dark:border-pink-950/20">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-pink-500 dark:text-pink-400 font-bold">{tempIp} 常用角色推薦：</span>
+                      <button
+                        type="button"
+                        onClick={handleOpenEditIpRoles}
+                        className="text-[10px] font-bold text-pink-600 hover:text-pink-700 dark:text-pink-400 dark:hover:text-pink-300 transition-colors flex items-center gap-0.5"
+                      >
+                        ⚙️ 編輯此 IP 推薦
+                      </button>
                     </div>
+                    {ipRecommendedRoles.length > 0 ? (
+                      <div className="flex gap-1.5 flex-wrap pt-1.5 pb-1">
+                        {ipRecommendedRoles.map((role) => (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => handleAddTempRole(role)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/40 border border-pink-100/50 dark:border-pink-900/50 transition-all"
+                          >
+                            + {role}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-gray-400 dark:text-gray-550 italic pt-1 pb-1">
+                        無剩餘推薦角色。
+                      </p>
+                    )}
                   </div>
                 )}
 
