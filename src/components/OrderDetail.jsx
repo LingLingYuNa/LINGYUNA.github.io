@@ -8,6 +8,7 @@ import AddItem from './AddItem';
 import SellItem from './SellItem';
 import AddOrder from './AddOrder';
 import { getDeadlineInfo, calculateOrderTotalTWD, compressImage } from '../utils';
+import { useHardwareBack } from '../hooks/useHardwareBack';
 
 // 輔助函數：解析角色陣列，相容舊字串格式
 const getItemRoles = (item) => {
@@ -25,6 +26,14 @@ export default function OrderDetail({ orderId, onBack }) {
   const [editingItem, setEditingItem] = useState(null);
   const [viewMode, setViewMode] = useState('edit'); // 'edit' | 'receipt'
   const [zoomImage, setZoomImage] = useState(null);
+
+  // 硬體返回鍵綁定
+  const handleCloseAddItem = useHardwareBack(isAddItemOpen, () => setIsAddItemOpen(false), `add-item`);
+  const handleCloseEditOrder = useHardwareBack(isEditOrderOpen, () => setIsEditOrderOpen(false), `edit-order`);
+  const handleCloseSellItem = useHardwareBack(!!selectedItemToSell, () => setSelectedItemToSell(null), `sell-item`);
+  const handleCloseEditItem = useHardwareBack(!!editingItem, () => setEditingItem(null), `edit-item`);
+  const handleCloseZoomImage = useHardwareBack(!!zoomImage, () => setZoomImage(null), `zoom-image`);
+  const handleCloseReceiptMode = useHardwareBack(viewMode === 'receipt', () => setViewMode('edit'), 'receipt');
 
   const handleDirectUploadProof = async (e) => {
     const file = e.target.files[0];
@@ -274,7 +283,7 @@ export default function OrderDetail({ orderId, onBack }) {
         <div className="flex items-center gap-1.5 mr-1">
           {/* 小票與編輯模式切換 */}
           <button 
-            onClick={() => setViewMode(viewMode === 'edit' ? 'receipt' : 'edit')}
+            onClick={() => viewMode === 'edit' ? setViewMode('receipt') : handleCloseReceiptMode()}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm border ${
               viewMode === 'receipt'
                 ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900'
@@ -735,7 +744,7 @@ export default function OrderDetail({ orderId, onBack }) {
 
       {/* 新增子物品表單 Modal */}
       {isAddItemOpen && (
-        <AddItem orderId={orderId} onClose={() => setIsAddItemOpen(false)} />
+        <AddItem orderId={orderId} onClose={handleCloseAddItem} />
       )}
 
       {/* 售出物品表單 Modal */}
@@ -743,24 +752,24 @@ export default function OrderDetail({ orderId, onBack }) {
         <SellItem 
           item={selectedItemToSell.item} 
           remainingQty={selectedItemToSell.stats.remainingQty} 
-          onClose={() => setSelectedItemToSell(null)} 
+          onClose={handleCloseSellItem} 
         />
       )}
 
       {/* 編輯訂單表單 Modal */}
       {isEditOrderOpen && order && (
-        <AddOrder existingOrder={order} onClose={() => setIsEditOrderOpen(false)} />
+        <AddOrder existingOrder={order} onClose={handleCloseEditOrder} />
       )}
 
       {/* 編輯子物品表單 Modal */}
       {editingItem && (
-        <AddItem orderId={orderId} existingItem={editingItem} onClose={() => setEditingItem(null)} />
+        <AddItem orderId={orderId} existingItem={editingItem} onClose={handleCloseEditItem} />
       )}
 
       {/* 全螢幕 Lightbox 放大憑證圖 */}
       {zoomImage && (
         <div 
-          onClick={() => setZoomImage(null)}
+          onClick={handleCloseZoomImage}
           className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
         >
           <img src={zoomImage} alt="放大圖片" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />

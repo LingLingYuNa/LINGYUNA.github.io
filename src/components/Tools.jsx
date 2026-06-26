@@ -4,6 +4,7 @@ import { db } from '../db';
 import TagManager from './TagManager';
 import TagRoleManager from './TagRoleManager';
 import IpRolesManager from './IpRolesManager';
+import { useHardwareBack } from '../hooks/useHardwareBack';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive, getGoogleTokenClient } from '../utils/googleDriveSync';
 import { calculateOrderTotalTWD } from '../utils';
 import * as XLSX from 'xlsx';
@@ -18,6 +19,11 @@ export default function Tools() {
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [isTagRoleManagerOpen, setIsTagRoleManagerOpen] = useState(false);
   const [isIpRolesManagerOpen, setIsIpRolesManagerOpen] = useState(false);
+
+  // 手機硬體返回鍵綁定
+  const handleCloseTagManager = useHardwareBack(isTagManagerOpen, () => setIsTagManagerOpen(false), 'tag-manager');
+  const handleCloseTagRoleManager = useHardwareBack(isTagRoleManagerOpen, () => setIsTagRoleManagerOpen(false), 'tag-role-manager');
+  const handleCloseIpRolesManager = useHardwareBack(isIpRolesManagerOpen, () => setIsIpRolesManagerOpen(false), 'ip-roles-manager');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
   });
@@ -829,17 +835,17 @@ export default function Tools() {
 
       {/* 標籤管理面版 Modal */}
       {isTagManagerOpen && (
-        <TagManager onClose={() => setIsTagManagerOpen(false)} />
+        <TagManager onClose={handleCloseTagManager} />
       )}
 
       {/* 全域標籤與角色管理中心 Modal */}
       {isTagRoleManagerOpen && (
-        <TagRoleManager onClose={() => setIsTagRoleManagerOpen(false)} />
+        <TagRoleManager onClose={handleCloseTagRoleManager} />
       )}
 
       {/* IP 常用角色推薦管理 Modal */}
       {isIpRolesManagerOpen && (
-        <IpRolesManager onClose={() => setIsIpRolesManagerOpen(false)} />
+        <IpRolesManager onClose={handleCloseIpRolesManager} />
       )}
     </div>
   );

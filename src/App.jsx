@@ -10,6 +10,7 @@ import OrderDetail from './components/OrderDetail';
 import QuickAddModal from './components/QuickAddModal';
 import { Plus } from 'lucide-react';
 import { db } from './db';
+import { useHardwareBack } from './hooks/useHardwareBack';
 
 function App() {
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
@@ -19,6 +20,11 @@ function App() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollTop = useRef(0);
+
+  // 綁定硬體返回鍵
+  const handleCloseAddOrder = useHardwareBack(isAddOrderOpen, () => setIsAddOrderOpen(false), 'add-order');
+  const handleCloseQuickAdd = useHardwareBack(isQuickAddOpen, () => { setIsQuickAddOpen(false); setQuickAddOrderId(null); }, 'quick-add');
+  const handleBackOrderDetail = useHardwareBack(!!selectedOrderId, () => setSelectedOrderId(null), 'order-detail');
 
   // 統一處理分頁切換並清除所有彈窗與詳情狀態
   const handleTabChange = (tab) => {
@@ -104,7 +110,7 @@ function App() {
         {selectedOrderId ? (
           <OrderDetail 
             orderId={selectedOrderId} 
-            onBack={() => setSelectedOrderId(null)} 
+            onBack={handleBackOrderDetail} 
           />
         ) : (
           <>
@@ -142,17 +148,14 @@ function App() {
 
       {/* 新增訂單彈窗 */}
       {isAddOrderOpen && (
-        <AddOrder onClose={() => setIsAddOrderOpen(false)} />
+        <AddOrder onClose={handleCloseAddOrder} />
       )}
 
       {/* 快速記帳彈窗 */}
       {isQuickAddOpen && (
         <QuickAddModal 
           orderId={quickAddOrderId} 
-          onClose={() => {
-            setIsQuickAddOpen(false);
-            setQuickAddOrderId(null);
-          }} 
+          onClose={handleCloseQuickAdd} 
         />
       )}
     </div>

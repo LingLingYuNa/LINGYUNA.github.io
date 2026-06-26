@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X, Image as ImageIcon } from 'lucide-react';
+import { useHardwareBack } from '../hooks/useHardwareBack';
 import { db } from '../db';
 import { DEFAULT_TAGS } from '../constants';
 import { compressImage, calculateOrderTotalTWD } from '../utils';
@@ -59,6 +60,10 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   const [editTargetIp, setEditTargetIp] = useState('原神');
   const [editRolesInput, setEditRolesInput] = useState('');
 
+  // 手機硬體返回鍵綁定
+  const handleClosePropModal = useHardwareBack(isPropModalOpen, () => setIsPropModalOpen(false), 'prop-modal');
+  const handleCloseEditIpRoles = useHardwareBack(isEditingIpRoles, () => setIsEditingIpRoles(false), 'edit-ip-roles');
+
   const handleOpenEditIpRoles = () => {
     const target = tempIp || '原神';
     setEditTargetIp(target);
@@ -82,7 +87,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     
     setIpRolesMap(newMap);
     localStorage.setItem('collecttrack_ip_roles_map', JSON.stringify(newMap));
-    setIsEditingIpRoles(false);
+    handleCloseEditIpRoles();
   };
 
   const dbCustomTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([])) || [];
@@ -177,7 +182,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     setIp(tempIp);
     setRoles(tempRoles);
     setSelectedTags(tempTags);
-    setIsPropModalOpen(false);
+    handleClosePropModal();
   };
 
   const handleAddTempRole = (roleToAddOrEvent) => {
@@ -579,7 +584,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       {/* 三合一屬性設定彈跳視窗 */}
       {isPropModalOpen && (
         <div 
-          onClick={(e) => { if (e.target === e.currentTarget) setIsPropModalOpen(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) handleClosePropModal(); }}
           className="fixed inset-0 z-[70] bg-gray-950/40 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6"
         >
           <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-200">
@@ -591,7 +596,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               </h3>
               <button 
                 type="button" 
-                onClick={() => setIsPropModalOpen(false)}
+                onClick={handleClosePropModal}
                 className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 <X size={18} />
@@ -867,7 +872,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             <div className="bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-850 p-4 pb-safe flex gap-3 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)]">
               <button
                 type="button"
-                onClick={() => setIsPropModalOpen(false)}
+                onClick={handleClosePropModal}
                 className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-255 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 transition-colors text-xs"
               >
                 取消
@@ -888,7 +893,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       {/* 編輯 IP 常用角色推薦彈窗 */}
       {isEditingIpRoles && (
         <div 
-          onClick={(e) => { if (e.target === e.currentTarget) setIsEditingIpRoles(false); }}
+          onClick={(e) => { if (e.target === e.currentTarget) handleCloseEditIpRoles(); }}
           className="fixed inset-0 z-[80] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
         >
           <div 
@@ -901,7 +906,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               </h3>
               <button 
                 type="button" 
-                onClick={() => setIsEditingIpRoles(false)}
+                onClick={handleCloseEditIpRoles}
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-850"
               >
                 <X size={16} />
@@ -955,7 +960,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             <div className="flex gap-3 pt-2">
               <button
                 type="button"
-                onClick={() => setIsEditingIpRoles(false)}
+                onClick={handleCloseEditIpRoles}
                 className="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs"
               >
                 取消
