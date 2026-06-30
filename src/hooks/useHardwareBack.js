@@ -11,26 +11,25 @@ import { useEffect, useCallback } from 'react';
 export function useHardwareBack(isOpen, closeAction, hashName) {
   useEffect(() => {
     if (isOpen) {
-      // 1. 當元件開啟時，推入對應的 hash
-      // 注意：這裡只改變 hash，不會重載頁面，但會真實在 history 產生一筆新紀錄
       const currentHash = window.location.hash;
-      if (currentHash !== `#${hashName}`) {
-        window.history.pushState(null, '', `#${hashName}`);
+      // 只有在當前 hash 不包含該 hashName 時才追加，避免重複推入歷史
+      if (!currentHash.includes(hashName)) {
+        const prefix = (currentHash === '' || currentHash === '#') ? '#/' : `${currentHash}/`;
+        window.history.pushState(null, '', `${prefix}${hashName}`);
       }
     } else {
-      // 2. 當元件因為其他原因被關閉 (例如表單儲存成功觸發 closeAction)
-      // 這時我們要負責把當初推入的 hash 幫忙清掉 (也就是模擬返回)，維持 history 乾淨
-      if (window.location.hash === `#${hashName}`) {
+      const currentHash = window.location.hash;
+      // 如果目前 hash 是以自己的 hashName 結尾，代表主動關閉時需要後退歷史將此 hash 移除
+      if (currentHash.endsWith(`/${hashName}`)) {
         window.history.back();
       }
     }
   }, [isOpen, hashName]);
 
   useEffect(() => {
-    // 3. 監聽瀏覽器的 popstate 事件 (使用者按了手機的實體返回鍵，或瀏覽器上一頁)
     const handlePopState = () => {
-      // 如果目前是開啟狀態，且 hash 已經不是自己的 hashName，代表使用者按了返回鍵離開了這個虛擬路由
-      if (isOpen && window.location.hash !== `#${hashName}`) {
+      // popstate 觸發時，如果已經不再包含自己的 hashName，說明歷史已經倒退到該層級之外，執行關閉
+      if (isOpen && !window.location.hash.includes(hashName)) {
         closeAction();
       }
     };
@@ -39,12 +38,12 @@ export function useHardwareBack(isOpen, closeAction, hashName) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [isOpen, hashName, closeAction]);
 
-  // 4. 提供給 UI 按鈕 (例如左上角的 X 或返回箭頭) 使用
   const handleCloseUI = useCallback(() => {
-    if (window.location.hash === `#${hashName}`) {
-      window.history.back(); // 觸發 popstate，上面的 listener 就會呼叫 closeAction
+    // UI 按鈕主動關閉時，如果是最上層的 hash 段則後退歷史，否則 fallback 直接關閉
+    if (window.location.hash.endsWith(`/${hashName}`)) {
+      window.history.back();
     } else {
-      closeAction(); // 如果 hash 已經不是自己的，作為 fallback 直接關閉
+      closeAction();
     }
   }, [hashName, closeAction]);
 
