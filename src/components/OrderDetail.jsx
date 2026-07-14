@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical, Copy } from 'lucide-react';
+import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, getStatusStyle, PAYMENT_METHODS } from '../constants';
 import AddItem from './AddItem';
@@ -118,6 +118,30 @@ export default function OrderDetail({ orderId, onBack }) {
       console.error('更新排序失敗:', error);
     }
   };
+
+  const handleMoveItem = async (index, direction) => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === localItems.length - 1) return;
+
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    const updated = [...localItems];
+    const [movedItem] = updated.splice(index, 1);
+    updated.splice(targetIndex, 0, movedItem);
+
+    // 即時更新本地 UI
+    setLocalItems(updated);
+
+    try {
+      await db.transaction('rw', db.items, async () => {
+        for (let i = 0; i < updated.length; i++) {
+          await db.items.update(updated[i].id, { sort_order: i });
+        }
+      });
+    } catch (error) {
+      console.error('更新排序失敗:', error);
+    }
+  };
+
 
   // 監聽此訂單下所有子物品的售出紀錄
   const sales = useLiveQuery(async () => {
@@ -569,16 +593,50 @@ export default function OrderDetail({ orderId, onBack }) {
                           : 'border-gray-100 dark:border-gray-700/80'
                     }`}
                   >
-                    {/* 左側拖曳把手 */}
-                    <div 
-                      onMouseDown={() => setCanDrag(true)}
-                      onMouseUp={() => setCanDrag(false)}
-                      onTouchStart={() => setCanDrag(true)}
-                      onTouchEnd={() => setCanDrag(false)}
-                      className="flex items-center cursor-grab active:cursor-grabbing text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 shrink-0 px-0.5 select-none"
-                      title="拖曳排序"
-                    >
-                      <GripVertical size={20} />
+                    {/* 左側拖曳把手與行動端上下排序按鈕 */}
+                    <div className="flex flex-col items-center justify-center gap-1 shrink-0 px-0.5 select-none">
+                      {/* 向上移動按鈕 */}
+                      <button 
+                        type="button"
+                        onClick={() => handleMoveItem(index, 'up')}
+                        disabled={index === 0}
+                        className={`p-1 transition-all rounded ${
+                          index === 0 
+                            ? 'text-gray-100 dark:text-gray-800 cursor-not-allowed opacity-20' 
+                            : 'text-gray-300 dark:text-gray-600 hover:text-primary dark:hover:text-primary-light active:scale-75'
+                        }`}
+                        title="向上移動"
+                      >
+                        <ChevronUp size={18} strokeWidth={2.5} />
+                      </button>
+
+                      {/* 電腦端滑鼠拖曳把手 */}
+                      <div 
+                        onMouseDown={() => setCanDrag(true)}
+                        onMouseUp={() => setCanDrag(false)}
+                        className="hidden md:flex items-center justify-center cursor-grab active:cursor-grabbing text-gray-300 dark:text-gray-600 hover:text-gray-500"
+                        title="按住拖曳排序"
+                      >
+                        <GripVertical size={16} />
+                      </div>
+
+                      {/* 手機端的分隔小橫條（純視覺裝飾） */}
+                      <div className="md:hidden w-3 h-0.5 bg-gray-200 dark:bg-gray-700/60 rounded" />
+
+                      {/* 向下移動按鈕 */}
+                      <button 
+                        type="button"
+                        onClick={() => handleMoveItem(index, 'down')}
+                        disabled={index === localItems.length - 1}
+                        className={`p-1 transition-all rounded ${
+                          index === localItems.length - 1 
+                            ? 'text-gray-100 dark:text-gray-800 cursor-not-allowed opacity-20' 
+                            : 'text-gray-300 dark:text-gray-600 hover:text-primary dark:hover:text-primary-light active:scale-75'
+                        }`}
+                        title="向下移動"
+                      >
+                        <ChevronDown size={18} strokeWidth={2.5} />
+                      </button>
                     </div>
 
                     {/* 右側主要的卡片內容 */}
