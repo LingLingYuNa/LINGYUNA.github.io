@@ -18,6 +18,21 @@ const getItemRoles = (item) => {
   return charStr ? charStr.split(',').map(s => s.trim()).filter(Boolean) : [];
 };
 
+// 輔助函數：格式化日期為 YYYY/MM/DD 短格式
+const formatOrderDate = (dateStr) => {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr.split('T')[0] || '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const r = String(d.getDate()).padStart(2, '0');
+    return `${y}/${m}/${r}`;
+  } catch (e) {
+    return dateStr.split('T')[0] || '';
+  }
+};
+
 export default function OrderList({ onOrderClick, currentTab }) {
   const [viewMode, setViewMode] = useState('list'); // 'list' | 'gallery'
   const [selectedItem, setSelectedItem] = useState(null);
@@ -503,7 +518,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.98]'
                         }`}
                       >
-                        <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           {/* 圓圈 Checkbox */}
                           {isSelectMode && (
                             <div 
@@ -519,20 +534,27 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             </div>
                           )}
 
-                          {/* 左側標籤 */}
-                          {order.tags && order.tags[0] ? (
-                            <span className="text-xs bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2.5 py-1 rounded-xl font-bold shrink-0">
-                              {order.tags[0]}
-                            </span>
-                          ) : (
-                            <span className="text-xs bg-gray-100 dark:bg-gray-750 text-gray-500 dark:text-gray-400 px-2.5 py-1 rounded-xl font-bold shrink-0">
-                              無標籤
-                            </span>
-                          )}
-                          {/* 名稱 */}
-                          <span className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
-                            {order.title || order.source || '日常支出'}
-                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                              {/* 左側標籤 */}
+                              {order.tags && order.tags[0] ? (
+                                <span className="text-[10px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-md font-bold shrink-0">
+                                  {order.tags[0]}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] bg-gray-100 dark:bg-gray-750 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-md font-bold shrink-0">
+                                  無標籤
+                                </span>
+                              )}
+                              {/* 名稱 */}
+                              <span className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
+                                {order.title || order.source || '日常支出'}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold flex items-center gap-1">
+                              📅 {formatOrderDate(order.created_at)}
+                            </p>
+                          </div>
                         </div>
                         
                         <div className="flex items-center gap-3 shrink-0">
@@ -610,11 +632,14 @@ export default function OrderList({ onOrderClick, currentTab }) {
                           <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base truncate">
                             {order.title || order.source}
                           </h3>
-                          {order.title && order.source && (
-                            <p className="text-xs text-gray-400 dark:text-gray-500 font-semibold mt-0.5 truncate">
-                              來源：{order.source}
-                            </p>
-                          )}
+                          <div className="flex items-center gap-2.5 flex-wrap mt-0.5 text-xs text-gray-400 dark:text-gray-500 font-semibold">
+                            {order.title && order.source && (
+                              <span className="truncate">來源：{order.source}</span>
+                            )}
+                            <span className="flex items-center gap-1 shrink-0">
+                              📅 {formatOrderDate(order.created_at)}
+                            </span>
+                          </div>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
                             <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
                               {(() => {
