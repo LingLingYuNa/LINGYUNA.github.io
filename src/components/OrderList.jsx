@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
 import { getDeadlineInfo } from '../utils';
-import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square } from 'lucide-react';
+import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes } from 'lucide-react';
 import AddOrder from './AddOrder';
 import CalendarView from './CalendarView';
 import SellItem from './SellItem';
@@ -142,8 +142,8 @@ export default function OrderList({ onOrderClick, currentTab }) {
 
   const tagsToRender = customTags.length > 0 ? Array.from(new Set(customTags.map(t => t.name))) : DEFAULT_TAGS;
  
-  // 整理 Gallery 需要的項目，並進行標籤與搜尋關鍵字篩選
-  const filteredGalleryItems = useMemo(() => {
+  // 整理 Gallery / Items 需要的項目，並進行標籤與搜尋關鍵字篩選
+  const filteredItems = useMemo(() => {
     if (!items) return [];
 
     // 依據 dateSort 進行排序
@@ -324,18 +324,27 @@ export default function OrderList({ onOrderClick, currentTab }) {
       <header className="flex justify-between items-end mt-2 px-1 mb-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
-            {viewMode === 'list' ? '訂單清單' : viewMode === 'gallery' ? '收藏圖牆' : '收支日曆'}
+            {viewMode === 'list' ? '訂單清單' : viewMode === 'items' ? '物品清單' : viewMode === 'gallery' ? '收藏圖牆' : '收支日曆'}
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">所有的週邊敗家紀錄</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+            {viewMode === 'items' ? '所有週邊的單品明細' : '所有的週邊敗家紀錄'}
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl flex gap-0.5 transition-colors">
             <button
               onClick={() => setViewMode('list')}
               className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
-              title="清單模式"
+              title="訂單清單"
             >
               <List size={18} />
+            </button>
+            <button
+              onClick={() => setViewMode('items')}
+              className={`p-1.5 rounded-lg transition-all ${viewMode === 'items' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              title="物品清單"
+            >
+              <Boxes size={18} />
             </button>
             <button
               onClick={() => setViewMode('gallery')}
@@ -891,6 +900,131 @@ export default function OrderList({ onOrderClick, currentTab }) {
             })()
           )}
         </div>
+      ) : viewMode === 'items' ? (
+        // --- 物品清單模式 ---
+        <div className="space-y-4">
+          {/* 搜尋與時間排序組合 */}
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
+                <Search size={18} />
+              </span>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="搜尋商品名稱、角色、訂單名稱或來源..."
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* 排序按鈕 */}
+            <button
+              type="button"
+              onClick={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}
+              className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
+              title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
+            >
+              <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
+            </button>
+          </div>
+
+          {items.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+                <Boxes size={32} />
+              </div>
+              <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">物品清單空空如也</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-400">新增週邊物品時，就會在這裡列出喔！</p>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+                <Search size={32} />
+              </div>
+              <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的物品</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字篩選</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-32">
+              {filteredItems.map(item => {
+                const associatedOrder = orders?.find(o => o.id === item.order_id);
+                const exchangeRate = associatedOrder ? Number(associatedOrder.exchange_rate) : 1;
+                const costTWD = item.twd_net_cost !== undefined 
+                  ? item.twd_net_cost 
+                  : Math.round(Number(item.price || 0) * exchangeRate);
+
+                const itemRoles = getItemRoles(item);
+                const statusInfo = getStatusStyle(item.status || associatedOrder?.status || '已喊單');
+                const orderTitle = associatedOrder?.title || associatedOrder?.source || '未知訂單';
+
+                return (
+                  <div
+                    key={item.id}
+                    onClick={() => onOrderClick && onOrderClick(item.order_id)}
+                    className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex items-center justify-between hover:shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      {item.image ? (
+                        <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-750">
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-primary-light/35 dark:bg-primary-dark/20 text-primary dark:text-primary-light rounded-xl flex items-center justify-center shrink-0">
+                          <PackageOpen size={22} />
+                        </div>
+                      )}
+
+                      <div className="min-w-0">
+                        <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
+                          {item.name}
+                        </h4>
+                        
+                        <div className="flex items-center gap-1.5 flex-wrap mt-0.5 text-[10px] text-gray-400 dark:text-gray-500 font-semibold">
+                          <span>數量: {item.quantity}</span>
+                          <span>|</span>
+                          <span className="truncate">來自: {orderTitle}</span>
+                        </div>
+
+                        {(itemRoles.length > 0 || (item.tags && item.tags.length > 0)) && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            {itemRoles.map(r => (
+                              <span key={r} className="text-[9px] bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold shrink-0">
+                                👤 {r}
+                              </span>
+                            ))}
+                            {(item.tags || []).map(t => (
+                              <span key={t} className="text-[9px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-1.5 py-0.5 rounded font-bold shrink-0">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-end gap-1.5 shrink-0 ml-3">
+                      <span className="font-black text-gray-800 dark:text-gray-100 text-sm">
+                        NT$ {costTWD.toLocaleString()}
+                      </span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all shadow-sm ${statusInfo.color}`}>
+                        {statusInfo.dot} {statusInfo.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       ) : viewMode === 'gallery' ? (
         // --- 圖牆模式 ---
         <div className="space-y-4">
@@ -936,7 +1070,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
               <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">圖牆空空如也</h3>
               <p className="text-sm text-gray-400 dark:text-gray-400">新增物品時，就會顯示在這裡喔！</p>
             </div>
-          ) : filteredGalleryItems.length === 0 ? (
+          ) : filteredItems.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
               <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
                 <Search size={32} />
@@ -946,7 +1080,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32">
-              {filteredGalleryItems.map(item => {
+              {filteredItems.map(item => {
                 const associatedOrder = orders?.find(o => o.id === item.order_id);
                 const currencySymbol = associatedOrder 
                   ? (CURRENCIES.find(c => c.code === associatedOrder.currency)?.symbol || '$')
