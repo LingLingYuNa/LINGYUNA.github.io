@@ -145,7 +145,15 @@ export default function OrderList({ onOrderClick, currentTab }) {
   // 整理 Gallery 需要的項目，並進行標籤與搜尋關鍵字篩選
   const filteredGalleryItems = useMemo(() => {
     if (!items) return [];
-    let result = items.slice().reverse();
+
+    // 依據 dateSort 進行排序
+    const sortedItems = [...items].sort((a, b) => {
+      const timeA = new Date(a.created_at || a.id || 0).getTime();
+      const timeB = new Date(b.created_at || b.id || 0).getTime();
+      return dateSort === 'desc' ? timeB - timeA : timeA - timeB;
+    });
+
+    let result = sortedItems;
     const query = searchQuery.trim().toLowerCase();
 
     // 1. 標籤篩選
@@ -181,7 +189,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
     }
 
     return result;
-  }, [items, orders, activeTag, searchQuery]);
+  }, [items, orders, activeTag, searchQuery, dateSort]);
 
   // 載入中狀態
   if (orders === undefined || items === undefined || sales === undefined) {
@@ -886,10 +894,9 @@ export default function OrderList({ onOrderClick, currentTab }) {
       ) : viewMode === 'gallery' ? (
         // --- 圖牆模式 ---
         <div className="space-y-4">
-          {/* 搜尋與標籤過濾 */}
-          <div className="space-y-2">
-            {/* 搜尋框 */}
-            <div className="relative">
+          {/* 搜尋與時間排序組合 */}
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
               <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
                 <Search size={18} />
               </span>
@@ -910,35 +917,15 @@ export default function OrderList({ onOrderClick, currentTab }) {
               )}
             </div>
 
-            {/* 標籤過濾器 (橫向滑動) */}
-            <div 
-              className="flex gap-1.5 overflow-x-auto py-1 -mx-4 px-4 scrollbar-none" 
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            {/* 排序按鈕 */}
+            <button
+              type="button"
+              onClick={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}
+              className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
+              title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
             >
-              <button
-                onClick={() => setActiveTag(null)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                  activeTag === null
-                    ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
-                }`}
-              >
-                全部
-              </button>
-              {tagsToRender.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                    activeTag === tag
-                      ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+              <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
+            </button>
           </div>
 
           {items.length === 0 ? (
