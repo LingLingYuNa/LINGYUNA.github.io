@@ -462,35 +462,6 @@ export default function OrderList({ onOrderClick, currentTab }) {
               </div>
             )}
 
-            {/* 標籤過濾器 (橫向滑動) */}
-            <div 
-              className="flex gap-1.5 overflow-x-auto py-1 -mx-4 px-4 scrollbar-none" 
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              <button
-                onClick={() => setActiveTag(null)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                  activeTag === null
-                    ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
-                }`}
-              >
-                全部
-              </button>
-              {tagsToRender.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
-                    activeTag === tag
-                      ? 'bg-primary text-white shadow-sm shadow-primary/20'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700/50 hover:text-gray-700 dark:hover:text-gray-200'
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
           </div>
 
           {listType === 'expenses' ? (
