@@ -29,12 +29,16 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   const [urlInput, setUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [ip, setIp] = useState(existingItem?.ip || '');
+  const [sourceType, setSourceType] = useState(existingItem?.source_type || 'official');
+  const [fanSource, setFanSource] = useState(existingItem?.fan_source || '');
 
   // 屬性設定彈跳視窗狀態與臨時狀態
   const [isPropModalOpen, setIsPropModalOpen] = useState(false);
   const [tempIp, setTempIp] = useState('');
   const [tempRoles, setTempRoles] = useState([]);
   const [tempTags, setTempTags] = useState([]);
+  const [tempSourceType, setTempSourceType] = useState('official');
+  const [tempFanSource, setTempFanSource] = useState('');
   const [tempRoleInput, setTempRoleInput] = useState('');
   const [tempTagInput, setTempTagInput] = useState('');
 
@@ -150,6 +154,25 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     return Array.from(ipsSet).filter(Boolean);
   }, [dbItems]);
 
+  // 提取所有已存在的同人來源作為選項
+  const availableFanSources = React.useMemo(() => {
+    const sourcesSet = new Set([
+      '繪師/社團自製',
+      '同人委託',
+      '微博/小紅書拼團',
+      '淘寶同人店',
+      '日本同人(Booth/Mercari)'
+    ]);
+    
+    dbItems.forEach(item => {
+      if (item.fan_source) {
+        sourcesSet.add(item.fan_source.trim());
+      }
+    });
+    
+    return Array.from(sourcesSet).filter(Boolean);
+  }, [dbItems]);
+
   // 基於 temp 狀態計算過濾後的角色推薦
   const filteredAvailableRoles = React.useMemo(() => {
     return availableRoles.filter(role => 
@@ -173,6 +196,8 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     setTempIp(ip);
     setTempRoles([...roles]);
     setTempTags([...selectedTags]);
+    setTempSourceType(sourceType);
+    setTempFanSource(fanSource);
     setTempRoleInput('');
     setTempTagInput('');
     setIsPropModalOpen(true);
@@ -182,6 +207,8 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     setIp(tempIp);
     setRoles(tempRoles);
     setSelectedTags(tempTags);
+    setSourceType(tempSourceType);
+    setFanSource(tempFanSource);
     handleClosePropModal();
   };
 
@@ -266,6 +293,8 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         weight: Number(weight) || 0,
         image: images[0] || '',
         images: images,
+        source_type: sourceType,
+        fan_source: fanSource,
       };
 
       if (existingItem) {
@@ -358,8 +387,20 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             </div>
             
             {/* 已選屬性展示 */}
-            {(ip || roles.length > 0 || selectedTags.length > 0) ? (
+            {(ip || roles.length > 0 || selectedTags.length > 0 || sourceType) ? (
               <div className="space-y-2.5">
+                {/* 來源屬性 */}
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0">來源：</span>
+                  <span className={`px-2.5 py-0.5 rounded-lg font-bold border text-[10px] ${
+                    sourceType === 'official'
+                      ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
+                      : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
+                  }`}>
+                    {sourceType === 'official' ? '👑 官方周邊' : `🎨 同人周邊 (${fanSource || '未註明來源'})`}
+                  </span>
+                </div>
+
                 {/* 作品 (IP) */}
                 {ip && (
                   <div className="flex items-center gap-2 text-xs">
@@ -862,6 +903,89 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         </button>
                       </span>
                     ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 4. 來源與同人出處區 */}
+              <div className="space-y-2.5 pt-4 border-t border-gray-100 dark:border-gray-850">
+                <h4 className="text-xs font-bold text-gray-455 dark:text-gray-500 uppercase tracking-wider">
+                  4. 來源屬性
+                </h4>
+                
+                {/* 官方/同人分段選擇 */}
+                <div className="flex bg-gray-100 dark:bg-gray-800/80 p-1 rounded-xl transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempSourceType('official');
+                      setTempFanSource(''); // 切回官方時清空同人來源
+                    }}
+                    className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                      tempSourceType === 'official'
+                        ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200/20'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    👑 官方周邊
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTempSourceType('fan')}
+                    className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                      tempSourceType === 'fan'
+                        ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200/20'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    }`}
+                  >
+                    🎨 同人自製/二創
+                  </button>
+                </div>
+
+                {/* 如果是同人，展開來源選擇與輸入 */}
+                {tempSourceType === 'fan' && (
+                  <div className="space-y-3 bg-purple-50/20 dark:bg-purple-950/5 p-3 rounded-xl border border-purple-100/40 dark:border-purple-950/20 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <span className="text-[10px] text-purple-650 dark:text-purple-400 font-bold block mb-1">同人來源/作者/社團：</span>
+                    
+                    {/* 推薦來源 Pills */}
+                    {availableFanSources.length > 0 && (
+                      <div className="flex gap-1.5 flex-wrap pb-1">
+                        {availableFanSources.map((source) => (
+                          <button
+                            key={source}
+                            type="button"
+                            onClick={() => setTempFanSource(source)}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                              tempFanSource === source
+                                ? 'bg-purple-100 dark:bg-purple-950/30 text-purple-850 dark:text-purple-300 border-purple-200 dark:border-purple-900 shadow-sm'
+                                : 'bg-white dark:bg-gray-800 text-gray-550 dark:text-gray-400 border-transparent hover:bg-gray-50 dark:hover:bg-gray-750'
+                            }`}
+                          >
+                            {source}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* 自訂輸入框 */}
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={tempFanSource}
+                        onChange={(e) => setTempFanSource(e.target.value)}
+                        placeholder="請輸入或選擇繪師、社團或同人來源名稱..."
+                        className="w-full bg-white dark:bg-gray-800 border border-gray-250 dark:border-gray-750 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      />
+                      {tempFanSource && (
+                        <button
+                          type="button"
+                          onClick={() => setTempFanSource('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                        >
+                          <X size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>

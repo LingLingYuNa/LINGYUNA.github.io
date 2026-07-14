@@ -645,6 +645,15 @@ export default function OrderDetail({ orderId, onBack }) {
                       <div className="flex justify-between items-start mb-2 gap-2">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            {item.source_type && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0 border ${
+                                item.source_type === 'official'
+                                  ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
+                                  : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
+                              }`}>
+                                {item.source_type === 'official' ? '👑 官方' : `🎨 同人 (${item.fan_source || '未註明'})`}
+                              </span>
+                            )}
                             {item.ip && (
                               <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
                                 🎬 {item.ip}
