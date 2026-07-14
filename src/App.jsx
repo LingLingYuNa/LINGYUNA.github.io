@@ -27,6 +27,7 @@ function App() {
   const orders = useLiveQuery(() => db.orders.toArray());
   const items = useLiveQuery(() => db.items.toArray());
   const sales = useLiveQuery(() => db.sales.toArray());
+  const customTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([]));
 
   const [isRestoreChecked, setIsRestoreChecked] = useState(false);
   const isFirstDataChange = useRef(true);
@@ -64,17 +65,19 @@ function App() {
         const localOrdersCount = await db.orders.count();
         const localItemsCount = await db.items.count();
         const salesData = data.sales || [];
+        const customTagsData = data.custom_tags || [];
 
         // 本機為空 -> 直接靜默還原
         if (localOrdersCount === 0 && localItemsCount === 0) {
           console.log('🔄 啟動檢測：本機無資料，自動還原雲端備份中...');
-          await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+          await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
             if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
             if (data.items.length > 0) await db.items.bulkPut(data.items);
             if (salesData.length > 0) await db.sales.bulkPut(salesData);
+            if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
           });
           localStorage.setItem('last_local_update', export_date || new Date().toISOString());
-          alert('🔄 已自動從 Google Drive 同步並載入您的資產資料！');
+          alert('🔄 已自動從 Google Drive 同步並載入您的資產與標籤資料！');
           window.location.reload();
           return;
         }
@@ -89,16 +92,18 @@ function App() {
 
           if (confirmRestore) {
             console.log('🔄 啟動檢測：使用者確認還原較新的雲端資料...');
-            await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+            await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
               await db.orders.clear();
               await db.items.clear();
               await db.sales.clear();
+              await db.custom_tags.clear();
               if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
               if (data.items.length > 0) await db.items.bulkPut(data.items);
               if (salesData.length > 0) await db.sales.bulkPut(salesData);
+              if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
             });
             localStorage.setItem('last_local_update', export_date);
-            alert('✅ 雲端資料同步還原成功！');
+            alert('✅ 雲端資料與標籤同步還原成功！');
             window.location.reload();
             return;
           } else {
@@ -115,10 +120,10 @@ function App() {
     checkAndRestore();
   }, []);
 
-  // 2. 資料變更，背景 5 秒防抖自動備份
+  // 2. 資料與標籤變更，背景 5 秒防抖自動備份
   useEffect(() => {
     if (!isRestoreChecked) return;
-    if (!orders || !items || !sales) return;
+    if (!orders || !items || !sales || !customTags) return;
 
     if (isFirstDataChange.current) {
       isFirstDataChange.current = false;
@@ -136,15 +141,15 @@ function App() {
 
     const nowStr = new Date().toISOString();
     localStorage.setItem('last_local_update', nowStr);
-    console.log('🔄 偵測到本機資料異動，已規劃在 5 秒後進行背景備份...');
+    console.log('🔄 偵測到本機資料或標籤異動，已規劃在 5 秒後進行背景備份...');
 
     const timer = setTimeout(async () => {
       try {
-        console.log('🔄 背景同步：開始自動上傳最新資料至雲端...');
+        console.log('🔄 背景同步：開始自動上傳最新資料與標籤至雲端...');
         const backupData = {
-          version: 2,
+          version: 3,
           export_date: nowStr,
-          data: { orders, items, sales }
+          data: { orders, items, sales, custom_tags: customTags }
         };
         await uploadBackup(backupData);
         console.log('✅ 背景同步：已成功自動備份至 Google Drive！');
@@ -154,7 +159,7 @@ function App() {
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [orders, items, sales, isRestoreChecked]);
+  }, [orders, items, sales, customTags, isRestoreChecked]);
 
   // 綁定硬體返回鍵
   const handleCloseAddOrder = useHardwareBack(isAddOrderOpen, () => setIsAddOrderOpen(false), 'add-order');

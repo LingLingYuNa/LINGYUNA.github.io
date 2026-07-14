@@ -90,11 +90,12 @@ export default function Tools() {
       const orders = await db.orders.toArray();
       const items = await db.items.toArray();
       const sales = await db.sales.toArray();
+      const customTags = db.custom_tags ? await db.custom_tags.toArray() : [];
 
       const backupData = {
-        version: 2,
+        version: 3,
         export_date: new Date().toISOString(),
-        data: { orders, items, sales }
+        data: { orders, items, sales, custom_tags: customTags }
       };
 
       setSyncStatusText('正在上傳至 Google 雲端硬碟...');
@@ -165,11 +166,13 @@ export default function Tools() {
       }
 
       const salesData = data.sales || [];
+      const customTagsData = data.custom_tags || [];
 
-      await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+      await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
         if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
         if (data.items.length > 0) await db.items.bulkPut(data.items);
         if (salesData.length > 0) await db.sales.bulkPut(salesData);
+        if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
       });
 
       if (backupData.export_date) {
