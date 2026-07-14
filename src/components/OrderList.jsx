@@ -45,6 +45,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
   const [isReconOpen, setIsReconOpen] = useState(false);
   const [selectedBuyer, setSelectedBuyer] = useState('');
   const [zoomImage, setZoomImage] = useState(null);
+  const [dateSort, setDateSort] = useState('desc'); // 'desc' | 'asc'
 
   const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
 
@@ -128,7 +129,13 @@ export default function OrderList({ onOrderClick, currentTab }) {
   };
 
   // 即時監聽 IndexedDB
-  const orders = useLiveQuery(() => db.orders.orderBy('created_at').reverse().toArray());
+  const orders = useLiveQuery(() => {
+    let q = db.orders.orderBy('created_at');
+    if (dateSort === 'desc') {
+      q = q.reverse();
+    }
+    return q.toArray();
+  }, [dateSort]);
   const items = useLiveQuery(() => db.items.toArray());
   const sales = useLiveQuery(() => db.sales.toArray());
   const customTags = useLiveQuery(() => db.custom_tags.orderBy('sort_order').toArray()) || [];
@@ -403,6 +410,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   <span>🧾 對帳單</span>
                 </button>
               )}
+
+              {/* 排序按鈕 */}
+              <button
+                type="button"
+                onClick={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}
+                className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
+                title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
+              >
+                <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
+              </button>
 
               <button
                 type="button"
@@ -727,7 +744,11 @@ export default function OrderList({ onOrderClick, currentTab }) {
           ) : (
             // 收入分頁 (Sales)
             (() => {
-              const sortedFilteredSales = [...filteredSales].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+              const sortedFilteredSales = [...filteredSales].sort((a, b) => {
+                const timeA = new Date(a.created_at || 0).getTime();
+                const timeB = new Date(b.created_at || 0).getTime();
+                return dateSort === 'desc' ? timeB - timeA : timeA - timeB;
+              });
               return sales.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
                   <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-300 dark:text-emerald-500 rounded-full flex items-center justify-center mb-4">
