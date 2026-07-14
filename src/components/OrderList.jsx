@@ -304,7 +304,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
 
   // 動態加總金額
   const totalSelectedAmount = selectedIds.reduce((sum, id) => {
-    if (listType === 'expenses') {
+    if (viewMode === 'items') {
+      const item = items.find(x => x.id === id);
+      if (!item) return sum;
+      const associatedOrder = orders?.find(o => o.id === item.order_id);
+      const exchangeRate = associatedOrder ? Number(associatedOrder.exchange_rate) : 1;
+      const costTWD = item.twd_net_cost !== undefined 
+        ? item.twd_net_cost 
+        : Math.round(Number(item.price || 0) * exchangeRate);
+      return sum + costTWD;
+    } else if (listType === 'expenses') {
       const o = orders.find(x => x.id === id);
       if (!o) return sum;
       // 優先使用 total_amount_twd，相容舊資料
@@ -935,6 +944,22 @@ export default function OrderList({ onOrderClick, currentTab }) {
             >
               <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
             </button>
+
+            {/* 選取按鈕 */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsSelectMode(!isSelectMode);
+                setSelectedIds([]);
+              }}
+              className={`px-3 py-2.5 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 ${
+                isSelectMode
+                  ? 'bg-gray-750 text-gray-200 border border-gray-600 shadow-sm'
+                  : 'bg-primary-light/50 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light hover:bg-primary-light dark:hover:bg-primary-dark/30 shadow-sm shadow-primary/5'
+              }`}
+            >
+              <span>{isSelectMode ? '🚫 取消' : '☑️ 選取'}</span>
+            </button>
           </div>
 
           {items.length === 0 ? (
@@ -966,13 +991,42 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 const statusInfo = getStatusStyle(item.status || associatedOrder?.status || '已喊單');
                 const orderTitle = associatedOrder?.title || associatedOrder?.source || '未知訂單';
 
+                const isSelected = selectedIds.includes(item.id);
+
                 return (
                   <div
                     key={item.id}
-                    onClick={() => onOrderClick && onOrderClick(item.order_id)}
-                    className="p-4 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex items-center justify-between hover:shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                    onClick={() => {
+                      if (isSelectMode) {
+                        toggleSelection(item.id);
+                      } else {
+                        onOrderClick && onOrderClick(item.order_id);
+                      }
+                    }}
+                    className={`p-4 rounded-2xl shadow-sm border flex items-center justify-between transition-all duration-200 ${
+                      isSelectMode ? 'cursor-pointer' : ''
+                    } ${
+                      isSelected 
+                        ? 'bg-primary-light/10 border-primary shadow-sm dark:bg-primary-dark/10' 
+                        : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.99]'
+                    }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* 圓圈 Checkbox */}
+                      {isSelectMode && (
+                        <div 
+                          className="shrink-0 mr-1"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleSelection(item.id)}
+                            className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
+                          />
+                        </div>
+                      )}
+
                       {item.image ? (
                         <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-750">
                           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -983,7 +1037,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         </div>
                       )}
 
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
                           {item.name}
                         </h4>
@@ -1164,7 +1218,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 <span className="text-xs text-gray-400 dark:text-gray-500">
                   合計 NT$
                 </span>
-                <span className={`text-base font-black ${listType === 'expenses' ? 'text-primary dark:text-primary-light' : 'text-secondary-dark dark:text-secondary'}`}>
+                <span className={`text-base font-black ${(viewMode === 'items' || listType === 'expenses') ? 'text-primary dark:text-primary-light' : 'text-secondary-dark dark:text-secondary'}`}>
                   {totalSelectedAmount.toLocaleString()}
                 </span>
               </div>
@@ -1175,17 +1229,26 @@ export default function OrderList({ onOrderClick, currentTab }) {
               <button
                 type="button"
                 onClick={() => {
-                  const currentFilteredListSize = listType === 'expenses' ? filteredOrders.length : filteredSales.length;
+                  const currentFilteredListSize = viewMode === 'items' 
+                    ? filteredItems.length 
+                    : (listType === 'expenses' ? filteredOrders.length : filteredSales.length);
+                  
                   if (selectedIds.length === currentFilteredListSize && currentFilteredListSize > 0) {
                     setSelectedIds([]);
                   } else {
-                    handleSelectAll();
+                    if (viewMode === 'items') {
+                      setSelectedIds(filteredItems.map(item => item.id));
+                    } else {
+                      handleSelectAll();
+                    }
                   }
                 }}
                 className="px-3 py-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-lg transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
               >
                 {(() => {
-                  const currentFilteredListSize = listType === 'expenses' ? filteredOrders.length : filteredSales.length;
+                  const currentFilteredListSize = viewMode === 'items' 
+                    ? filteredItems.length 
+                    : (listType === 'expenses' ? filteredOrders.length : filteredSales.length);
                   return selectedIds.length === currentFilteredListSize && currentFilteredListSize > 0 ? '❌ 取消全選' : '🤝 全選當前';
                 })()}
               </button>
