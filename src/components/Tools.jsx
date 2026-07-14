@@ -32,6 +32,9 @@ export default function Tools() {
   const [isLinked, setIsLinked] = useState(() => {
     return localStorage.getItem('google_drive_linked') === 'true';
   });
+  const [isAutoSync, setIsAutoSync] = useState(() => {
+    return localStorage.getItem('google_drive_auto_sync') === 'true';
+  });
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatusText, setSyncStatusText] = useState('');
 
@@ -49,7 +52,9 @@ export default function Tools() {
     try {
       await requestAuth();
       setIsLinked(true);
-      alert('✅ 成功連結 Google 帳號！您現在可以使用雲端備份與還原功能。');
+      localStorage.setItem('google_drive_auto_sync', 'true'); // 連結後預設開啟自動同步
+      setIsAutoSync(true);
+      alert('✅ 成功連結 Google 帳號！背景自動同步已為您預設開啟。');
     } catch (error) {
       console.error('連結失敗:', error);
       alert('❌ 連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
@@ -64,8 +69,16 @@ export default function Tools() {
     if (window.confirm('確定要解除 Google 帳號的雲端同步連結嗎？這只會清除本機的登入 Token，不會刪除您雲端硬碟中的備份檔案。')) {
       disconnectGoogleDrive();
       setIsLinked(false);
+      localStorage.removeItem('google_drive_auto_sync');
+      setIsAutoSync(false);
       alert('已成功解除雲端同步連結。');
     }
+  };
+
+  const handleToggleAutoSync = () => {
+    const newValue = !isAutoSync;
+    setIsAutoSync(newValue);
+    localStorage.setItem('google_drive_auto_sync', String(newValue));
   };
 
   // 雲端備份
@@ -101,6 +114,7 @@ export default function Tools() {
         }
       }
       
+      localStorage.setItem('last_local_update', backupData.export_date);
       alert('✅ 雲端備份成功！已更新至您的 Google 雲端硬碟。');
     } catch (error) {
       console.error('雲端備份失敗:', error);
@@ -158,6 +172,9 @@ export default function Tools() {
         if (salesData.length > 0) await db.sales.bulkPut(salesData);
       });
 
+      if (backupData.export_date) {
+        localStorage.setItem('last_local_update', backupData.export_date);
+      }
       alert('✅ 雲端還原成功！系統將自動重新載入以套用最新資料。');
       window.location.reload();
     } catch (error) {
@@ -713,6 +730,31 @@ export default function Tools() {
                   <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
                     您已將此裝置與 Google 帳號連結。備份檔案會以私有格式存放在您雲端硬碟的 <span className="font-semibold text-gray-700 dark:text-gray-300">CollectTrack_Backup.json</span> 中。
                   </p>
+
+                  {/* 背景自動同步 Toggle */}
+                  <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl border border-gray-100 dark:border-gray-800/80 flex items-center justify-between transition-colors">
+                    <div className="flex flex-col text-left">
+                      <span className="font-bold text-gray-800 dark:text-gray-100 text-xs sm:text-sm flex items-center gap-1">
+                        🔄 背景自動同步 (Auto Sync)
+                      </span>
+                      <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5">
+                        記帳與異動時背景備份，啟動時自動還原或提醒
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleToggleAutoSync}
+                      className={`w-12 h-7 rounded-full transition-all relative outline-none focus:outline-none ${
+                        isAutoSync ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    >
+                      <div
+                        className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all shadow-md ${
+                          isAutoSync ? 'left-6' : 'left-1'
+                        }`}
+                      />
+                    </button>
+                  </div>
 
                   {/* 同步中 Loading 顯示 */}
                   {isSyncing && (

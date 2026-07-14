@@ -11,6 +11,8 @@ import QuickAddModal from './components/QuickAddModal';
 import { Plus } from 'lucide-react';
 import { db } from './db';
 import { useHardwareBack } from './hooks/useHardwareBack';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { uploadBackup, downloadBackup, requestAuth } from './utils/googleDriveSync';
 
 function App() {
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
@@ -20,6 +22,139 @@ function App() {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollTop = useRef(0);
+
+  // 讀取資料表資料以監聽變更
+  const orders = useLiveQuery(() => db.orders.toArray());
+  const items = useLiveQuery(() => db.items.toArray());
+  const sales = useLiveQuery(() => db.sales.toArray());
+
+  const [isRestoreChecked, setIsRestoreChecked] = useState(false);
+  const isFirstDataChange = useRef(true);
+
+  // 1. 啟動時自動還原或版本衝突偵測
+  useEffect(() => {
+    const checkAndRestore = async () => {
+      const isLinked = localStorage.getItem('google_drive_linked') === 'true';
+      const isAutoSync = localStorage.getItem('google_drive_auto_sync') === 'true';
+      const accessToken = localStorage.getItem('google_drive_access_token');
+      const expiresAt = Number(localStorage.getItem('google_drive_token_expires_at')) || 0;
+
+      if (!isLinked || !isAutoSync || !accessToken || Date.now() > expiresAt) {
+        setIsRestoreChecked(true);
+        return;
+      }
+
+      try {
+        console.log('🔄 啟動檢測：正在從 Google Drive 讀取雲端備份...');
+        const backupData = await downloadBackup();
+        
+        if (!backupData) {
+          console.log('🔄 啟動檢測：雲端尚無備份檔案。');
+          setIsRestoreChecked(true);
+          return;
+        }
+
+        const { data, export_date } = backupData;
+        if (!data || !data.orders || !data.items) {
+          console.warn('🔄 啟動檢測：雲端備份格式不符，跳過自動還原。');
+          setIsRestoreChecked(true);
+          return;
+        }
+
+        const localOrdersCount = await db.orders.count();
+        const localItemsCount = await db.items.count();
+        const salesData = data.sales || [];
+
+        // 本機為空 -> 直接靜默還原
+        if (localOrdersCount === 0 && localItemsCount === 0) {
+          console.log('🔄 啟動檢測：本機無資料，自動還原雲端備份中...');
+          await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+            if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
+            if (data.items.length > 0) await db.items.bulkPut(data.items);
+            if (salesData.length > 0) await db.sales.bulkPut(salesData);
+          });
+          localStorage.setItem('last_local_update', export_date || new Date().toISOString());
+          alert('🔄 已自動從 Google Drive 同步並載入您的資產資料！');
+          window.location.reload();
+          return;
+        }
+
+        // 本機有資料 -> 衝突提示
+        const lastLocalUpdate = localStorage.getItem('last_local_update');
+        if (export_date && (!lastLocalUpdate || new Date(export_date) > new Date(lastLocalUpdate))) {
+          const cloudTimeStr = new Date(export_date).toLocaleString('zh-TW', { hour12: false });
+          const confirmRestore = window.confirm(
+            `🔄 雲端同步提示\n\n偵測到您在 Google 雲端硬碟有更近期的備份資料（更新時間：${cloudTimeStr}）。\n\n是否要立即載入並覆蓋此裝置的舊資料？`
+          );
+
+          if (confirmRestore) {
+            console.log('🔄 啟動檢測：使用者確認還原較新的雲端資料...');
+            await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+              await db.orders.clear();
+              await db.items.clear();
+              await db.sales.clear();
+              if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
+              if (data.items.length > 0) await db.items.bulkPut(data.items);
+              if (salesData.length > 0) await db.sales.bulkPut(salesData);
+            });
+            localStorage.setItem('last_local_update', export_date);
+            alert('✅ 雲端資料同步還原成功！');
+            window.location.reload();
+            return;
+          } else {
+            localStorage.setItem('last_local_update', export_date);
+          }
+        }
+      } catch (error) {
+        console.error('🔄 啟動自動同步檢測失敗:', error);
+      } finally {
+        setIsRestoreChecked(true);
+      }
+    };
+
+    checkAndRestore();
+  }, []);
+
+  // 2. 資料變更，背景 5 秒防抖自動備份
+  useEffect(() => {
+    if (!isRestoreChecked) return;
+    if (!orders || !items || !sales) return;
+
+    if (isFirstDataChange.current) {
+      isFirstDataChange.current = false;
+      return;
+    }
+
+    const isLinked = localStorage.getItem('google_drive_linked') === 'true';
+    const isAutoSync = localStorage.getItem('google_drive_auto_sync') === 'true';
+    const accessToken = localStorage.getItem('google_drive_access_token');
+    const expiresAt = Number(localStorage.getItem('google_drive_token_expires_at')) || 0;
+
+    if (!isLinked || !isAutoSync || !accessToken || Date.now() > expiresAt) {
+      return;
+    }
+
+    const nowStr = new Date().toISOString();
+    localStorage.setItem('last_local_update', nowStr);
+    console.log('🔄 偵測到本機資料異動，已規劃在 5 秒後進行背景備份...');
+
+    const timer = setTimeout(async () => {
+      try {
+        console.log('🔄 背景同步：開始自動上傳最新資料至雲端...');
+        const backupData = {
+          version: 2,
+          export_date: nowStr,
+          data: { orders, items, sales }
+        };
+        await uploadBackup(backupData);
+        console.log('✅ 背景同步：已成功自動備份至 Google Drive！');
+      } catch (err) {
+        console.error('❌ 背景同步自動上傳失敗:', err);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [orders, items, sales, isRestoreChecked]);
 
   // 綁定硬體返回鍵
   const handleCloseAddOrder = useHardwareBack(isAddOrderOpen, () => setIsAddOrderOpen(false), 'add-order');
