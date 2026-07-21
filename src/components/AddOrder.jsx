@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Image as ImageIcon } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
@@ -17,6 +17,16 @@ export default function AddOrder({ existingOrder, onClose }) {
   const [tagCategory, setTagCategory] = useState(existingOrder?.tag_category || 'general');
   const [selectedTags, setSelectedTags] = useState(existingOrder?.tags || []);
   const [focusedField, setFocusedField] = useState(null); // 'title' | 'source' | null
+  const blurTimeoutRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const [isSaving, setIsSaving] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState(existingOrder?.payment_method || (existingOrder?.tag_category === 'general' ? '現金' : 'ATM/轉帳'));
   
@@ -175,8 +185,22 @@ export default function AddOrder({ existingOrder, onClose }) {
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              onFocus={() => setFocusedField('title')}
-              onBlur={() => setTimeout(() => setFocusedField(null), 250)}
+              onFocus={() => {
+                if (blurTimeoutRef.current) {
+                  clearTimeout(blurTimeoutRef.current);
+                  blurTimeoutRef.current = null;
+                }
+                setFocusedField('title');
+              }}
+              onBlur={() => {
+                if (blurTimeoutRef.current) {
+                  clearTimeout(blurTimeoutRef.current);
+                }
+                blurTimeoutRef.current = setTimeout(() => {
+                  setFocusedField(null);
+                  blurTimeoutRef.current = null;
+                }, 250);
+              }}
               placeholder="例如：徽章盒裝、角色立牌、隨機拍立得..."
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
@@ -188,7 +212,14 @@ export default function AddOrder({ existingOrder, onClose }) {
                     <button
                       key={t}
                       type="button"
-                      onMouseDown={() => setTitle(t)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setTitle(t);
+                      }}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        setTitle(t);
+                      }}
                       className="px-2.5 py-1 text-xs bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-medium transition-colors shrink-0"
                     >
                       {t}
@@ -207,8 +238,22 @@ export default function AddOrder({ existingOrder, onClose }) {
               required
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              onFocus={() => setFocusedField('source')}
-              onBlur={() => setTimeout(() => setFocusedField(null), 250)}
+              onFocus={() => {
+                if (blurTimeoutRef.current) {
+                  clearTimeout(blurTimeoutRef.current);
+                  blurTimeoutRef.current = null;
+                }
+                setFocusedField('source');
+              }}
+              onBlur={() => {
+                if (blurTimeoutRef.current) {
+                  clearTimeout(blurTimeoutRef.current);
+                }
+                blurTimeoutRef.current = setTimeout(() => {
+                  setFocusedField(null);
+                  blurTimeoutRef.current = null;
+                }, 250);
+              }}
               placeholder="例如：煤爐、駿河屋、淘寶、安利美特..."
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
@@ -220,7 +265,14 @@ export default function AddOrder({ existingOrder, onClose }) {
                     <button
                       key={s}
                       type="button"
-                      onMouseDown={() => setSource(s)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        setSource(s);
+                      }}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        setSource(s);
+                      }}
                       className="px-2.5 py-1 text-xs bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-medium transition-colors shrink-0"
                     >
                       {s}
