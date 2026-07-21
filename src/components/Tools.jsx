@@ -303,6 +303,11 @@ export default function Tools() {
       const orders = await db.orders.toArray();
       const items = await db.items.toArray();
 
+      if (orders.length === 0) {
+        alert('ℹ️ 目前資料庫中無任何訂單資料可供匯出。');
+        return;
+      }
+
       const flattenData = [];
       for (const order of orders) {
         const orderItems = items.filter(item => item.order_id === order.id);
@@ -348,11 +353,11 @@ export default function Tools() {
               '訂單總金額': order.total_amount || 0,
               'IP': item.ip || '',
               '物品名稱': item.name || '',
-              '角色': item.roles ? item.roles.join(', ') : (item.character || item.role || ''),
+              '角色': Array.isArray(item.roles) ? item.roles.join(', ') : (typeof item.roles === 'string' ? item.roles : (item.character || item.role || '')),
               '數量': item.quantity || 0,
               '外幣單價': item.price || 0,
-              '物品標籤': item.tags ? item.tags.join(', ') : (item.tag || ''),
-              '圖片': item.images ? item.images.join(' || ') : (item.image || ''),
+              '物品標籤': Array.isArray(item.tags) ? item.tags.join(', ') : (typeof item.tags === 'string' ? item.tags : (item.tag || '')),
+              '圖片': Array.isArray(item.images) ? item.images.join(' || ') : (typeof item.images === 'string' ? item.images : (item.image || '')),
               // 智慧還原輔助欄位
               '幣別': order.currency || 'TWD',
               '匯率': order.exchange_rate || 1,
