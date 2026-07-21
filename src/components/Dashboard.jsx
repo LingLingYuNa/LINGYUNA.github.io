@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { getDeadlineInfo } from '../utils';
-import { requestAuth, uploadBackup } from '../utils/googleDriveSync';
+import { requestAuth, uploadBackup, downloadBackup } from '../utils/googleDriveSync';
 
 export default function Dashboard({ onQuickAdd, onOrderClick }) {
   // 1. 新增狀態來管理當前檢視的月份，預設為當前時間
@@ -12,7 +12,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
   const [isLinked, setIsLinked] = useState(() => localStorage.getItem('google_drive_linked') === 'true');
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // 連結 Google 帳號並自動完成首次雲端同步備份
+  // 連結 Google 帳號並自動完成首次雲端同步備份或還原
   const handleConnect = async () => {
     setIsSyncing(true);
     try {
@@ -20,21 +20,80 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       setIsLinked(true);
       localStorage.setItem('google_drive_auto_sync', 'true'); // 連結後預設開啟自動同步
 
-      // 取得 IndexedDB 內的全部最新資料
+      // 1. 嘗試載入雲端是否有已存在的備份檔
+      const backupData = await downloadBackup();
+      
       const ordersData = await db.orders.toArray();
       const itemsData = await db.items.toArray();
       const salesData = await db.sales.toArray();
       const customTagsData = db.custom_tags ? await db.custom_tags.toArray() : [];
 
-      const backupData = {
-        version: 3,
-        export_date: new Date().toISOString(),
-        data: { orders: ordersData, items: itemsData, sales: salesData, custom_tags: customTagsData }
-      };
+      const localOrdersCount = ordersData.length;
+      const localItemsCount = itemsData.length;
 
-      await uploadBackup(backupData);
-      localStorage.setItem('last_local_update', backupData.export_date);
-      alert('✅ 成功連結 Google 帳號！背景自動備份已為您啟用並完成首次同步。');
+      if (backupData && backupData.data) {
+        // 雲端已有備份檔案！
+        const { data, export_date } = backupData;
+        const salesList = data.sales || [];
+        const customTagsList = data.custom_tags || [];
+
+        if (localOrdersCount === 0 && localItemsCount === 0) {
+          // A. 本地資料為空 -> 執行靜默自動還原
+          await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
+            if (data.orders && data.orders.length > 0) await db.orders.bulkPut(data.orders);
+            if (data.items && data.items.length > 0) await db.items.bulkPut(data.items);
+            if (salesList.length > 0) await db.sales.bulkPut(salesList);
+            if (customTagsList.length > 0) await db.custom_tags.bulkPut(customTagsList);
+          });
+          localStorage.setItem('last_local_update', export_date || new Date().toISOString());
+          alert('🔄 已自動從 Google Drive 下載並還原您的全部記帳與標籤資料！');
+          window.location.reload();
+          return;
+        } else {
+          // B. 本地有資料 -> 彈出提示詢問使用者要由雲端覆蓋，還是本地覆蓋雲端
+          const confirmRestore = window.confirm(
+            `☁️ 雲端同步提示\n\n偵測到您在 Google 雲端硬碟已有備份資料（更新時間：${new Date(export_date).toLocaleString('zh-TW')}）。\n\n【確定】：載入雲端資料並覆蓋此裝置的本地資料。\n【取消】：保留本地資料，並以本地資料覆蓋雲端備份。`
+          );
+
+          if (confirmRestore) {
+            // 還原雲端覆蓋本地
+            await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
+              await db.orders.clear();
+              await db.items.clear();
+              await db.sales.clear();
+              await db.custom_tags.clear();
+              if (data.orders && data.orders.length > 0) await db.orders.bulkPut(data.orders);
+              if (data.items && data.items.length > 0) await db.items.bulkPut(data.items);
+              if (salesList.length > 0) await db.sales.bulkPut(salesList);
+              if (customTagsList.length > 0) await db.custom_tags.bulkPut(customTagsList);
+            });
+            localStorage.setItem('last_local_update', export_date || new Date().toISOString());
+            alert('🔄 已成功載入雲端備份並覆蓋本地資料！');
+            window.location.reload();
+            return;
+          } else {
+            // 本地覆蓋雲端
+            const newBackup = {
+              version: 3,
+              export_date: new Date().toISOString(),
+              data: { orders: ordersData, items: itemsData, sales: salesData, custom_tags: customTagsData }
+            };
+            await uploadBackup(newBackup);
+            localStorage.setItem('last_local_update', newBackup.export_date);
+            alert('✅ 已使用本地資料覆蓋雲端備份檔案！');
+          }
+        }
+      } else {
+        // 雲端無備份檔 -> 直接建立備份上傳
+        const newBackup = {
+          version: 3,
+          export_date: new Date().toISOString(),
+          data: { orders: ordersData, items: itemsData, sales: salesData, custom_tags: customTagsData }
+        };
+        await uploadBackup(newBackup);
+        localStorage.setItem('last_local_update', newBackup.export_date);
+        alert('✅ 成功連結 Google 帳號！已為您建立雲端備份並完成首次同步。');
+      }
     } catch (error) {
       console.error('連結雲端失敗:', error);
       alert('❌ 連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
