@@ -308,16 +308,23 @@ export default function Tools() {
         return;
       }
 
-      const flattenData = [];
+      // 依月份群組資料 (YYYY-MM -> 該月份所有資料列的陣列)
+      const monthlyGroups = {};
+
       for (const order of orders) {
         const orderItems = items.filter(item => item.order_id === order.id);
         
         // 取得格式化日期 YYYY-MM-DD (優先以 created_at 解析日期，以防 date 為空)
         const orderDate = order.created_at ? order.created_at.split('T')[0] : '';
+        const monthKey = orderDate ? orderDate.slice(0, 7) : '未分類';
+
+        if (!monthlyGroups[monthKey]) {
+          monthlyGroups[monthKey] = [];
+        }
 
         if (orderItems.length === 0) {
           // 生活記帳模式或無物品的訂單
-          flattenData.push({
+          monthlyGroups[monthKey].push({
             '訂單日期': orderDate,
             '訂單名稱': order.title || '',
             '支付方式': order.payment_method || '',
@@ -342,7 +349,7 @@ export default function Tools() {
           });
         } else {
           for (const item of orderItems) {
-            flattenData.push({
+            monthlyGroups[monthKey].push({
               '訂單日期': orderDate,
               '訂單名稱': order.title || '',
               '支付方式': order.payment_method || '',
@@ -369,10 +376,20 @@ export default function Tools() {
         }
       }
 
-      // 產生 Sheet
-      const worksheet = XLSX.utils.json_to_sheet(flattenData);
       const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, '財務報表');
+
+      // 排序月份鍵值：新到舊排序，未分類排最後
+      const sortedMonthKeys = Object.keys(monthlyGroups).sort((a, b) => {
+        if (a === '未分類') return 1;
+        if (b === '未分類') return -1;
+        return b.localeCompare(a); // 降冪排序 (新月份在左邊)
+      });
+
+      // 將每個月份群組加入為獨立的工作表 (Sheet)
+      for (const monthKey of sortedMonthKeys) {
+        const worksheet = XLSX.utils.json_to_sheet(monthlyGroups[monthKey]);
+        XLSX.utils.book_append_sheet(workbook, worksheet, monthKey);
+      }
 
       // 打包並下載
       XLSX.writeFile(workbook, `CollectTrack_財務報表_${getFormattedDate()}.xlsx`);
@@ -402,12 +419,19 @@ export default function Tools() {
       try {
         const data = event.target.result;
         const workbook = XLSX.read(data, { type: 'binary' });
-        const firstSheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[firstSheetName];
-        const excelRows = XLSX.utils.sheet_to_json(worksheet);
+        
+        let excelRows = [];
+        // 循環讀取 Excel 內的所有工作表並合併
+        for (const sheetName of workbook.SheetNames) {
+          const worksheet = workbook.Sheets[sheetName];
+          const sheetRows = XLSX.utils.sheet_to_json(worksheet);
+          if (Array.isArray(sheetRows)) {
+            excelRows = excelRows.concat(sheetRows);
+          }
+        }
 
         if (excelRows.length === 0) {
-          throw new Error('Excel 檔案內無任何資料列');
+          throw new Error('Excel 檔案內所有工作表均無任何資料列');
         }
 
         // 基本欄位格式防呆驗證
