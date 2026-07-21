@@ -17,7 +17,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
   const handleConnect = async () => {
     setIsSyncing(true);
     try {
-      await requestAuth();
+      await requestAuth(true);
       setIsLinked(true);
       localStorage.setItem('google_drive_auto_sync', 'true'); // 連結後預設開啟自動同步
 

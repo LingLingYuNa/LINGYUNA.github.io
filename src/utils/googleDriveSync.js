@@ -52,10 +52,11 @@ export function getGoogleTokenClient() {
 }
 
 /**
- * 彈出 Google 授權視窗，請求使用者授予 Google Drive 權限
+ * 請求使用者授予 Google Drive 權限 (支援靜默與強制授權)
+ * @param {boolean} forceConsent 是否強制彈出帳號與同意畫面，預設為 false (優先嘗試靜默刷新)
  * @returns {Promise<string>} 回傳 valid Access Token
  */
-export function requestAuth() {
+export function requestAuth(forceConsent = false) {
   return new Promise((resolve, reject) => {
     if (typeof window.google === 'undefined' || !window.google.accounts || !window.google.accounts.oauth2) {
       reject(new Error('Google SDK 尚未載入完成，請確認網路連線或 index.html 是否載入腳本。'));
@@ -69,8 +70,8 @@ export function requestAuth() {
     }
 
     pendingAuthPromise = { resolve, reject };
-    // 使用 prompt: 'consent' 強制彈出同意畫面取得 Token
-    client.requestAccessToken({ prompt: 'consent' });
+    // 若為 forceConsent 則使用 'consent' 強制使用者確認；否則傳入空字串嘗試靜默刷新
+    client.requestAccessToken({ prompt: forceConsent ? 'consent' : '' });
   });
 }
 

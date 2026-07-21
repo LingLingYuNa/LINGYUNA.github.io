@@ -37,12 +37,24 @@ function App() {
     const checkAndRestore = async () => {
       const isLinked = localStorage.getItem('google_drive_linked') === 'true';
       const isAutoSync = localStorage.getItem('google_drive_auto_sync') === 'true';
-      const accessToken = localStorage.getItem('google_drive_access_token');
+      let accessToken = localStorage.getItem('google_drive_access_token');
       const expiresAt = Number(localStorage.getItem('google_drive_token_expires_at')) || 0;
 
-      if (!isLinked || !isAutoSync || !accessToken || Date.now() > expiresAt) {
+      if (!isLinked || !isAutoSync) {
         setIsRestoreChecked(true);
         return;
+      }
+
+      // 如果 Token 已過期但先前有連結帳號，優先嘗試自動靜默刷新授權
+      if (!accessToken || Date.now() > expiresAt) {
+        try {
+          console.log('🔄 啟動檢測：Token 已過期，嘗試自動靜默刷新 Google 授權...');
+          accessToken = await requestAuth(false);
+        } catch (err) {
+          console.warn('⚠️ 啟動檢測：自動靜默刷新授權失敗，本機本次將不進行同步還原:', err);
+          setIsRestoreChecked(true);
+          return;
+        }
       }
 
       try {
@@ -132,10 +144,8 @@ function App() {
 
     const isLinked = localStorage.getItem('google_drive_linked') === 'true';
     const isAutoSync = localStorage.getItem('google_drive_auto_sync') === 'true';
-    const accessToken = localStorage.getItem('google_drive_access_token');
-    const expiresAt = Number(localStorage.getItem('google_drive_token_expires_at')) || 0;
 
-    if (!isLinked || !isAutoSync || !accessToken || Date.now() > expiresAt) {
+    if (!isLinked || !isAutoSync) {
       return;
     }
 
@@ -145,6 +155,15 @@ function App() {
 
     const timer = setTimeout(async () => {
       try {
+        const token = localStorage.getItem('google_drive_access_token');
+        const expires = Number(localStorage.getItem('google_drive_token_expires_at')) || 0;
+
+        // 如果 Token 已過期但仍為連結狀態，在此處進行靜默授權刷新
+        if (!token || Date.now() > expires) {
+          console.log('🔄 背景同步：檢測到授權 Token 已過期，正在嘗試自動靜默刷新 Google 授權...');
+          await requestAuth(false);
+        }
+
         console.log('🔄 背景同步：開始自動上傳最新資料與標籤至雲端...');
         const backupData = {
           version: 3,
@@ -154,7 +173,7 @@ function App() {
         await uploadBackup(backupData);
         console.log('✅ 背景同步：已成功自動備份至 Google Drive！');
       } catch (err) {
-        console.error('❌ 背景同步自動上傳失敗:', err);
+        console.error('❌ 背景同步自動上傳失敗 (可能未登入或 Session 已失效):', err);
       }
     }, 5000);
 

@@ -50,7 +50,7 @@ export default function Tools() {
     setIsSyncing(true);
     setSyncStatusText('正在連結 Google 帳號...');
     try {
-      await requestAuth();
+      await requestAuth(true);
       setIsLinked(true);
       localStorage.setItem('google_drive_auto_sync', 'true'); // 連結後預設開啟自動同步
       setIsAutoSync(true);
@@ -106,7 +106,7 @@ export default function Tools() {
       } catch (err) {
         if (err.message === 'TOKEN_EXPIRED' || err.message === 'NOT_LINKED') {
           setSyncStatusText('授權已過期，正在重新取得授權...');
-          await requestAuth();
+          await requestAuth(true);
           setIsLinked(true);
           setSyncStatusText('授權成功，正在上傳至 Google 雲端硬碟...');
           await uploadBackup(backupData);
@@ -142,7 +142,7 @@ export default function Tools() {
       } catch (err) {
         if (err.message === 'TOKEN_EXPIRED' || err.message === 'NOT_LINKED') {
           setSyncStatusText('授權已過期，正在重新取得授權...');
-          await requestAuth();
+          await requestAuth(true);
           setIsLinked(true);
           setSyncStatusText('授權成功，正在載入雲端備份...');
           backupData = await downloadBackup();
