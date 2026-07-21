@@ -2,10 +2,46 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { getDeadlineInfo } from '../utils';
+import { requestAuth, uploadBackup } from '../utils/googleDriveSync';
 
 export default function Dashboard({ onQuickAdd, onOrderClick }) {
   // 1. 新增狀態來管理當前檢視的月份，預設為當前時間
   const [selectedMonth, setSelectedMonth] = useState(new Date());
+
+  // 雲端同步連結狀態
+  const [isLinked, setIsLinked] = useState(() => localStorage.getItem('google_drive_linked') === 'true');
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // 連結 Google 帳號並自動完成首次雲端同步備份
+  const handleConnect = async () => {
+    setIsSyncing(true);
+    try {
+      await requestAuth();
+      setIsLinked(true);
+      localStorage.setItem('google_drive_auto_sync', 'true'); // 連結後預設開啟自動同步
+
+      // 取得 IndexedDB 內的全部最新資料
+      const ordersData = await db.orders.toArray();
+      const itemsData = await db.items.toArray();
+      const salesData = await db.sales.toArray();
+      const customTagsData = db.custom_tags ? await db.custom_tags.toArray() : [];
+
+      const backupData = {
+        version: 3,
+        export_date: new Date().toISOString(),
+        data: { orders: ordersData, items: itemsData, sales: salesData, custom_tags: customTagsData }
+      };
+
+      await uploadBackup(backupData);
+      localStorage.setItem('last_local_update', backupData.export_date);
+      alert('✅ 成功連結 Google 帳號！背景自動備份已為您啟用並完成首次同步。');
+    } catch (error) {
+      console.error('連結雲端失敗:', error);
+      alert('❌ 連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // 撈取所有訂單、物品與售出紀錄
   const orders = useLiveQuery(() => db.orders.toArray());
@@ -98,10 +134,43 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       {/* 標題與月份區塊 */}
       <header className="flex justify-between items-end mt-2 px-1">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">總覽</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">總覽</h1>
+            {isLinked ? (
+              <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-650 dark:text-emerald-450 px-2 py-0.5 rounded-full border border-emerald-100/30 dark:border-emerald-900/30 font-bold shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                雲端備份中
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[10px] bg-amber-50 dark:bg-amber-950/20 text-amber-650 dark:text-amber-450 px-2 py-0.5 rounded-full border border-amber-100/30 dark:border-amber-900/30 font-bold shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                未同步備份
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">本月資產與回血追蹤</p>
         </div>
       </header>
+
+      {/* 雲端備份提醒橫幅 */}
+      {!isLinked && (
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm animate-in slide-in-from-top-4 duration-300">
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0 mt-0.5">⚠️</span>
+            <div>
+              <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">未啟用雲端自動備份</h3>
+              <p className="text-xs text-amber-600 dark:text-amber-400/80 mt-0.5">目前資料僅儲存在本機瀏覽器，清理快取或換手機可能導致資料遺失！</p>
+            </div>
+          </div>
+          <button
+            onClick={handleConnect}
+            disabled={isSyncing}
+            className="self-start sm:self-center px-4 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-amber-500/20 flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+          >
+            <span>{isSyncing ? '連接中...' : '☁️ 立即連結 Google 備份'}</span>
+          </button>
+        </div>
+      )}
 
       {/* 頂部數據與切換區 - 電腦版 3 欄佈局，手機版維持垂直排列 */}
       <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
