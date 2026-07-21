@@ -7,15 +7,11 @@ import IpRolesManager from './IpRolesManager';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive, getGoogleTokenClient } from '../utils/googleDriveSync';
 import { calculateOrderTotalTWD } from '../utils';
-import * as XLSX from 'xlsx';
 
 export default function Tools() {
   const fileInputRef = useRef(null);
-  const excelInputRef = useRef(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
-  const [isExportingExcel, setIsExportingExcel] = useState(false);
-  const [isImportingExcel, setIsImportingExcel] = useState(false);
   const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   const [isTagRoleManagerOpen, setIsTagRoleManagerOpen] = useState(false);
   const [isIpRolesManagerOpen, setIsIpRolesManagerOpen] = useState(false);
@@ -636,7 +632,7 @@ export default function Tools() {
               {/* 匯出按鈕 */}
               <button 
                 onClick={handleExport}
-                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
+                disabled={isExporting || isImporting}
                 className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
               >
                 <div className="flex flex-col text-left">
@@ -651,48 +647,12 @@ export default function Tools() {
               {/* 匯入按鈕 */}
               <button 
                 onClick={triggerImport}
-                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
+                disabled={isExporting || isImporting}
+                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 <div className="flex flex-col text-left">
                   <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">匯入還原資料</span>
                   <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">從之前的備份檔還原或合併資料</span>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                  <Upload size={20} strokeWidth={2.5} />
-                </div>
-              </button>
-
-              {/* 匯出為 Excel 報表 (.xlsx) */}
-              <button 
-                onClick={handleExportExcel}
-                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
-              >
-                <div className="flex flex-col text-left">
-                  <span className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
-                    {isExportingExcel && <RefreshCw size={14} className="animate-spin text-blue-500" />}
-                    📊 匯出為 Excel 報表 (.xlsx)
-                  </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">將訂單與物品攤平為 Excel 表格下載</span>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                  <Download size={20} strokeWidth={2.5} />
-                </div>
-              </button>
-
-              {/* 匯入 Excel 報表 (.xlsx) */}
-              <button 
-                onClick={triggerExcelImport}
-                disabled={isExporting || isImporting || isExportingExcel || isImportingExcel}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors disabled:opacity-50"
-              >
-                <div className="flex flex-col text-left">
-                  <span className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
-                    {isImportingExcel && <RefreshCw size={14} className="animate-spin text-emerald-500" />}
-                    📥 匯入 Excel 報表 (.xlsx)
-                  </span>
-                  <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">自編輯好的 Excel 報表智慧還原資料</span>
                 </div>
                 <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <Upload size={20} strokeWidth={2.5} />
@@ -705,15 +665,6 @@ export default function Tools() {
                 accept=".json" 
                 ref={fileInputRef} 
                 onChange={handleImport} 
-                className="hidden" 
-              />
-
-              {/* 隱藏的 Excel 上傳 input */}
-              <input 
-                type="file" 
-                accept=".xlsx, .xls" 
-                ref={excelInputRef} 
-                onChange={handleImportExcel} 
                 className="hidden" 
               />
             </div>
