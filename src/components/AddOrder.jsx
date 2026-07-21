@@ -69,10 +69,31 @@ export default function AddOrder({ existingOrder, onClose }) {
   };
 
 
-  // 歷史數據用來做關聯建議
+  // 歷史數據用來做關聯建議，依使用頻率由高到低排序並限制前 15 筆
   const allOrders = useLiveQuery(() => db.orders.toArray()) || [];
-  const uniqueTitles = Array.from(new Set(allOrders.map(o => o.title).filter(Boolean))).slice(0, 15);
-  const uniqueSources = Array.from(new Set(allOrders.map(o => o.source).filter(Boolean))).slice(0, 15);
+  const { uniqueTitles, uniqueSources } = React.useMemo(() => {
+    const titleCounts = {};
+    const sourceCounts = {};
+    
+    allOrders.forEach(o => {
+      if (o.title) {
+        titleCounts[o.title] = (titleCounts[o.title] || 0) + 1;
+      }
+      if (o.source) {
+        sourceCounts[o.source] = (sourceCounts[o.source] || 0) + 1;
+      }
+    });
+
+    const sortedTitles = Object.keys(titleCounts)
+      .sort((a, b) => titleCounts[b] - titleCounts[a])
+      .slice(0, 15);
+
+    const sortedSources = Object.keys(sourceCounts)
+      .sort((a, b) => sourceCounts[b] - sourceCounts[a])
+      .slice(0, 15);
+
+    return { uniqueTitles: sortedTitles, uniqueSources: sortedSources };
+  }, [allOrders]);
 
   // 讀取 IndexedDB 的自訂標籤，若未載入完成或為空則使用預設標籤做後備
   const customTags = useLiveQuery(() => db.custom_tags.orderBy('sort_order').toArray()) || [];
