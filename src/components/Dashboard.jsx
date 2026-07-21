@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { getDeadlineInfo } from '../utils';
-import { requestAuth, uploadBackup, downloadBackup } from '../utils/googleDriveSync';
+import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive } from '../utils/googleDriveSync';
+import { Cloud, RefreshCw, LogOut } from 'lucide-react';
 
 export default function Dashboard({ onQuickAdd, onOrderClick }) {
   // 1. 新增狀態來管理當前檢視的月份，預設為當前時間
@@ -99,6 +100,16 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       alert('❌ 連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
     } finally {
       setIsSyncing(false);
+    }
+  };
+
+  // 解除連結雲端帳號
+  const handleDisconnect = () => {
+    if (window.confirm('確定要解除 Google 帳號的雲端同步連結嗎？這會清除本機的登入 Token，但不會刪除雲端硬碟的備份檔。')) {
+      disconnectGoogleDrive();
+      setIsLinked(false);
+      localStorage.removeItem('google_drive_auto_sync');
+      alert('已成功解除雲端同步連結。');
     }
   };
 
@@ -300,43 +311,99 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
 
       {/* 下方清單與提醒區 - 大螢幕左右並排 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* ⏳ 待繳費提醒通知區塊 */}
-        {unpaidOrders.length > 0 && (
+        
+        {/* 左側資訊欄 */}
+        <div className="space-y-6">
+          {/* ⏳ 待繳費提醒通知區塊 */}
+          {unpaidOrders.length > 0 && (
+            <section className="px-1 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                  <span>⏳</span> 待繳費提醒
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-full">
+                  {unpaidOrders.length} 筆待辦
+                </span>
+              </div>
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {unpaidOrders.map(order => (
+                  <div
+                    key={order.id}
+                    onClick={() => onOrderClick && onOrderClick(order.id)}
+                    className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex items-center justify-between transition-all hover:shadow-md active:scale-[0.98] cursor-pointer"
+                  >
+                    <div className="min-w-0 pr-2">
+                      <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate font-sans">
+                        {order.title || order.source}
+                      </h3>
+                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-semibold truncate">
+                        來源：{order.source} | 繳費期限: {order.payment_deadline}
+                      </p>
+                    </div>
+                    <div className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black shrink-0 ${order.deadlineInfo.colorClass}`}>
+                      {order.deadlineInfo.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* ☁️ 雲端備份與同步狀態常駐區塊 */}
           <section className="px-1 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-base font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
-                <span>⏳</span> 待繳費提醒
-              </h2>
-              <span className="text-[10px] font-bold px-2 py-0.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-full">
-                {unpaidOrders.length} 筆待辦
-              </span>
-            </div>
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-              {unpaidOrders.map(order => (
-                <div
-                  key={order.id}
-                  onClick={() => onOrderClick && onOrderClick(order.id)}
-                  className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex items-center justify-between transition-all hover:shadow-md active:scale-[0.98] cursor-pointer"
-                >
-                  <div className="min-w-0 pr-2">
-                    <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate font-sans">
-                      {order.title || order.source}
-                    </h3>
-                    <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-semibold truncate">
-                      來源：{order.source} | 繳費期限: {order.payment_deadline}
+            <h2 className="text-base font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+              <span>☁️</span> 雲端同步狀態
+            </h2>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 transition-colors">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2.5 rounded-xl shrink-0 ${isLinked ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500' : 'bg-gray-50 dark:bg-gray-800 text-gray-450 dark:text-gray-500'}`}>
+                    <Cloud size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
+                      {isLinked ? 'Google 雲端已連結' : '未連結 Google 帳號'}
+                    </h4>
+                    <p className="text-[10px] text-gray-450 dark:text-gray-500 mt-0.5 font-medium leading-relaxed">
+                      {isLinked ? '已啟用防丟失背景 5 秒自動同步' : '資料僅保存在本機，清除快取恐遺失'}
                     </p>
                   </div>
-                  <div className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black shrink-0 ${order.deadlineInfo.colorClass}`}>
-                    {order.deadlineInfo.text}
-                  </div>
                 </div>
-              ))}
+                
+                {isLinked ? (
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={handleConnect}
+                      disabled={isSyncing}
+                      className="px-2.5 py-1.5 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-650 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 select-none border border-gray-100 dark:border-gray-600"
+                    >
+                      <RefreshCw size={10} className={isSyncing ? 'animate-spin' : ''} />
+                      <span>立即同步</span>
+                    </button>
+                    <button
+                      onClick={handleDisconnect}
+                      className="p-2 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded-xl transition-all border border-red-100/10"
+                      title="中斷連結"
+                    >
+                      <LogOut size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleConnect}
+                    disabled={isSyncing}
+                    className="px-3.5 py-2 bg-gradient-to-r from-primary to-primary-dark text-white text-[11px] font-bold rounded-xl hover:shadow-md hover:shadow-primary/20 active:scale-95 transition-all select-none shrink-0"
+                  >
+                    {isSyncing ? '連結中...' : '立即登入'}
+                  </button>
+                )}
+              </div>
             </div>
           </section>
-        )}
+        </div>
 
-        {/* 本月新增紀錄 */}
-        <section className={`px-1 ${unpaidOrders.length === 0 ? 'md:col-span-2' : ''}`}>
+        {/* 右側資訊欄：本月新增紀錄 */}
+        <section className="px-1">
           <h2 className="text-base font-bold text-gray-800 dark:text-gray-200 mb-3">本月新增紀錄</h2>
           {sortedMonthlyOrders.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-6 flex flex-col items-center justify-center text-center h-40 transition-colors">
