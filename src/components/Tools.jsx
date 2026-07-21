@@ -308,6 +308,20 @@ export default function Tools() {
         return;
       }
 
+      // 輔助函數：過濾 Excel 儲存格字元上限 (32767) 及過濾 base64 圖片數據，同時保留數值型別
+      const cleanVal = (val) => {
+        if (val === null || val === undefined) return '';
+        if (typeof val === 'string') {
+          if (val.includes('data:image/')) {
+            return '[Base64 圖片數據]';
+          }
+          if (val.length > 32700) {
+            return val.slice(0, 32700) + '... (長度超限已截斷)';
+          }
+        }
+        return val;
+      };
+
       // 依月份群組資料 (YYYY-MM -> 該月份所有資料列的陣列)
       const monthlyGroups = {};
 
@@ -325,14 +339,14 @@ export default function Tools() {
         if (orderItems.length === 0) {
           // 生活記帳模式或無物品的訂單
           monthlyGroups[monthKey].push({
-            '訂單日期': orderDate,
-            '訂單名稱': order.title || '',
-            '支付方式': order.payment_method || '',
-            '手續費%': order.handling_fee_percent || 0,
-            '匯款手續費': order.remittance_fee || 0,
-            '運費': order.shipping_fee || 0,
-            '折扣': order.discount_amount || 0,
-            '訂單總金額': order.total_amount || 0,
+            '訂單日期': cleanVal(orderDate),
+            '訂單名稱': cleanVal(order.title || ''),
+            '支付方式': cleanVal(order.payment_method || ''),
+            '手續費%': cleanVal(order.handling_fee_percent || 0),
+            '匯款手續費': cleanVal(order.remittance_fee || 0),
+            '運費': cleanVal(order.shipping_fee || 0),
+            '折扣': cleanVal(order.discount_amount || 0),
+            '訂單總金額': cleanVal(order.total_amount || 0),
             'IP': '',
             '物品名稱': '',
             '角色': '',
@@ -341,36 +355,36 @@ export default function Tools() {
             '物品標籤': '',
             '圖片': '',
             // 智慧還原輔助欄位
-            '幣別': order.currency || 'TWD',
-            '匯率': order.exchange_rate || 1,
-            '物流狀態': order.status || '',
-            '訂單來源': order.source || '',
-            '匯款憑證': order.payment_proof || ''
+            '幣別': cleanVal(order.currency || 'TWD'),
+            '匯率': cleanVal(order.exchange_rate || 1),
+            '物流狀態': cleanVal(order.status || ''),
+            '訂單來源': cleanVal(order.source || ''),
+            '匯款憑證': cleanVal(order.payment_proof || '')
           });
         } else {
           for (const item of orderItems) {
             monthlyGroups[monthKey].push({
-              '訂單日期': orderDate,
-              '訂單名稱': order.title || '',
-              '支付方式': order.payment_method || '',
-              '手續費%': order.handling_fee_percent || 0,
-              '匯款手續費': order.remittance_fee || 0,
-              '運費': order.shipping_fee || 0,
-              '折扣': order.discount_amount || 0,
-              '訂單總金額': order.total_amount || 0,
-              'IP': item.ip || '',
-              '物品名稱': item.name || '',
-              '角色': Array.isArray(item.roles) ? item.roles.join(', ') : (typeof item.roles === 'string' ? item.roles : (item.character || item.role || '')),
-              '數量': item.quantity || 0,
-              '外幣單價': item.price || 0,
-              '物品標籤': Array.isArray(item.tags) ? item.tags.join(', ') : (typeof item.tags === 'string' ? item.tags : (item.tag || '')),
-              '圖片': Array.isArray(item.images) ? item.images.join(' || ') : (typeof item.images === 'string' ? item.images : (item.image || '')),
+              '訂單日期': cleanVal(orderDate),
+              '訂單名稱': cleanVal(order.title || ''),
+              '支付方式': cleanVal(order.payment_method || ''),
+              '手續費%': cleanVal(order.handling_fee_percent || 0),
+              '匯款手續費': cleanVal(order.remittance_fee || 0),
+              '運費': cleanVal(order.shipping_fee || 0),
+              '折扣': cleanVal(order.discount_amount || 0),
+              '訂單總金額': cleanVal(order.total_amount || 0),
+              'IP': cleanVal(item.ip || ''),
+              '物品名稱': cleanVal(item.name || ''),
+              '角色': cleanVal(Array.isArray(item.roles) ? item.roles.join(', ') : (typeof item.roles === 'string' ? item.roles : (item.character || item.role || ''))),
+              '數量': cleanVal(item.quantity || 0),
+              '外幣單價': cleanVal(item.price || 0),
+              '物品標籤': cleanVal(Array.isArray(item.tags) ? item.tags.join(', ') : (typeof item.tags === 'string' ? item.tags : (item.tag || ''))),
+              '圖片': cleanVal(Array.isArray(item.images) ? item.images.join(' || ') : (typeof item.images === 'string' ? item.images : (item.image || ''))),
               // 智慧還原輔助欄位
-              '幣別': order.currency || 'TWD',
-              '匯率': order.exchange_rate || 1,
-              '物流狀態': order.status || '',
-              '訂單來源': order.source || '',
-              '匯款憑證': order.payment_proof || ''
+              '幣別': cleanVal(order.currency || 'TWD'),
+              '匯率': cleanVal(order.exchange_rate || 1),
+              '物流狀態': cleanVal(order.status || ''),
+              '訂單來源': cleanVal(order.source || ''),
+              '匯款憑證': cleanVal(order.payment_proof || '')
             });
           }
         }
