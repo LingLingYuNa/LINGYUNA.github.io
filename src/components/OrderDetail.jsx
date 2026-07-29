@@ -7,6 +7,7 @@ import { STATUS_COLORS, CURRENCIES, getStatusStyle, PAYMENT_METHODS } from '../c
 import AddItem from './AddItem';
 import SellItem from './SellItem';
 import AddOrder from './AddOrder';
+import ImportUnassignedModal from './ImportUnassignedModal';
 import { getDeadlineInfo, calculateOrderTotalTWD, compressImage } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
@@ -28,6 +29,13 @@ export default function OrderDetail({ orderId, onBack }) {
   const [zoomImage, setZoomImage] = useState(null);
   const cameraInputRef = useRef(null);
   const albumInputRef = useRef(null);
+  const [isImportUnassignedOpen, setIsImportUnassignedOpen] = useState(false);
+
+  // 查詢無歸屬的物品數量
+  const unassignedCount = useLiveQuery(async () => {
+    const all = await db.items.toArray();
+    return all.filter(i => !i.order_id).length;
+  }, []) || 0;
 
   // 硬體返回鍵綁定
   const handleCloseAddItem = useHardwareBack(isAddItemOpen, () => setIsAddItemOpen(false), `add-item`);
@@ -572,13 +580,25 @@ export default function OrderDetail({ orderId, onBack }) {
                 共 {items?.length || 0} 項
               </span>
             </div>
-            <button
-              onClick={() => setIsAddItemOpen(true)}
-              className="px-3 py-1.5 text-xs bg-primary text-white rounded-xl shadow-sm hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
-            >
-              <Plus size={14} strokeWidth={2.5} />
-              <span>新增物品</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setIsAddItemOpen(true)}
+                className="px-3 py-1.5 text-xs bg-primary text-white rounded-xl shadow-sm hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
+              >
+                <Plus size={14} strokeWidth={2.5} />
+                <span>新增物品</span>
+              </button>
+              {unassignedCount > 0 && (
+                <button
+                  onClick={() => setIsImportUnassignedOpen(true)}
+                  className="px-3 py-1.5 text-xs bg-secondary-light/60 dark:bg-secondary-dark/30 hover:bg-secondary-light dark:hover:bg-secondary-dark/50 text-secondary-dark dark:text-secondary-light rounded-xl shadow-xs transition-all flex items-center gap-1 font-bold border border-secondary-dark/20"
+                  title="從獨立未歸屬物品中挑選並併入本訂單"
+                >
+                  <Package size={14} />
+                  <span>從待歸屬併入 ({unassignedCount})</span>
+                </button>
+              )}
+            </div>
           </div>
           
           {!items || items.length === 0 ? (
@@ -835,6 +855,14 @@ export default function OrderDetail({ orderId, onBack }) {
       {/* 新增子物品表單 Modal */}
       {isAddItemOpen && (
         <AddItem orderId={orderId} onClose={handleCloseAddItem} />
+      )}
+
+      {/* 併入獨立待歸屬物品 Modal */}
+      {isImportUnassignedOpen && (
+        <ImportUnassignedModal 
+          orderId={orderId} 
+          onClose={() => setIsImportUnassignedOpen(false)} 
+        />
       )}
 
       {/* 售出物品表單 Modal */}

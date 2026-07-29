@@ -9,6 +9,10 @@ import { compressImage, calculateOrderTotalTWD } from '../utils';
 export default function AddItem({ orderId, existingItem, onClose }) {
   const cameraInputRef = useRef(null);
   const albumInputRef = useRef(null);
+  const [assignedOrderId, setAssignedOrderId] = useState(
+    existingItem?.order_id ?? (orderId || null)
+  );
+  const availableOrders = useLiveQuery(() => db.orders.orderBy('created_at').reverse().toArray(), []) || [];
   const [name, setName] = useState(existingItem?.name || '');
   
   // 角色改為多選標籤模式，向下相容舊資料欄位 character 與 role
@@ -283,8 +287,11 @@ export default function AddItem({ orderId, existingItem, onClose }) {
 
     setIsSaving(true);
     try {
+      const targetOrderId = assignedOrderId ? Number(assignedOrderId) : null;
+      const oldOrderId = existingItem?.order_id ? Number(existingItem.order_id) : null;
+
       const itemData = {
-        order_id: orderId,
+        order_id: targetOrderId,
         name,
         ip, // 新增 IP 欄位
         roles: roles,
@@ -316,21 +323,33 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         });
       }
 
-      // 重新撈取該訂單所有的物品並計算總金額，連動更新父訂單
-      const allItems = await db.items.where({ order_id: orderId }).toArray();
-      const newTotal = allItems.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0);
-      
-      const parentOrder = await db.orders.get(orderId);
-      if (parentOrder) {
+      // 輔助函數：連動更新指定訂單金額
+      const updateOrderTotal = async (targetId) => {
+        if (!targetId) return;
+        const parentOrder = await db.orders.get(targetId);
+        if (!parentOrder) return;
+        
+        const allItems = await db.items.where({ order_id: targetId }).toArray();
+        const newTotal = allItems.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
         const updatedOrder = {
           ...parentOrder,
           total_amount: newTotal
         };
         const newTotalTWD = calculateOrderTotalTWD(updatedOrder, allItems);
-        await db.orders.update(orderId, { 
+        await db.orders.update(targetId, { 
           total_amount: newTotal,
           total_amount_twd: newTotalTWD
         });
+      };
+
+      // 若舊訂單存在且與新訂單不同，重新計算舊訂單
+      if (oldOrderId && oldOrderId !== targetOrderId) {
+        await updateOrderTotal(oldOrderId);
+      }
+
+      // 重新計算新訂單
+      if (targetOrderId) {
+        await updateOrderTotal(targetOrderId);
       }
 
       onClose(); // 儲存後關閉
@@ -371,6 +390,26 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               placeholder="例如：壓克力立牌、特典小卡..."
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
+          </div>
+
+          {/* 訂單歸屬 */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">🛒 訂單歸屬 (選填)</label>
+              <span className="text-[11px] text-gray-400 font-normal">可先單獨登記，之後再併入訂單</span>
+            </div>
+            <select
+              value={assignedOrderId || ''}
+              onChange={(e) => setAssignedOrderId(e.target.value ? Number(e.target.value) : null)}
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
+            >
+              <option value="">📦 暫不歸屬 (單獨登記物品)</option>
+              {availableOrders.map(ord => (
+                <option key={ord.id} value={ord.id}>
+                  🛒 {ord.title || ord.source || '未命名訂單'} ({ord.created_at ? ord.created_at.split('T')[0] : ''})
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* 週邊屬性卡片 */}

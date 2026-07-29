@@ -5,7 +5,7 @@ import { db } from '../db';
 import { CURRENCIES, STATUS_COLORS, DEFAULT_TAGS, ORDER_STATUSES, PAYMENT_METHODS } from '../constants';
 import { calculateOrderTotalTWD, compressImage } from '../utils';
 
-export default function AddOrder({ existingOrder, onClose }) {
+export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
   const [title, setTitle] = useState(existingOrder?.title || existingOrder?.source || '');
   const [source, setSource] = useState(existingOrder?.source || '');
   const [amount, setAmount] = useState(existingOrder?.total_amount || '');
@@ -163,15 +163,21 @@ export default function AddOrder({ existingOrder, onClose }) {
       // 計算最終台幣總計
       orderData.total_amount_twd = calculateOrderTotalTWD(orderData, dbItems);
 
+      let savedId = existingOrder?.id;
       if (existingOrder) {
         await db.orders.update(existingOrder.id, orderData);
       } else {
-        await db.orders.add({
+        savedId = await db.orders.add({
           ...orderData,
           created_at: new Date().toISOString(),
         });
       }
-      onClose();
+
+      if (onSuccessCreated && savedId) {
+        onSuccessCreated(savedId);
+      } else {
+        onClose();
+      }
     } catch (error) {
       console.error('寫入失敗:', error);
       alert('寫入資料失敗，請重試');

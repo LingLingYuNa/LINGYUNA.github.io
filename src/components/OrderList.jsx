@@ -8,6 +8,8 @@ import AddOrder from './AddOrder';
 import CalendarView from './CalendarView';
 import SellItem from './SellItem';
 import ReconciliationModal from './ReconciliationModal';
+import AddItem from './AddItem';
+import AssignOrderModal from './AssignOrderModal';
 
 // 輔助函數：解析角色陣列，相容舊字串格式
 const getItemRoles = (item) => {
@@ -46,6 +48,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
   const [selectedBuyer, setSelectedBuyer] = useState('');
   const [zoomImage, setZoomImage] = useState(null);
   const [dateSort, setDateSort] = useState('desc'); // 'desc' | 'asc'
+  const [mainTab, setMainTab] = useState('orders'); // 'orders' | 'unassigned'
+  const [assigningItem, setAssigningItem] = useState(null);
+  const [isAddStandaloneOpen, setIsAddStandaloneOpen] = useState(false);
+  const [editingStandaloneItem, setEditingStandaloneItem] = useState(null);
 
   const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
 
@@ -383,8 +389,8 @@ export default function OrderList({ onOrderClick, currentTab }) {
       {viewMode === 'list' ? (
         // --- 列表模式 ---
         <div className="space-y-4">
-          {/* 支出 / 收入 雙分頁 Tab */}
-          <div className="flex bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-2xl transition-colors">
+          {/* 支出 / 收入 / 待歸屬 三分頁 Tab */}
+          <div className="flex bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-2xl transition-colors gap-1">
             <button
               onClick={() => setListType('expenses')}
               className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
@@ -404,6 +410,23 @@ export default function OrderList({ onOrderClick, currentTab }) {
               }`}
             >
               收入 (Incomes)
+            </button>
+            <button
+              onClick={() => setListType('unassigned')}
+              className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 ${
+                listType === 'unassigned' 
+                  ? 'bg-secondary-dark text-white shadow-sm shadow-secondary-dark/20' 
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}
+            >
+              <span>📦 待歸屬</span>
+              {items && items.filter(i => !i.order_id).length > 0 && (
+                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                  listType === 'unassigned' ? 'bg-white/30 text-white' : 'bg-secondary-dark/20 text-secondary-dark dark:text-secondary-light'
+                }`}>
+                  {items.filter(i => !i.order_id).length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -742,6 +765,132 @@ export default function OrderList({ onOrderClick, currentTab }) {
                     </div>
                   );
                 })}
+              </div>
+            )
+          ) : listType === 'unassigned' ? (
+            // 待歸屬物品分頁 (Unassigned Items)
+            items.filter(i => !i.order_id).length === 0 ? (
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-full flex items-center justify-center mb-4">
+                  <PackageOpen size={32} />
+                </div>
+                <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無獨立待歸屬物品</h3>
+                <p className="text-sm text-gray-400 dark:text-gray-400 mb-4">先單獨登記的戰利品或週邊會顯示於此<br/>方便隨時一鍵併入指定訂單</p>
+                <button
+                  onClick={() => setIsAddStandaloneOpen(true)}
+                  className="px-4 py-2 bg-secondary-dark text-white text-xs font-bold rounded-xl shadow-md hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1.5"
+                >
+                  <Plus size={16} />
+                  <span>單獨新增第一筆物品</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4 pb-32">
+                <div className="flex items-center justify-between p-3.5 bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 rounded-2xl">
+                  <div>
+                    <h4 className="font-bold text-gray-800 dark:text-gray-100 text-xs flex items-center gap-1">
+                      <span>📦 獨立待歸屬物品清單 ({items.filter(i => !i.order_id).length})</span>
+                    </h4>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      點擊「併入/歸屬至訂單」可隨時連結至指定訂單
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddStandaloneOpen(true)}
+                    className="px-3 py-1.5 bg-secondary-dark text-white rounded-xl text-xs font-bold shadow-sm hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1 shrink-0"
+                  >
+                    <Plus size={14} />
+                    <span>新增獨立物品</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {items.filter(i => !i.order_id).map(item => {
+                    const coverImg = item.images?.[0] || item.image;
+                    const itemTotalPrice = Number(item.price || 0) * Number(item.quantity || 1);
+                    return (
+                      <div 
+                        key={item.id}
+                        className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-150 dark:border-gray-750 shadow-sm space-y-3 hover:border-secondary/50 transition-all flex flex-col justify-between"
+                      >
+                        <div className="flex gap-3 items-start">
+                          {coverImg ? (
+                            <img 
+                              src={coverImg} 
+                              alt={item.name}
+                              className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
+                              <PackageOpen size={24} />
+                            </div>
+                          )}
+
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
+                                {item.name}
+                              </h4>
+                              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 shrink-0">
+                                待歸屬
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+                              {item.ip && <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">IP: {item.ip}</span>}
+                              {getItemRoles(item).map(r => (
+                                <span key={r} className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
+                                  {r}
+                                </span>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center justify-between text-xs pt-1">
+                              <span className="text-gray-400">數量: x{item.quantity}</span>
+                              <span className="font-bold text-primary-dark dark:text-primary text-sm">
+                                ${itemTotalPrice}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 動作按鈕 */}
+                        <div className="pt-2 border-t border-gray-100 dark:border-gray-750 flex items-center justify-between gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setAssigningItem(item)}
+                            className="flex-1 py-2 px-3 bg-primary text-white rounded-xl text-xs font-bold shadow-xs hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                          >
+                            <PackageOpen size={14} />
+                            <span>併入/歸屬至訂單</span>
+                          </button>
+                          
+                          <button
+                            type="button"
+                            onClick={() => setEditingStandaloneItem(item)}
+                            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                            title="編輯物品"
+                          >
+                            <Pencil size={15} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              if (window.confirm(`確定要刪除「${item.name}」嗎？`)) {
+                                await db.items.delete(item.id);
+                              }
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                            title="刪除物品"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )
           ) : (
@@ -1491,6 +1640,25 @@ export default function OrderList({ onOrderClick, currentTab }) {
           remainingQty={selectedSaleToEdit.remainingQty}
           existingSale={selectedSaleToEdit.sale}
           onClose={() => setSelectedSaleToEdit(null)}
+        />
+      )}
+
+      {/* 歸屬至訂單 Modal */}
+      {assigningItem && (
+        <AssignOrderModal 
+          item={assigningItem} 
+          onClose={() => setAssigningItem(null)} 
+        />
+      )}
+
+      {/* 單獨新增/編輯物品 Modal */}
+      {(isAddStandaloneOpen || editingStandaloneItem) && (
+        <AddItem 
+          existingItem={editingStandaloneItem} 
+          onClose={() => {
+            setIsAddStandaloneOpen(false);
+            setEditingStandaloneItem(null);
+          }} 
         />
       )}
 

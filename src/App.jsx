@@ -8,6 +8,8 @@ import Tools from './components/Tools';
 import AddOrder from './components/AddOrder';
 import OrderDetail from './components/OrderDetail';
 import QuickAddModal from './components/QuickAddModal';
+import AddChoiceModal from './components/AddChoiceModal';
+import AddItem from './components/AddItem';
 import { Plus } from 'lucide-react';
 import { db } from './db';
 import { useHardwareBack } from './hooks/useHardwareBack';
@@ -17,6 +19,8 @@ import { uploadBackup, downloadBackup, requestAuth } from './utils/googleDriveSy
 function App() {
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isAddChoiceOpen, setIsAddChoiceOpen] = useState(false);
+  const [isAddStandaloneItemOpen, setIsAddStandaloneItemOpen] = useState(false);
   const [quickAddOrderId, setQuickAddOrderId] = useState(null);
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
@@ -296,18 +300,41 @@ function App() {
 
       {/* 電腦版懸浮新增按鈕 (FAB) - 在手機版隱藏，在電腦版固定右下角 */}
       <button 
-        onClick={() => setIsAddOrderOpen(true)}
+        onClick={() => setIsAddChoiceOpen(true)}
         className="hidden md:flex md:fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 hover:-translate-y-1 transition-all duration-300 transform z-40"
       >
         <Plus size={28} strokeWidth={2.5} />
       </button>
 
       {/* 底部導覽列 */}
-      <BottomNav currentTab={currentTab} onTabChange={handleTabChange} onAddClick={() => setIsAddOrderOpen(true)} />
+      <BottomNav currentTab={currentTab} onTabChange={handleTabChange} onAddClick={() => setIsAddChoiceOpen(true)} />
+
+      {/* 新增類型選擇彈窗 */}
+      {isAddChoiceOpen && (
+        <AddChoiceModal 
+          onClose={() => setIsAddChoiceOpen(false)}
+          onSelectChoice={(type) => {
+            setIsAddChoiceOpen(false);
+            if (type === 'order') {
+              setIsAddOrderOpen(true);
+            } else if (type === 'item') {
+              setIsAddStandaloneItemOpen(true);
+            } else if (type === 'quick') {
+              setQuickAddOrderId(null);
+              setIsQuickAddOpen(true);
+            }
+          }}
+        />
+      )}
 
       {/* 新增訂單彈窗 */}
       {isAddOrderOpen && (
         <AddOrder onClose={handleCloseAddOrder} />
+      )}
+
+      {/* 單獨新增物品彈窗 */}
+      {isAddStandaloneItemOpen && (
+        <AddItem onClose={() => setIsAddStandaloneItemOpen(false)} />
       )}
 
       {/* 快速記帳彈窗 */}
