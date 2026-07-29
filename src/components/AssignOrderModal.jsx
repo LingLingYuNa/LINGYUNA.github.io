@@ -5,10 +5,18 @@ import { db } from '../db';
 import { calculateOrderTotalTWD } from '../utils';
 import AddOrder from './AddOrder';
 
-export default function AssignOrderModal({ item, onClose, onSuccess }) {
+export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const [isAssigning, setIsAssigning] = useState(false);
+
+  const itemsToAssign = React.useMemo(() => {
+    if (items && Array.isArray(items) && items.length > 0) return items;
+    if (item) return [item];
+    return [];
+  }, [item, items]);
+
+  const totalSum = itemsToAssign.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.quantity || 1)), 0);
 
   // 撈取現有所有訂單
   const orders = useLiveQuery(() => db.orders.orderBy('created_at').reverse().toArray()) || [];
@@ -26,31 +34,35 @@ export default function AssignOrderModal({ item, onClose, onSuccess }) {
 
   // 執行歸屬動作
   const handleAssignToOrder = async (targetOrder) => {
-    if (!item || !targetOrder) return;
+    if (itemsToAssign.length === 0 || !targetOrder) return;
     setIsAssigning(true);
 
     try {
-      // 1. 更新物品的 order_id
-      await db.items.update(item.id, {
-        order_id: targetOrder.id
+      await db.transaction('rw', db.items, db.orders, async () => {
+        // 1. 批量更新物品的 order_id
+        for (const targetItem of itemsToAssign) {
+          await db.items.update(targetItem.id, {
+            order_id: targetOrder.id
+          });
+        }
+
+        // 2. 重新撈取目標訂單下的所有物品並計算新總金額
+        const allItems = await db.items.where({ order_id: targetOrder.id }).toArray();
+        const newTotal = allItems.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
+
+        const updatedOrder = {
+          ...targetOrder,
+          total_amount: newTotal
+        };
+        const newTotalTWD = calculateOrderTotalTWD(updatedOrder, allItems);
+
+        await db.orders.update(targetOrder.id, {
+          total_amount: newTotal,
+          total_amount_twd: newTotalTWD
+        });
       });
 
-      // 2. 重新撈取目標訂單下的所有物品並計算新總金額
-      const allItems = await db.items.where({ order_id: targetOrder.id }).toArray();
-      const newTotal = allItems.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity)), 0);
-
-      const updatedOrder = {
-        ...targetOrder,
-        total_amount: newTotal
-      };
-      const newTotalTWD = calculateOrderTotalTWD(updatedOrder, allItems);
-
-      await db.orders.update(targetOrder.id, {
-        total_amount: newTotal,
-        total_amount_twd: newTotalTWD
-      });
-
-      alert(`✅ 已成功將「${item.name}」併入訂單「${targetOrder.title || targetOrder.source || '未命名訂單'}」！`);
+      alert(`✅ 已成功將 ${itemsToAssign.length} 筆物品併入訂單「${targetOrder.title || targetOrder.source || '未命名訂單'}」！`);
       if (onSuccess) onSuccess(targetOrder.id);
       onClose();
     } catch (error) {
@@ -75,9 +87,14 @@ export default function AssignOrderModal({ item, onClose, onSuccess }) {
               <Package size={18} />
             </div>
             <div>
-              <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">將物品併入訂單</h3>
+              <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">
+                {itemsToAssign.length > 1 ? `將 ${itemsToAssign.length} 筆物品併入訂單` : '將物品併入訂單'}
+              </h3>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[220px] sm:max-w-xs">
-                名稱：{item?.name} (NT${Number(item?.price || 0) * Number(item?.quantity || 1)})
+                {itemsToAssign.length > 1 
+                  ? `已選取：${itemsToAssign[0]?.name} 等 ${itemsToAssign.length} 項 (合計 $${totalSum})`
+                  : `名稱：${itemsToAssign[0]?.name} ($${totalSum})`
+                }
               </p>
             </div>
           </div>

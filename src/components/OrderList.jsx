@@ -50,6 +50,8 @@ export default function OrderList({ onOrderClick, currentTab }) {
   const [dateSort, setDateSort] = useState('desc'); // 'desc' | 'asc'
   const [mainTab, setMainTab] = useState('orders'); // 'orders' | 'unassigned'
   const [assigningItem, setAssigningItem] = useState(null);
+  const [assigningItems, setAssigningItems] = useState([]);
+  const [selectedUnassignedIds, setSelectedUnassignedIds] = useState([]);
   const [isAddStandaloneOpen, setIsAddStandaloneOpen] = useState(false);
   const [editingStandaloneItem, setEditingStandaloneItem] = useState(null);
 
@@ -769,130 +771,224 @@ export default function OrderList({ onOrderClick, currentTab }) {
             )
           ) : listType === 'unassigned' ? (
             // 待歸屬物品分頁 (Unassigned Items)
-            items.filter(i => !i.order_id).length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
-                <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-full flex items-center justify-center mb-4">
-                  <PackageOpen size={32} />
-                </div>
-                <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無獨立待歸屬物品</h3>
-                <p className="text-sm text-gray-400 dark:text-gray-400 mb-4">先單獨登記的戰利品或週邊會顯示於此<br/>方便隨時一鍵併入指定訂單</p>
-                <button
-                  onClick={() => setIsAddStandaloneOpen(true)}
-                  className="px-4 py-2 bg-secondary-dark text-white text-xs font-bold rounded-xl shadow-md hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1.5"
-                >
-                  <Plus size={16} />
-                  <span>單獨新增第一筆物品</span>
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-4 pb-32">
-                <div className="flex items-center justify-between p-3.5 bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 rounded-2xl">
-                  <div>
-                    <h4 className="font-bold text-gray-800 dark:text-gray-100 text-xs flex items-center gap-1">
-                      <span>📦 獨立待歸屬物品清單 ({items.filter(i => !i.order_id).length})</span>
-                    </h4>
-                    <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                      點擊「併入/歸屬至訂單」可隨時連結至指定訂單
-                    </p>
+            (() => {
+              const unassignedList = items.filter(i => !i.order_id);
+              const isAllSelected = unassignedList.length > 0 && selectedUnassignedIds.length === unassignedList.length;
+
+              const toggleSelectAll = () => {
+                if (isAllSelected) {
+                  setSelectedUnassignedIds([]);
+                } else {
+                  setSelectedUnassignedIds(unassignedList.map(i => i.id));
+                }
+              };
+
+              const toggleItemSelect = (id) => {
+                setSelectedUnassignedIds(prev => 
+                  prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+                );
+              };
+
+              const selectedItemsList = unassignedList.filter(i => selectedUnassignedIds.includes(i.id));
+              const selectedTotalSum = selectedItemsList.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.quantity || 1)), 0);
+
+              return unassignedList.length === 0 ? (
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-full flex items-center justify-center mb-4">
+                    <PackageOpen size={32} />
                   </div>
+                  <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無獨立待歸屬物品</h3>
+                  <p className="text-sm text-gray-400 dark:text-gray-400 mb-4">先單獨登記的戰利品或週邊會顯示於此<br/>方便隨時一鍵併入指定訂單</p>
                   <button
-                    type="button"
                     onClick={() => setIsAddStandaloneOpen(true)}
-                    className="px-3 py-1.5 bg-secondary-dark text-white rounded-xl text-xs font-bold shadow-sm hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1 shrink-0"
+                    className="px-4 py-2 bg-secondary-dark text-white text-xs font-bold rounded-xl shadow-md hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1.5"
                   >
-                    <Plus size={14} />
-                    <span>新增獨立物品</span>
+                    <Plus size={16} />
+                    <span>單獨新增第一筆物品</span>
                   </button>
                 </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {items.filter(i => !i.order_id).map(item => {
-                    const coverImg = item.images?.[0] || item.image;
-                    const itemTotalPrice = Number(item.price || 0) * Number(item.quantity || 1);
-                    return (
-                      <div 
-                        key={item.id}
-                        className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-150 dark:border-gray-750 shadow-sm space-y-3 hover:border-secondary/50 transition-all flex flex-col justify-between"
+              ) : (
+                <div className="space-y-4 pb-32 relative">
+                  {/* 控制列 */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 rounded-2xl">
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={toggleSelectAll}
+                        className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                       >
-                        <div className="flex gap-3 items-start">
-                          {coverImg ? (
-                            <img 
-                              src={coverImg} 
-                              alt={item.name}
-                              className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
-                            />
-                          ) : (
-                            <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
-                              <PackageOpen size={24} />
-                            </div>
-                          )}
+                        {isAllSelected ? <CheckSquare size={16} className="text-primary" /> : <Square size={16} className="text-gray-400" />}
+                        <span>全選 ({selectedUnassignedIds.length}/{unassignedList.length})</span>
+                      </button>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 font-medium hidden sm:inline">
+                        勾選下方物品可批次併入訂單
+                      </span>
+                    </div>
 
-                          <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex items-center justify-between gap-2">
-                              <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
-                                {item.name}
-                              </h4>
-                              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 shrink-0">
-                                待歸屬
-                              </span>
+                    <button
+                      type="button"
+                      onClick={() => setIsAddStandaloneOpen(true)}
+                      className="px-3 py-1.5 bg-secondary-dark text-white rounded-xl text-xs font-bold shadow-sm hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1 shrink-0"
+                    >
+                      <Plus size={14} />
+                      <span>新增獨立物品</span>
+                    </button>
+                  </div>
+
+                  {/* 待歸屬物品卡片牆 */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {unassignedList.map(item => {
+                      const isSelected = selectedUnassignedIds.includes(item.id);
+                      const coverImg = item.images?.[0] || item.image;
+                      const itemTotalPrice = Number(item.price || 0) * Number(item.quantity || 1);
+                      return (
+                        <div 
+                          key={item.id}
+                          onClick={() => toggleItemSelect(item.id)}
+                          className={`bg-white dark:bg-gray-800 rounded-2xl p-4 border shadow-sm space-y-3 transition-all flex flex-col justify-between cursor-pointer select-none ${
+                            isSelected 
+                              ? 'border-primary ring-2 ring-primary/20 bg-primary-light/10 dark:bg-primary-dark/10' 
+                              : 'border-gray-150 dark:border-gray-750 hover:border-secondary/50'
+                          }`}
+                        >
+                          <div className="flex gap-3 items-start">
+                            {/* Checkbox Icon */}
+                            <div className="pt-0.5 shrink-0 text-primary">
+                              {isSelected ? <CheckSquare size={18} /> : <Square size={18} className="text-gray-400" />}
                             </div>
 
-                            <div className="flex flex-wrap gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                              {item.ip && <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">IP: {item.ip}</span>}
-                              {getItemRoles(item).map(r => (
-                                <span key={r} className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
-                                  {r}
+                            {coverImg ? (
+                              <img 
+                                src={coverImg} 
+                                alt={item.name}
+                                className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
+                              />
+                            ) : (
+                              <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
+                                <PackageOpen size={24} />
+                              </div>
+                            )}
+
+                            <div className="flex-1 min-w-0 space-y-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
+                                  {item.name}
+                                </h4>
+                                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 shrink-0">
+                                  待歸屬
                                 </span>
-                              ))}
-                            </div>
+                              </div>
 
-                            <div className="flex items-center justify-between text-xs pt-1">
-                              <span className="text-gray-400">數量: x{item.quantity}</span>
-                              <span className="font-bold text-primary-dark dark:text-primary text-sm">
-                                ${itemTotalPrice}
-                              </span>
+                              <div className="flex flex-wrap gap-1 text-[11px] text-gray-500 dark:text-gray-400">
+                                {item.ip && <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">IP: {item.ip}</span>}
+                                {getItemRoles(item).map(r => (
+                                  <span key={r} className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
+                                    {r}
+                                  </span>
+                                ))}
+                              </div>
+
+                              <div className="flex items-center justify-between text-xs pt-1">
+                                <span className="text-gray-400">數量: x{item.quantity}</span>
+                                <span className="font-bold text-primary-dark dark:text-primary text-sm">
+                                  ${itemTotalPrice}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* 動作按鈕 */}
-                        <div className="pt-2 border-t border-gray-100 dark:border-gray-750 flex items-center justify-between gap-2">
-                          <button
-                            type="button"
-                            onClick={() => setAssigningItem(item)}
-                            className="flex-1 py-2 px-3 bg-primary text-white rounded-xl text-xs font-bold shadow-xs hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-1.5"
-                          >
-                            <PackageOpen size={14} />
-                            <span>併入/歸屬至訂單</span>
-                          </button>
-                          
-                          <button
-                            type="button"
-                            onClick={() => setEditingStandaloneItem(item)}
-                            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
-                            title="編輯物品"
-                          >
-                            <Pencil size={15} />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              if (window.confirm(`確定要刪除「${item.name}」嗎？`)) {
-                                await db.items.delete(item.id);
-                              }
-                            }}
-                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
-                            title="刪除物品"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          {/* 動作按鈕 */}
+                          <div className="pt-2 border-t border-gray-100 dark:border-gray-750 flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAssigningItem(item);
+                              }}
+                              className="flex-1 py-2 px-3 bg-primary text-white rounded-xl text-xs font-bold shadow-xs hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <PackageOpen size={14} />
+                              <span>單獨歸屬</span>
+                            </button>
+                            
+                            <button
+                              type="button"
+                              onClick={() => setEditingStandaloneItem(item)}
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                              title="編輯物品"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (window.confirm(`確定要刪除「${item.name}」嗎？`)) {
+                                  await db.items.delete(item.id);
+                                  setSelectedUnassignedIds(prev => prev.filter(id => id !== item.id));
+                                }
+                              }}
+                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                              title="刪除物品"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* 多選勾選懸浮操作列 */}
+                  {selectedUnassignedIds.length > 0 && (
+                    <div className="fixed bottom-20 left-4 right-4 max-w-lg mx-auto bg-gray-900/95 dark:bg-gray-800/95 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 border border-gray-700/60 z-50 animate-in slide-in-from-bottom-5">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-sm flex items-center gap-1.5">
+                          <CheckSquare size={16} className="text-primary" />
+                          <span>已選擇 {selectedUnassignedIds.length} 筆物品</span>
+                        </div>
+                        <div className="text-xs text-gray-300 truncate">
+                          合計：NT${selectedTotalSum}
                         </div>
                       </div>
-                    );
-                  })}
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAssigningItem(null);
+                            setAssigningItems(selectedItemsList);
+                          }}
+                          className="px-3.5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+                        >
+                          <PackageOpen size={14} />
+                          <span>歸屬至訂單</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (window.confirm(`確定要刪除已選取的 ${selectedUnassignedIds.length} 筆物品嗎？`)) {
+                              await db.items.where('id').anyOf(selectedUnassignedIds).delete();
+                              setSelectedUnassignedIds([]);
+                            }
+                          }}
+                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-xl transition-colors"
+                          title="批量刪除"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedUnassignedIds([])}
+                          className="p-2 text-gray-400 hover:text-white rounded-xl transition-colors text-xs font-bold"
+                          title="取消選擇"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            )
+              );
+            })()
           ) : (
             // 收入分頁 (Sales)
             (() => {
@@ -1643,11 +1739,18 @@ export default function OrderList({ onOrderClick, currentTab }) {
         />
       )}
 
-      {/* 歸屬至訂單 Modal */}
-      {assigningItem && (
+      {/* 歸屬至訂單 Modal (支援單筆與多筆) */}
+      {(assigningItem || assigningItems.length > 0) && (
         <AssignOrderModal 
-          item={assigningItem} 
-          onClose={() => setAssigningItem(null)} 
+          item={assigningItem}
+          items={assigningItems} 
+          onClose={() => {
+            setAssigningItem(null);
+            setAssigningItems([]);
+          }}
+          onSuccess={() => {
+            setSelectedUnassignedIds([]);
+          }} 
         />
       )}
 
