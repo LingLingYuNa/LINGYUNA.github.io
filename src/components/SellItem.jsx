@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
-import { X, DollarSign } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, DollarSign, Camera, Image as ImageIcon } from 'lucide-react';
 import { db } from '../db';
 import { compressImage } from '../utils';
 
 export default function SellItem({ item, remainingQty, existingSale, onClose }) {
+  const cameraInputRef = useRef(null);
+  const albumInputRef = useRef(null);
   const [quantity, setQuantity] = useState(existingSale?.quantity || 1);
   const [price, setPrice] = useState(existingSale?.price || '');
   const [buyerId, setBuyerId] = useState(existingSale?.buyer_id || '');
@@ -147,15 +149,53 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
           {/* 包裝/證明照片上傳 (選填) */}
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">包裝/證明照片 (選填)</label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               {image && (
-                <img src={image} alt="預覽" className="w-12 h-12 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm shrink-0" />
+                <div className="relative group shrink-0">
+                  <img src={image} alt="預覽" className="w-12 h-12 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm" />
+                  <button
+                    type="button"
+                    onClick={() => setImage('')}
+                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors shadow-sm"
+                    title="移除照片"
+                  >
+                    <X size={10} />
+                  </button>
+                </div>
               )}
+              <div className="flex-1 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                >
+                  <Camera size={14} className="text-secondary-dark dark:text-secondary-light" />
+                  <span>📷 拍照</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => albumInputRef.current?.click()}
+                  className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                >
+                  <ImageIcon size={14} className="text-secondary-dark dark:text-secondary-light" />
+                  <span>🖼️ 相簿</span>
+                </button>
+              </div>
+              
               <input
                 type="file"
                 accept="image/*"
+                capture="environment"
+                ref={cameraInputRef}
                 onChange={handleImageChange}
-                className="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-secondary-light/80 dark:file:bg-gray-700 file:text-secondary-dark dark:file:text-secondary-light hover:file:bg-secondary-light dark:hover:file:bg-gray-600 transition-colors w-full"
+                className="hidden"
+              />
+              <input
+                type="file"
+                accept="image/*"
+                ref={albumInputRef}
+                onChange={handleImageChange}
+                className="hidden"
               />
             </div>
           </div>

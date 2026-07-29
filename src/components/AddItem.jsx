@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { X, Image as ImageIcon } from 'lucide-react';
+import { X, Image as ImageIcon, Camera } from 'lucide-react';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 import { db } from '../db';
 import { DEFAULT_TAGS } from '../constants';
 import { compressImage, calculateOrderTotalTWD } from '../utils';
 
 export default function AddItem({ orderId, existingItem, onClose }) {
+  const cameraInputRef = useRef(null);
+  const albumInputRef = useRef(null);
   const [name, setName] = useState(existingItem?.name || '');
   
   // 角色改為多選標籤模式，向下相容舊資料欄位 character 與 role
@@ -552,13 +554,44 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             <div className="space-y-3">
               {/* 檔案上傳按鈕 */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">上傳本地圖片：</span>
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">新增圖片方式：</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                  >
+                    <Camera size={14} className="text-primary-dark dark:text-primary" />
+                    <span>📷 拍攝照片</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => albumInputRef.current?.click()}
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                  >
+                    <ImageIcon size={14} className="text-primary-dark dark:text-primary" />
+                    <span>🖼️ 選擇相簿</span>
+                  </button>
+                </div>
+                
+                {/* 隱藏的相機拍照 input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  ref={cameraInputRef}
+                  onChange={handleImageChange}
+                  className="hidden"
+                />
+                
+                {/* 隱藏的相簿多選 input */}
                 <input
                   type="file"
                   accept="image/*"
                   multiple
+                  ref={albumInputRef}
                   onChange={handleImageChange}
-                  className="text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border file:border-gray-250 dark:file:border-gray-650 file:text-xs file:font-semibold file:bg-gray-50 dark:file:bg-gray-800 file:text-gray-700 dark:text-gray-300 hover:file:bg-gray-100 dark:hover:file:bg-gray-750 transition-colors w-full cursor-pointer"
+                  className="hidden"
                 />
               </div>
               

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical, Copy, ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, Package, DollarSign, Truck, Percent, Trash2, Pencil, Image as ImageIcon, X, Upload, GripVertical, Copy, ChevronUp, ChevronDown, Camera } from 'lucide-react';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, getStatusStyle, PAYMENT_METHODS } from '../constants';
 import AddItem from './AddItem';
@@ -26,6 +26,8 @@ export default function OrderDetail({ orderId, onBack }) {
   const [editingItem, setEditingItem] = useState(null);
   const [viewMode, setViewMode] = useState('edit'); // 'edit' | 'receipt'
   const [zoomImage, setZoomImage] = useState(null);
+  const cameraInputRef = useRef(null);
+  const albumInputRef = useRef(null);
 
   // 硬體返回鍵綁定
   const handleCloseAddItem = useHardwareBack(isAddItemOpen, () => setIsAddItemOpen(false), `add-item`);
@@ -486,16 +488,37 @@ export default function OrderDetail({ orderId, onBack }) {
                   </button>
                 </div>
               ) : (
-                <label className="px-3 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95">
-                  <Upload size={13} />
-                  <span>上傳憑證</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  >
+                    <Camera size={13} className="text-primary-dark dark:text-primary" />
+                    <span>拍照</span>
+                  </button>
+                  <button
+                    onClick={() => albumInputRef.current?.click()}
+                    className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                  >
+                    <Upload size={13} className="text-primary-dark dark:text-primary" />
+                    <span>相簿</span>
+                  </button>
                   <input
                     type="file"
                     accept="image/*"
+                    capture="environment"
+                    ref={cameraInputRef}
                     onChange={handleDirectUploadProof}
                     className="hidden"
                   />
-                </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    ref={albumInputRef}
+                    onChange={handleDirectUploadProof}
+                    className="hidden"
+                  />
+                </div>
               )}
             </div>
           </div>
