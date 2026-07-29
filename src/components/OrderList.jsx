@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
 import { getDeadlineInfo } from '../utils';
-import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes } from 'lucide-react';
+import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes, Plus } from 'lucide-react';
 import AddOrder from './AddOrder';
 import CalendarView from './CalendarView';
 import SellItem from './SellItem';
