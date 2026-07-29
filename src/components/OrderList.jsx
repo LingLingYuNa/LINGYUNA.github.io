@@ -13,6 +13,7 @@ import AssignOrderModal from './AssignOrderModal';
 
 // 輔助函數：解析角色陣列，相容舊字串格式
 const getItemRoles = (item) => {
+  if (!item) return [];
   if (item.roles && Array.isArray(item.roles)) {
     return item.roles;
   }
@@ -136,16 +137,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
     }
   };
 
-  // 即時監聽 IndexedDB
+  // 即時監聽 IndexedDB (一律加上 || [] 防呆空值)
   const orders = useLiveQuery(() => {
     let q = db.orders.orderBy('created_at');
     if (dateSort === 'desc') {
       q = q.reverse();
     }
     return q.toArray();
-  }, [dateSort]);
-  const items = useLiveQuery(() => db.items.toArray());
-  const sales = useLiveQuery(() => db.sales.toArray());
+  }, [dateSort]) || [];
+  const items = useLiveQuery(() => db.items.toArray()) || [];
+  const sales = useLiveQuery(() => db.sales.toArray()) || [];
   const customTags = useLiveQuery(() => db.custom_tags.orderBy('sort_order').toArray()) || [];
 
   const tagsToRender = customTags.length > 0 ? Array.from(new Set(customTags.map(t => t.name))) : DEFAULT_TAGS;
