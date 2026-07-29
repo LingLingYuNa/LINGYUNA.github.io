@@ -773,25 +773,48 @@ export default function OrderList({ onOrderClick, currentTab }) {
           ) : listType === 'unassigned' ? (
             // 待歸屬物品分頁 (Unassigned Items)
             (() => {
-              const unassignedList = items.filter(i => !i.order_id);
-              const isAllSelected = unassignedList.length > 0 && selectedUnassignedIds.length === unassignedList.length;
+              const safeItems = items || [];
+              let unassignedList = safeItems.filter(i => i && !i.order_id);
+
+              if (activeTag) {
+                unassignedList = unassignedList.filter(item => {
+                  const itemTags = item && item.tags && Array.isArray(item.tags) ? item.tags : (item && item.tag ? [item.tag] : []);
+                  return itemTags.includes(activeTag);
+                });
+              }
+
+              if (searchQuery && searchQuery.trim()) {
+                const q = searchQuery.trim().toLowerCase();
+                unassignedList = unassignedList.filter(item => {
+                  const nameMatch = item && item.name && item.name.toLowerCase().includes(q);
+                  const ipMatch = item && item.ip && item.ip.toLowerCase().includes(q);
+                  const roles = getItemRoles(item);
+                  const roleMatch = roles.some(r => r && r.toLowerCase().includes(q));
+                  return nameMatch || ipMatch || roleMatch;
+                });
+              }
+
+              const safeSelectedIds = selectedUnassignedIds || [];
+              const isAllSelected = unassignedList.length > 0 && safeSelectedIds.length === unassignedList.length;
 
               const toggleSelectAll = () => {
                 if (isAllSelected) {
                   setSelectedUnassignedIds([]);
                 } else {
-                  setSelectedUnassignedIds(unassignedList.map(i => i.id));
+                  setSelectedUnassignedIds(unassignedList.map(i => i && i.id).filter(Boolean));
                 }
               };
 
               const toggleItemSelect = (id) => {
-                setSelectedUnassignedIds(prev => 
-                  prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-                );
+                if (!id) return;
+                setSelectedUnassignedIds(prev => {
+                  const safePrev = prev || [];
+                  return safePrev.includes(id) ? safePrev.filter(x => x !== id) : [...safePrev, id];
+                });
               };
 
-              const selectedItemsList = unassignedList.filter(i => selectedUnassignedIds.includes(i.id));
-              const selectedTotalSum = selectedItemsList.reduce((sum, i) => sum + (Number(i.price || 0) * Number(i.quantity || 1)), 0);
+              const selectedItemsList = unassignedList.filter(i => i && i.id && safeSelectedIds.includes(i.id));
+              const selectedTotalSum = selectedItemsList.reduce((sum, i) => sum + (Number(i?.price || 0) * Number(i?.quantity || 1)), 0);
 
               return unassignedList.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
@@ -819,7 +842,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
                       >
                         {isAllSelected ? <CheckSquare size={16} className="text-primary" /> : <Square size={16} className="text-gray-400" />}
-                        <span>全選 ({selectedUnassignedIds.length}/{unassignedList.length})</span>
+                        <span>全選 ({safeSelectedIds.length}/{unassignedList.length})</span>
                       </button>
                       <span className="text-xs text-gray-500 dark:text-gray-400 font-medium hidden sm:inline">
                         勾選下方物品可批次併入訂單
@@ -839,8 +862,9 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   {/* 待歸屬物品卡片牆 */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {unassignedList.map(item => {
-                      const isSelected = selectedUnassignedIds.includes(item.id);
-                      const coverImg = item.images?.[0] || item.image;
+                      if (!item) return null;
+                      const isSelected = safeSelectedIds.includes(item.id);
+                      const coverImg = (item.images && Array.isArray(item.images) && item.images[0]) || item.image;
                       const itemTotalPrice = Number(item.price || 0) * Number(item.quantity || 1);
                       return (
                         <div 
@@ -861,7 +885,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             {coverImg ? (
                               <img 
                                 src={coverImg} 
-                                alt={item.name}
+                                alt={item.name || '物品照片'}
                                 className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
                               />
                             ) : (
@@ -873,7 +897,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             <div className="flex-1 min-w-0 space-y-1">
                               <div className="flex items-center justify-between gap-2">
                                 <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
-                                  {item.name}
+                                  {item.name || '未命名物品'}
                                 </h4>
                                 <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 shrink-0">
                                   待歸屬
@@ -890,7 +914,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               </div>
 
                               <div className="flex items-center justify-between text-xs pt-1">
-                                <span className="text-gray-400">數量: x{item.quantity}</span>
+                                <span className="text-gray-400">數量: x{item.quantity || 1}</span>
                                 <span className="font-bold text-primary-dark dark:text-primary text-sm">
                                   ${itemTotalPrice}
                                 </span>
@@ -924,7 +948,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               onClick={async () => {
                                 if (window.confirm(`確定要刪除「${item.name}」嗎？`)) {
                                   await db.items.delete(item.id);
-                                  setSelectedUnassignedIds(prev => prev.filter(id => id !== item.id));
+                                  setSelectedUnassignedIds(prev => (prev || []).filter(id => id !== item.id));
                                 }
                               }}
                               className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
@@ -939,12 +963,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   </div>
 
                   {/* 多選勾選懸浮操作列 */}
-                  {selectedUnassignedIds.length > 0 && (
+                  {safeSelectedIds.length > 0 && (
                     <div className="fixed bottom-20 left-4 right-4 max-w-lg mx-auto bg-gray-900/95 dark:bg-gray-800/95 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 border border-gray-700/60 z-50 animate-in slide-in-from-bottom-5">
                       <div className="min-w-0 flex-1">
                         <div className="font-bold text-sm flex items-center gap-1.5">
                           <CheckSquare size={16} className="text-primary" />
-                          <span>已選擇 {selectedUnassignedIds.length} 筆物品</span>
+                          <span>已選擇 {safeSelectedIds.length} 筆物品</span>
                         </div>
                         <div className="text-xs text-gray-300 truncate">
                           合計：NT${selectedTotalSum}
@@ -966,8 +990,8 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         <button
                           type="button"
                           onClick={async () => {
-                            if (window.confirm(`確定要刪除已選取的 ${selectedUnassignedIds.length} 筆物品嗎？`)) {
-                              await db.items.where('id').anyOf(selectedUnassignedIds).delete();
+                            if (window.confirm(`確定要刪除已選取的 ${safeSelectedIds.length} 筆物品嗎？`)) {
+                              await db.items.where('id').anyOf(safeSelectedIds).delete();
                               setSelectedUnassignedIds([]);
                             }
                           }}

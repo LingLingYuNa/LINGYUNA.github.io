@@ -16,6 +16,42 @@ import { useHardwareBack } from './hooks/useHardwareBack';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { uploadBackup, downloadBackup, requestAuth } from './utils/googleDriveSync';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-3xl border border-red-200 dark:border-red-900 text-center my-8 max-w-lg mx-auto shadow-lg space-y-3">
+          <h3 className="font-bold text-lg">⚠️ 畫面繪製時發生異常</h3>
+          <p className="text-xs opacity-80 break-all font-mono">{this.state.error?.toString()}</p>
+          <button 
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }} 
+            className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95"
+          >
+            重新載入應用程式
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
@@ -287,10 +323,12 @@ function App() {
               />
             )}
             {currentTab === 'list' && (
-              <OrderList 
-                currentTab={currentTab}
-                onOrderClick={handleOrderClick} 
-              />
+              <ErrorBoundary>
+                <OrderList 
+                  currentTab={currentTab}
+                  onOrderClick={handleOrderClick} 
+                />
+              </ErrorBoundary>
             )}
             {currentTab === 'scissors' && <SplitOrder />}
             {currentTab === 'wrench' && <Tools />}
