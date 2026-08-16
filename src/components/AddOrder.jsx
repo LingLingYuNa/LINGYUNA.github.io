@@ -9,12 +9,14 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
   const [title, setTitle] = useState(existingOrder?.title || existingOrder?.source || '');
   const [source, setSource] = useState(existingOrder?.source || '');
   const [amount, setAmount] = useState(existingOrder?.total_amount || '');
-  const [currency, setCurrency] = useState(existingOrder?.currency || CURRENCIES[0].code);
-  const [exchangeRate, setExchangeRate] = useState(existingOrder?.exchange_rate || CURRENCIES[0].defaultRate);
+  const twdCurrency = CURRENCIES.find(c => c.code === 'TWD') || { code: 'TWD', defaultRate: 1 };
+
+  const [currency, setCurrency] = useState(existingOrder?.currency || 'TWD');
+  const [exchangeRate, setExchangeRate] = useState(existingOrder?.exchange_rate || twdCurrency.defaultRate);
   const [status, setStatus] = useState(existingOrder?.status || '已喊單');
   const [trackingNumber, setTrackingNumber] = useState(existingOrder?.tracking_number || '');
   const [paymentDeadline, setPaymentDeadline] = useState(existingOrder?.payment_deadline || '');
-  const [tagCategory, setTagCategory] = useState(existingOrder?.tag_category || 'general');
+  const [tagCategory, setTagCategory] = useState(existingOrder?.tag_category || 'anime');
   const [selectedTags, setSelectedTags] = useState(existingOrder?.tags || []);
   const [focusedField, setFocusedField] = useState(null); // 'title' | 'source' | null
   const blurTimeoutRef = useRef(null);
@@ -30,7 +32,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
   }, []);
 
   const [isSaving, setIsSaving] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState(existingOrder?.payment_method || (existingOrder?.tag_category === 'general' ? '現金' : 'ATM/轉帳'));
+  const [paymentMethod, setPaymentMethod] = useState(existingOrder?.payment_method || '貨到付款');
   
   // 進階費用與折扣狀態
   const [handlingFeePercent, setHandlingFeePercent] = useState(existingOrder?.handling_fee_percent || 0);
@@ -340,7 +342,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                   setTagCategory('anime');
                   setSelectedTags([]);
                   if (!existingOrder) {
-                    setPaymentMethod('ATM/轉帳');
+                    setPaymentMethod('貨到付款');
                   }
                 }}
                 className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
