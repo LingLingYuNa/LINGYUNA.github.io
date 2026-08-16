@@ -8,7 +8,7 @@ import AddItem from './AddItem';
 import SellItem from './SellItem';
 import AddOrder from './AddOrder';
 import ImportUnassignedModal from './ImportUnassignedModal';
-import { getDeadlineInfo, calculateOrderTotalTWD, compressImage } from '../utils';
+import { getDeadlineInfo, calculateOrderTotalTWD, compressImage, getItemIps } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
 // 輔助函數：解析角色陣列，相容舊字串格式
@@ -697,11 +697,11 @@ export default function OrderDetail({ orderId, onBack }) {
                                 {item.source_type === 'official' ? '👑 官方' : `🎨 同人 (${item.fan_source || '未註明'})`}
                               </span>
                             )}
-                            {item.ip && (
-                              <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
-                                🎬 {item.ip}
+                            {getItemIps(item).map((ipName, idx) => (
+                              <span key={idx} className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                                🎬 {ipName}
                               </span>
-                            )}
+                            ))}
                             {(() => {
                               const itemTags = item.tags && Array.isArray(item.tags)
                                 ? item.tags

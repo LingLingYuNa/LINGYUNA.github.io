@@ -100,4 +100,15 @@ export const calculateOrderTotalTWD = (order, items = []) => {
   return Math.round(totalTWD);
 };
 
+export const getItemIps = (item) => {
+  if (!item) return [];
+  if (item.ips && Array.isArray(item.ips) && item.ips.length > 0) {
+    return item.ips.filter(Boolean);
+  }
+  if (item.ip && typeof item.ip === 'string') {
+    return item.ip.split(/[,，]/).map(s => s.trim()).filter(Boolean);
+  }
+  return [];
+};
+
 

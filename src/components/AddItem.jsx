@@ -4,7 +4,7 @@ import { X, Image as ImageIcon, Camera } from 'lucide-react';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 import { db } from '../db';
 import { DEFAULT_TAGS } from '../constants';
-import { compressImage, calculateOrderTotalTWD } from '../utils';
+import { compressImage, calculateOrderTotalTWD, getItemIps } from '../utils';
 
 export default function AddItem({ orderId, existingItem, onClose }) {
   const cameraInputRef = useRef(null);
@@ -34,13 +34,18 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   );
   const [urlInput, setUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
-  const [ip, setIp] = useState(existingItem?.ip || '');
+
+  // IP (作品) 改為多選標籤模式，向下相容舊資料欄位 ip 與 ips
+  const [ips, setIps] = useState(
+    existingItem?.ips || (existingItem?.ip ? existingItem.ip.split(/[,，]/).map(s => s.trim()).filter(Boolean) : [])
+  );
   const [sourceType, setSourceType] = useState(existingItem?.source_type || 'official');
   const [fanSource, setFanSource] = useState(existingItem?.fan_source || '');
 
   // 屬性設定彈跳視窗狀態與臨時狀態
   const [isPropModalOpen, setIsPropModalOpen] = useState(false);
-  const [tempIp, setTempIp] = useState('');
+  const [tempIps, setTempIps] = useState([]);
+  const [tempIpInput, setTempIpInput] = useState('');
   const [tempRoles, setTempRoles] = useState([]);
   const [tempTags, setTempTags] = useState([]);
   const [tempSourceType, setTempSourceType] = useState('official');
@@ -75,7 +80,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   const handleCloseEditIpRoles = useHardwareBack(isEditingIpRoles, () => setIsEditingIpRoles(false), 'edit-ip-roles');
 
   const handleOpenEditIpRoles = () => {
-    const target = tempIp || '原神';
+    const target = tempIps[0] || '原神';
     setEditTargetIp(target);
     setEditRolesInput((ipRolesMap[target] || []).join(', '));
     setIsEditingIpRoles(true);
@@ -155,7 +160,8 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   const availableIPs = React.useMemo(() => {
     const ipsSet = new Set(DEFAULT_IPS);
     dbItems.forEach(item => {
-      if (item.ip) ipsSet.add(item.ip.trim());
+      const itemIps = getItemIps(item);
+      itemIps.forEach(i => i && ipsSet.add(i.trim()));
     });
     return Array.from(ipsSet).filter(Boolean);
   }, [dbItems]);
@@ -187,19 +193,24 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     );
   }, [availableRoles, tempRoles, tempRoleInput]);
 
-  // 基於當前選擇的 tempIp 與對應表，計算特定 IP 的推薦角色
+  // 基於當前選擇的 tempIps 列表與對應表，計算推薦角色
   const ipRecommendedRoles = React.useMemo(() => {
-    if (!tempIp) return [];
-    const list = ipRolesMap[tempIp] || [];
-    return list.filter(role => 
+    if (tempIps.length === 0) return [];
+    const recommendedSet = new Set();
+    tempIps.forEach(ipName => {
+      const list = ipRolesMap[ipName] || [];
+      list.forEach(r => recommendedSet.add(r));
+    });
+    return Array.from(recommendedSet).filter(role => 
       !tempRoles.includes(role) && 
       role.toLowerCase().includes(tempRoleInput.toLowerCase())
     );
-  }, [tempIp, ipRolesMap, tempRoles, tempRoleInput]);
+  }, [tempIps, ipRolesMap, tempRoles, tempRoleInput]);
 
   // 屬性設定彈跳視窗操作方法
   const handleOpenPropModal = () => {
-    setTempIp(ip);
+    setTempIps([...ips]);
+    setTempIpInput('');
     setTempRoles([...roles]);
     setTempTags([...selectedTags]);
     setTempSourceType(sourceType);
@@ -210,7 +221,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   };
 
   const handleConfirmProps = () => {
-    setIp(tempIp);
+    setIps(tempIps);
     setRoles(tempRoles);
     setSelectedTags(tempTags);
     setSourceType(tempSourceType);
@@ -293,7 +304,8 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       const itemData = {
         order_id: targetOrderId,
         name,
-        ip, // 新增 IP 欄位
+        ip: ips.join(', '),
+        ips: ips,
         roles: roles,
         character: roles.join(', '),
         tags: selectedTags,
@@ -423,12 +435,12 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 onClick={handleOpenPropModal}
                 className="text-xs font-bold text-primary hover:text-primary-dark transition-colors px-2.5 py-1.5 bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-sm"
               >
-                {(ip || roles.length > 0 || selectedTags.length > 0) ? '編輯屬性' : '設定屬性'}
+                {(ips.length > 0 || roles.length > 0 || selectedTags.length > 0) ? '編輯屬性' : '設定屬性'}
               </button>
             </div>
             
             {/* 已選屬性展示 */}
-            {(ip || roles.length > 0 || selectedTags.length > 0 || sourceType) ? (
+            {(ips.length > 0 || roles.length > 0 || selectedTags.length > 0 || sourceType) ? (
               <div className="space-y-2.5">
                 {/* 來源屬性 */}
                 <div className="flex items-center gap-2 text-xs">
@@ -443,12 +455,16 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 </div>
 
                 {/* 作品 (IP) */}
-                {ip && (
-                  <div className="flex items-center gap-2 text-xs">
-                    <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0">作品：</span>
-                    <span className="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-lg font-bold border border-purple-100/50 dark:border-purple-900/50">
-                      {ip}
-                    </span>
+                {ips.length > 0 && (
+                  <div className="flex items-start gap-2 text-xs">
+                    <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0 mt-1">作品：</span>
+                    <div className="flex flex-wrap gap-1">
+                      {ips.map((ipName, idx) => (
+                        <span key={idx} className="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-bold border border-purple-100/50 dark:border-purple-900/50">
+                          🎬 {ipName}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 )}
                 
@@ -719,11 +735,11 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             {/* 內容滾動區 */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
               
-              {/* 1. 作品 (IP) 選擇區 */}
+              {/* 1. 作品 (IP) 選擇區 (可多選) */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-gray-450 dark:text-gray-500 uppercase tracking-wider">
-                    1. 作品 (IP)
+                    1. 作品 (IP) (可多選)
                   </h4>
                   <button
                     type="button"
@@ -733,42 +749,99 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     ⚙️ 編輯推薦角色
                   </button>
                 </div>
-                {availableIPs.length > 0 && (
-                  <div className="flex gap-2 flex-wrap pb-1">
-                    {availableIPs.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setTempIp(option)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                          tempIp === option
-                            ? 'bg-purple-100 dark:bg-purple-950/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-900 shadow-sm'
-                            : 'bg-gray-50 dark:bg-gray-800 text-gray-550 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-750'
-                        }`}
+
+                {/* 已選 IP 標籤清單 */}
+                {tempIps.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-purple-50/50 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
+                    {tempIps.map((ipName) => (
+                      <span 
+                        key={ipName} 
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
                       >
-                        {option}
-                      </button>
+                        🎬 {ipName}
+                        <button
+                          type="button"
+                          onClick={() => setTempIps(tempIps.filter(i => i !== ipName))}
+                          className="hover:text-purple-950 dark:hover:text-white rounded-full p-0.5"
+                        >
+                          <X size={12} />
+                        </button>
+                      </span>
                     ))}
                   </div>
                 )}
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={tempIp}
-                    onChange={(e) => setTempIp(e.target.value)}
-                    placeholder="或輸入自訂作品名稱..."
-                    className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
-                  />
-                  {tempIp && (
-                    <button
-                      type="button"
-                      onClick={() => setTempIp('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
-                    >
-                      <X size={12} />
-                    </button>
-                  )}
-                </div>
+
+                {/* 常用 IP 快速勾選按鈕 */}
+                {availableIPs.length > 0 && (
+                  <div className="flex gap-2 flex-wrap pb-1">
+                    {availableIPs.map((option) => {
+                      const isSelected = tempIps.includes(option);
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setTempIps(tempIps.filter(i => i !== option));
+                            } else {
+                              setTempIps([...tempIps, option]);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                            isSelected
+                              ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                              : 'bg-gray-50 dark:bg-gray-800 text-gray-550 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-750'
+                          }`}
+                        >
+                          {isSelected ? `✓ ${option}` : `+ ${option}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* 輸入自訂 IP */}
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (tempIpInput.trim() && !tempIps.includes(tempIpInput.trim())) {
+                      setTempIps([...tempIps, tempIpInput.trim()]);
+                      setTempIpInput('');
+                    }
+                  }}
+                  className="flex gap-2"
+                >
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={tempIpInput}
+                      onChange={(e) => setTempIpInput(e.target.value)}
+                      placeholder="輸入自訂作品名稱按下 Enter 或點擊新增..."
+                      className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    />
+                    {tempIpInput && (
+                      <button
+                        type="button"
+                        onClick={() => setTempIpInput('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 rounded-full"
+                      >
+                        <X size={12} />
+                      </button>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (tempIpInput.trim() && !tempIps.includes(tempIpInput.trim())) {
+                        setTempIps([...tempIps, tempIpInput.trim()]);
+                        setTempIpInput('');
+                      }
+                    }}
+                    className="px-3.5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shrink-0 transition-colors"
+                  >
+                    ➕ 新增
+                  </button>
+                </form>
               </div>
 
               {/* 2. 角色選擇區 */}
@@ -787,10 +860,10 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 </div>
 
                 {/* 常用推薦角色 Pills */}
-                {tempIp && (
+                {tempIps.length > 0 && (
                   <div className="space-y-1 bg-pink-50/20 dark:bg-pink-950/5 p-2.5 rounded-xl border border-pink-100/40 dark:border-pink-950/20">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-pink-500 dark:text-pink-400 font-bold">{tempIp} 常用角色推薦：</span>
+                      <span className="text-[10px] text-pink-500 dark:text-pink-400 font-bold">{tempIps.join(' / ')} 常用角色推薦：</span>
                       <button
                         type="button"
                         onClick={handleOpenEditIpRoles}

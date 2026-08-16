@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
-import { getDeadlineInfo } from '../utils';
+import { getDeadlineInfo, getItemIps } from '../utils';
 import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes, Plus } from 'lucide-react';
 import AddOrder from './AddOrder';
 import CalendarView from './CalendarView';
@@ -787,7 +787,8 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 const q = searchQuery.trim().toLowerCase();
                 unassignedList = unassignedList.filter(item => {
                   const nameMatch = item && item.name && item.name.toLowerCase().includes(q);
-                  const ipMatch = item && item.ip && item.ip.toLowerCase().includes(q);
+                  const ips = getItemIps(item);
+                  const ipMatch = ips.some(ipName => ipName && ipName.toLowerCase().includes(q));
                   const roles = getItemRoles(item);
                   const roleMatch = roles.some(r => r && r.toLowerCase().includes(q));
                   return nameMatch || ipMatch || roleMatch;
@@ -905,7 +906,11 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               </div>
 
                               <div className="flex flex-wrap gap-1 text-[11px] text-gray-500 dark:text-gray-400">
-                                {item.ip && <span className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded">IP: {item.ip}</span>}
+                                {getItemIps(item).map((ipName, idx) => (
+                                  <span key={idx} className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded font-bold">
+                                    🎬 {ipName}
+                                  </span>
+                                ))}
                                 {getItemRoles(item).map(r => (
                                   <span key={r} className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
                                     {r}
@@ -1687,11 +1692,11 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         {selectedItem.source_type === 'official' ? '👑 官方' : `🎨 同人 (${selectedItem.fan_source || '未註明'})`}
                       </span>
                     )}
-                    {selectedItem.ip && (
-                      <span className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
-                        🎬 {selectedItem.ip}
+                    {getItemIps(selectedItem).map((ipName, idx) => (
+                      <span key={idx} className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                        🎬 {ipName}
                       </span>
-                    )}
+                    ))}
                     {(() => {
                       const itemTags = selectedItem.tags && Array.isArray(selectedItem.tags)
                         ? selectedItem.tags

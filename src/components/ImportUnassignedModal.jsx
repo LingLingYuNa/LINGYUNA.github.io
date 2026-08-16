@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X, CheckSquare, Square, Package, Check, ArrowRight } from 'lucide-react';
 import { db } from '../db';
-import { calculateOrderTotalTWD } from '../utils';
+import { calculateOrderTotalTWD, getItemIps } from '../utils';
 
 export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
   const [selectedItemIds, setSelectedItemIds] = useState([]);
@@ -161,7 +161,7 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
                         {item.name}
                       </div>
                       <div className="text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-2">
-                        {item.ip && <span>IP: {item.ip}</span>}
+                        {getItemIps(item).length > 0 && <span>IP: {getItemIps(item).join(', ')}</span>}
                         <span>數量: x{item.quantity}</span>
                         <span className="font-semibold text-primary-dark dark:text-primary">
                           ${Number(item.price || 0) * Number(item.quantity || 1)}
