@@ -4,7 +4,6 @@ import { X, ShoppingBag, PackagePlus, Zap } from 'lucide-react';
 export default function AddChoiceModal({ onClose, onSelectChoice }) {
   return (
     <div 
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-all"
     >
       <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col transition-colors animate-in slide-in-from-bottom-6 duration-200">

@@ -75,7 +75,6 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
 
   return (
     <div 
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all"
     >
       <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">

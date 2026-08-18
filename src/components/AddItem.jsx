@@ -376,7 +376,6 @@ export default function AddItem({ orderId, existingItem, onClose }) {
   return (
     // 全螢幕彈出層 (Mobile-First) + 電腦版置中卡片
     <div 
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
       className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-900 md:bg-gray-950/60 md:backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors"
     >
       <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
@@ -713,7 +712,6 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       {/* 三合一屬性設定彈跳視窗 */}
       {isPropModalOpen && (
         <div 
-          onClick={(e) => { if (e.target === e.currentTarget) handleClosePropModal(); }}
           className="fixed inset-0 z-[70] bg-gray-950/40 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6"
         >
           <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-200">
@@ -1162,7 +1160,6 @@ export default function AddItem({ orderId, existingItem, onClose }) {
       {/* 編輯 IP 常用角色推薦彈窗 */}
       {isEditingIpRoles && (
         <div 
-          onClick={(e) => { if (e.target === e.currentTarget) handleCloseEditIpRoles(); }}
           className="fixed inset-0 z-[80] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
         >
           <div 

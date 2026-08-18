@@ -127,10 +127,7 @@ export default function QuickAddModal({ orderId, onClose }) {
   return (
     <div 
       className="fixed inset-0 z-[100] bg-gray-950/60 dark:bg-black/75 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* 點擊背景關閉 (手機版) */}
-      <div className="absolute inset-0 md:hidden" onClick={onClose}></div>
 
       {/* 彈窗主體 (底部彈出層 Bottom Sheet / 電腦版置中卡片) */}
       <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300 relative h-full md:h-auto max-h-[90vh] md:max-w-md flex flex-col border-t md:border border-gray-100 dark:border-gray-800/80 mx-auto z-10 transition-colors">
