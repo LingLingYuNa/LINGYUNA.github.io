@@ -7,6 +7,17 @@ export default {
   ],
   theme: {
     extend: {
+      borderRadius: {
+        'sm': '14px',
+        DEFAULT: '14px',
+        'md': '14px',
+        'lg': '14px',
+        'xl': '14px',
+        '2xl': '14px',
+        '3xl': '14px',
+        '3.5r': '14px',
+        '3.5R': '14px',
+      },
       colors: {
         primary: {
           light: '#F4EDFD',
