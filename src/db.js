@@ -20,6 +20,14 @@ db.version(3).stores({
   custom_tags: '++id, name, category, parent_id, sort_order'
 });
 
+// V4 擴充：新增拆團記錄 (box_splits)、拆團品項 (box_split_items)、參團人員 (box_split_participants) 與全域角色排序庫 (character_sort_orders)
+db.version(4).stores({
+  box_splits: '++id, title, status, mode, date, created_at',
+  box_split_items: '++id, box_split_id, name, sort_order',
+  box_split_participants: '++id, box_split_id, item_id, buyer_name, created_at',
+  character_sort_orders: '++id, name, sort_order'
+});
+
 // 初始化預設標籤 (當 custom_tags 為空時寫入資料)
 db.on('ready', () => {
   // 檢查表格是否已定義（防止升級時還未就緒）

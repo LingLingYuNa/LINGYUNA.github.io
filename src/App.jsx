@@ -68,6 +68,10 @@ function App() {
   const items = useLiveQuery(() => db.items.toArray());
   const sales = useLiveQuery(() => db.sales.toArray());
   const customTags = useLiveQuery(() => db.custom_tags ? db.custom_tags.toArray() : Promise.resolve([]));
+  const boxSplits = useLiveQuery(() => db.box_splits ? db.box_splits.toArray() : Promise.resolve([]));
+  const boxSplitItems = useLiveQuery(() => db.box_split_items ? db.box_split_items.toArray() : Promise.resolve([]));
+  const boxSplitParticipants = useLiveQuery(() => db.box_split_participants ? db.box_split_participants.toArray() : Promise.resolve([]));
+  const characterSortOrders = useLiveQuery(() => db.character_sort_orders ? db.character_sort_orders.toArray() : Promise.resolve([]));
 
   const [isRestoreChecked, setIsRestoreChecked] = useState(false);
   const isFirstDataChange = useRef(true);
@@ -206,9 +210,13 @@ function App() {
 
         console.log('🔄 背景同步：開始自動上傳最新資料與標籤至雲端...');
         const backupData = {
-          version: 3,
+          version: 4,
           export_date: nowStr,
-          data: { orders, items, sales, custom_tags: customTags }
+          data: { 
+            orders, items, sales, custom_tags: customTags,
+            box_splits: boxSplits, box_split_items: boxSplitItems,
+            box_split_participants: boxSplitParticipants, character_sort_orders: characterSortOrders
+          }
         };
         await uploadBackup(backupData);
         console.log('✅ 背景同步：已成功自動備份至 Google Drive！');
@@ -218,7 +226,7 @@ function App() {
     }, 5000);
 
     return () => clearTimeout(timer);
-  }, [orders, items, sales, customTags, isRestoreChecked]);
+  }, [orders, items, sales, customTags, boxSplits, boxSplitItems, boxSplitParticipants, characterSortOrders, isRestoreChecked]);
 
   // 綁定硬體返回鍵
   const handleCloseAddOrder = useHardwareBack(isAddOrderOpen, () => setIsAddOrderOpen(false), 'add-order');
