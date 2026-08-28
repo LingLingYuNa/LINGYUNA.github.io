@@ -8,15 +8,17 @@ export default {
   theme: {
     extend: {
       borderRadius: {
-        'sm': '14px',
-        DEFAULT: '14px',
-        'md': '14px',
-        'lg': '14px',
-        'xl': '14px',
-        '2xl': '14px',
-        '3xl': '14px',
-        '3.5r': '14px',
-        '3.5R': '14px',
+        'sm': '8px',
+        DEFAULT: '8px',
+        'md': '8px',
+        'lg': '8px',
+        'xl': '8px',
+        '2xl': '8px',
+        '3xl': '8px',
+        '2r': '8px',
+        '2R': '8px',
+        '3.5r': '8px',
+        '3.5R': '8px',
       },
       colors: {
         primary: {
