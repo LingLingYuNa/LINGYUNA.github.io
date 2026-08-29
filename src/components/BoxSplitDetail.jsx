@@ -338,7 +338,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="font-black text-base text-gray-900 dark:text-gray-100 truncate">
-                        (種類名稱) {item.name}
+                        {item.name}
                       </h3>
                       <button
                         onClick={() => handleDeleteItem(item.id)}
@@ -398,7 +398,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                           <div className="space-y-0.5 flex-1 min-w-0">
                             <div className="flex items-center gap-1">
                               <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
-                                (參團人) {p.buyer_name}
+                                {p.buyer_name}
                               </span>
                               {p.is_allin && (
                                 <span className="text-[9px] font-black bg-amber-400 text-black px-1 rounded">
