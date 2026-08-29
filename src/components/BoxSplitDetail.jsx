@@ -353,6 +353,9 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                       <div>
                         <span className="font-bold text-gray-500">單價：</span>
                         <span className="font-extrabold text-purple-700 dark:text-purple-300">NT$ {unitPrice}</span>
+                        {stock > 1 && (
+                          <span className="text-[11px] font-bold text-gray-500 ml-1.5">(單件約 ${Math.round(unitPrice / stock)})</span>
+                        )}
                         {split.use_multiplier && (
                           <span className="text-[10px] text-gray-400 ml-1.5">(倍率: {item.price_multiplier || 1.0}x)</span>
                         )}
@@ -360,11 +363,21 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                           <span className="text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded ml-1 font-bold">自填單價</span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span><strong className="text-gray-500">庫存/總數量：</strong>{stock}</span>
                         <span><strong className="text-gray-500">已認領：</strong>{totalBoughtQty} / {stock}</span>
                         {isSoldOut && (
                           <span className="text-[10px] bg-red-100 text-red-700 font-bold px-1.5 rounded">完售</span>
+                        )}
+                        {totalBoughtQty > stock && (
+                          <button
+                            type="button"
+                            onClick={() => db.box_split_items.update(item.id, { stock: totalBoughtQty })}
+                            className="text-[10px] font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-800 transition-all cursor-pointer active:scale-95"
+                            title="點擊將庫存設定為已認領的總數量"
+                          >
+                            ⚠️ 已認領({totalBoughtQty})超過庫存({stock})，點此修正庫存為{totalBoughtQty}
+                          </button>
                         )}
                       </div>
                     </div>
