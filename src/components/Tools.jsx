@@ -177,8 +177,17 @@ export default function Tools() {
       const characterSortOrdersData = data.character_sort_orders || [];
 
       await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
-        if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
-        if (data.items.length > 0) await db.items.bulkPut(data.items);
+        await db.orders.clear();
+        await db.items.clear();
+        await db.sales.clear();
+        await db.custom_tags.clear();
+        if (db.box_splits) await db.box_splits.clear();
+        if (db.box_split_items) await db.box_split_items.clear();
+        if (db.box_split_participants) await db.box_split_participants.clear();
+        if (db.character_sort_orders) await db.character_sort_orders.clear();
+
+        if (data.orders && data.orders.length > 0) await db.orders.bulkPut(data.orders);
+        if (data.items && data.items.length > 0) await db.items.bulkPut(data.items);
         if (salesData.length > 0) await db.sales.bulkPut(salesData);
         if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
         if (boxSplitsData.length > 0) await db.box_splits.bulkPut(boxSplitsData);
@@ -300,8 +309,17 @@ export default function Tools() {
           setIsImporting(true);
           
           await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
-            if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
-            if (data.items.length > 0) await db.items.bulkPut(data.items);
+            await db.orders.clear();
+            await db.items.clear();
+            await db.sales.clear();
+            await db.custom_tags.clear();
+            if (db.box_splits) await db.box_splits.clear();
+            if (db.box_split_items) await db.box_split_items.clear();
+            if (db.box_split_participants) await db.box_split_participants.clear();
+            if (db.character_sort_orders) await db.character_sort_orders.clear();
+
+            if (data.orders && data.orders.length > 0) await db.orders.bulkPut(data.orders);
+            if (data.items && data.items.length > 0) await db.items.bulkPut(data.items);
             if (salesData.length > 0) await db.sales.bulkPut(salesData);
             if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
             if (boxSplitsData.length > 0) await db.box_splits.bulkPut(boxSplitsData);

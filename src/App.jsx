@@ -112,7 +112,7 @@ function App() {
         }
 
         const { data, export_date } = backupData;
-        if (!data || !data.orders || !data.items) {
+        if (!data || (!data.orders && !data.box_splits)) {
           console.warn('🔄 啟動檢測：雲端備份格式不符，跳過自動還原。');
           setIsRestoreChecked(true);
           return;
