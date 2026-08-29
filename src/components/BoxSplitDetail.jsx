@@ -12,6 +12,7 @@ import { useHardwareBack } from '../hooks/useHardwareBack';
 export default function BoxSplitDetail({ splitId, onBack }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
   const [isAddParticipantOpen, setIsAddParticipantOpen] = useState(false);
   const [activeItemIdForParticipant, setActiveItemIdForParticipant] = useState(null);
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
@@ -340,13 +341,25 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                       <h3 className="font-black text-base text-gray-900 dark:text-gray-100 truncate">
                         {item.name}
                       </h3>
-                      <button
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors shrink-0"
-                        title="刪除種類"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingItem(item);
+                            setIsAddItemOpen(true);
+                          }}
+                          className="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          title="編輯種類品項"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                          title="刪除種類"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
 
                     <div className="text-xs text-gray-600 dark:text-gray-300 mt-1 space-y-0.5">
@@ -462,11 +475,15 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         )}
       </div>
 
-      {/* 彈窗 1：新增品項種類 Modal */}
+      {/* 彈窗 1：新增/編輯品項種類 Modal */}
       {isAddItemOpen && (
         <AddItemModal
           splitId={splitId}
-          onClose={() => setIsAddItemOpen(false)}
+          existingItem={editingItem}
+          onClose={() => {
+            setIsAddItemOpen(false);
+            setEditingItem(null);
+          }}
         />
       )}
 
@@ -509,15 +526,19 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 // ----------------------------------------------------------------------
 // 子彈窗 1：新增品項種類 (AddItemModal)
 // ----------------------------------------------------------------------
-function AddItemModal({ splitId, onClose }) {
+function AddItemModal({ splitId, existingItem, onClose }) {
   const cameraInputRef = useRef(null);
   const albumInputRef = useRef(null);
 
-  const [name, setName] = useState('');
-  const [stock, setStock] = useState('1');
-  const [manualPrice, setManualPrice] = useState('');
-  const [priceMultiplier, setPriceMultiplier] = useState('1.0');
-  const [image, setImage] = useState('');
+  const [name, setName] = useState(existingItem?.name || '');
+  const [stock, setStock] = useState(existingItem?.stock ? String(existingItem.stock) : '1');
+  const [manualPrice, setManualPrice] = useState(
+    existingItem?.manual_price !== undefined && existingItem?.manual_price !== null ? String(existingItem.manual_price) : ''
+  );
+  const [priceMultiplier, setPriceMultiplier] = useState(
+    existingItem?.price_multiplier ? String(existingItem.price_multiplier) : '1.0'
+  );
+  const [image, setImage] = useState(existingItem?.image || '');
   const [urlInput, setUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
@@ -535,23 +556,34 @@ function AddItemModal({ splitId, onClose }) {
 
     setIsSaving(true);
     try {
-      const existingItems = await db.box_split_items.where('box_split_id').equals(Number(splitId)).toArray();
-      const nextSortOrder = existingItems.length > 0 ? Math.max(...existingItems.map(i => i.sort_order || 0)) + 1 : 1;
+      if (existingItem) {
+        await db.box_split_items.update(existingItem.id, {
+          name: name.trim(),
+          stock: Number(stock) || 1,
+          manual_price: manualPrice !== '' ? Number(manualPrice) : null,
+          price_multiplier: Number(priceMultiplier) || 1.0,
+          image,
+          updated_at: new Date().toISOString()
+        });
+      } else {
+        const existingItems = await db.box_split_items.where('box_split_id').equals(Number(splitId)).toArray();
+        const nextSortOrder = existingItems.length > 0 ? Math.max(...existingItems.map(i => i.sort_order || 0)) + 1 : 1;
 
-      await db.box_split_items.add({
-        box_split_id: Number(splitId),
-        name: name.trim(),
-        stock: Number(stock) || 1,
-        manual_price: manualPrice !== '' ? Number(manualPrice) : null,
-        price_multiplier: Number(priceMultiplier) || 1.0,
-        image,
-        sort_order: nextSortOrder,
-        created_at: new Date().toISOString()
-      });
+        await db.box_split_items.add({
+          box_split_id: Number(splitId),
+          name: name.trim(),
+          stock: Number(stock) || 1,
+          manual_price: manualPrice !== '' ? Number(manualPrice) : null,
+          price_multiplier: Number(priceMultiplier) || 1.0,
+          image,
+          sort_order: nextSortOrder,
+          created_at: new Date().toISOString()
+        });
+      }
 
       onClose();
     } catch (err) {
-      console.error('新增品項失敗:', err);
+      console.error('儲存品項失敗:', err);
       alert('寫入失敗');
     } finally {
       setIsSaving(false);
@@ -563,7 +595,9 @@ function AddItemModal({ splitId, onClose }) {
       <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
-          <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">新增種類品項</h3>
+          <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">
+            {existingItem ? '編輯種類品項' : '新增種類品項'}
+          </h3>
           <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full">
             <X size={20} />
           </button>
