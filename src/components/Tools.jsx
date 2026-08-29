@@ -87,11 +87,19 @@ export default function Tools() {
       const items = await db.items.toArray();
       const sales = await db.sales.toArray();
       const customTags = db.custom_tags ? await db.custom_tags.toArray() : [];
+      const boxSplits = db.box_splits ? await db.box_splits.toArray() : [];
+      const boxSplitItems = db.box_split_items ? await db.box_split_items.toArray() : [];
+      const boxSplitParticipants = db.box_split_participants ? await db.box_split_participants.toArray() : [];
+      const characterSortOrders = db.character_sort_orders ? await db.character_sort_orders.toArray() : [];
 
       const backupData = {
-        version: 3,
+        version: 4,
         export_date: new Date().toISOString(),
-        data: { orders, items, sales, custom_tags: customTags }
+        data: { 
+          orders, items, sales, custom_tags: customTags,
+          box_splits: boxSplits, box_split_items: boxSplitItems,
+          box_split_participants: boxSplitParticipants, character_sort_orders: characterSortOrders
+        }
       };
 
       setSyncStatusText('正在上傳至 Google 雲端硬碟...');
@@ -112,7 +120,7 @@ export default function Tools() {
       }
       
       localStorage.setItem('last_local_update', backupData.export_date);
-      alert('✅ 雲端備份成功！已更新至您的 Google 雲端硬碟。');
+      alert('✅ 雲端備份成功！已將您的資產、拆團紀錄與標籤更新至 Google 雲端硬碟。');
     } catch (error) {
       console.error('雲端備份失敗:', error);
       alert('❌ 雲端備份失敗：\n' + (error.message || '發生未知錯誤'));
@@ -124,7 +132,7 @@ export default function Tools() {
 
   // 雲端還原
   const handleCloudRestore = async () => {
-    const confirmMsg = `⚠️ 警告：這將會【覆蓋與合併】您目前的本機資料庫，且無法復原，確定要從雲端還原嗎？`;
+    const confirmMsg = `⚠️ 警告：這將會【覆蓋與合併】您目前的本機資料庫（包含拆團紀錄），且無法復原，確定要從雲端還原嗎？`;
     if (!window.confirm(confirmMsg)) return;
 
     setIsSyncing(true);
@@ -163,18 +171,26 @@ export default function Tools() {
 
       const salesData = data.sales || [];
       const customTagsData = data.custom_tags || [];
+      const boxSplitsData = data.box_splits || [];
+      const boxSplitItemsData = data.box_split_items || [];
+      const boxSplitParticipantsData = data.box_split_participants || [];
+      const characterSortOrdersData = data.character_sort_orders || [];
 
-      await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
+      await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
         if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
         if (data.items.length > 0) await db.items.bulkPut(data.items);
         if (salesData.length > 0) await db.sales.bulkPut(salesData);
         if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
+        if (boxSplitsData.length > 0) await db.box_splits.bulkPut(boxSplitsData);
+        if (boxSplitItemsData.length > 0) await db.box_split_items.bulkPut(boxSplitItemsData);
+        if (boxSplitParticipantsData.length > 0) await db.box_split_participants.bulkPut(boxSplitParticipantsData);
+        if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
       });
 
       if (backupData.export_date) {
         localStorage.setItem('last_local_update', backupData.export_date);
       }
-      alert('✅ 雲端還原成功！系統將自動重新載入以套用最新資料。');
+      alert('✅ 雲端還原成功！系統將自動重新載入以套用最新資料與拆團紀錄。');
       window.location.reload();
     } catch (error) {
       console.error('雲端還原失敗:', error);
@@ -211,11 +227,20 @@ export default function Tools() {
       const orders = await db.orders.toArray();
       const items = await db.items.toArray();
       const sales = await db.sales.toArray();
+      const customTags = db.custom_tags ? await db.custom_tags.toArray() : [];
+      const boxSplits = db.box_splits ? await db.box_splits.toArray() : [];
+      const boxSplitItems = db.box_split_items ? await db.box_split_items.toArray() : [];
+      const boxSplitParticipants = db.box_split_participants ? await db.box_split_participants.toArray() : [];
+      const characterSortOrders = db.character_sort_orders ? await db.character_sort_orders.toArray() : [];
 
       const backupData = {
-        version: 2, // 備份檔格式版本號
+        version: 4, // 備份檔格式版本號
         export_date: new Date().toISOString(),
-        data: { orders, items, sales }
+        data: { 
+          orders, items, sales, custom_tags: customTags,
+          box_splits: boxSplits, box_split_items: boxSplitItems,
+          box_split_participants: boxSplitParticipants, character_sort_orders: characterSortOrders
+        }
       };
 
       const jsonString = JSON.stringify(backupData, null, 2);
@@ -262,22 +287,30 @@ export default function Tools() {
           throw new Error('此 JSON 檔案不是有效的 CollectTrack 備份檔');
         }
 
-        // 容錯機制 (舊版可能沒有 sales)
         const salesData = data.sales || [];
+        const customTagsData = data.custom_tags || [];
+        const boxSplitsData = data.box_splits || [];
+        const boxSplitItemsData = data.box_split_items || [];
+        const boxSplitParticipantsData = data.box_split_participants || [];
+        const characterSortOrdersData = data.character_sort_orders || [];
 
-        const confirmMsg = `即將匯入資料\n包含：\n- ${data.orders.length} 筆訂單\n- ${data.items.length} 筆物品\n- ${salesData.length} 筆售出紀錄\n\n注意：這將會【覆蓋與合併】您目前的資料庫，確定要繼續嗎？`;
+        const confirmMsg = `即將匯入資料\n包含：\n- ${data.orders.length} 筆訂單\n- ${data.items.length} 筆物品\n- ${salesData.length} 筆售出紀錄\n- ${boxSplitsData.length} 筆拆團紀錄\n\n注意：這將會【覆蓋與合併】您目前的資料庫，確定要繼續嗎？`;
         
         if (window.confirm(confirmMsg)) {
           setIsImporting(true);
           
-          // 使用 Dexie Transaction 確保交易完整性 (要馬全寫入，要馬全失敗)
-          await db.transaction('rw', db.orders, db.items, db.sales, async () => {
+          await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
             if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
             if (data.items.length > 0) await db.items.bulkPut(data.items);
             if (salesData.length > 0) await db.sales.bulkPut(salesData);
+            if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
+            if (boxSplitsData.length > 0) await db.box_splits.bulkPut(boxSplitsData);
+            if (boxSplitItemsData.length > 0) await db.box_split_items.bulkPut(boxSplitItemsData);
+            if (boxSplitParticipantsData.length > 0) await db.box_split_participants.bulkPut(boxSplitParticipantsData);
+            if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
           });
           
-          alert('✅ 匯入成功！系統將自動重新載入以套用最新資料。');
+          alert('✅ 匯入成功！系統將自動重新載入以套用最新資料與拆團紀錄。');
           window.location.reload();
         }
       } catch (error) {
@@ -285,7 +318,6 @@ export default function Tools() {
         alert('❌ 匯入失敗：\n' + (error.message || '檔案解析發生錯誤'));
       } finally {
         setIsImporting(false);
-        // 清除 input，允許重複匯入同一個檔案
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     };

@@ -120,20 +120,29 @@ function App() {
 
         const localOrdersCount = await db.orders.count();
         const localItemsCount = await db.items.count();
+        const localSplitsCount = db.box_splits ? await db.box_splits.count() : 0;
         const salesData = data.sales || [];
         const customTagsData = data.custom_tags || [];
+        const boxSplitsData = data.box_splits || [];
+        const boxSplitItemsData = data.box_split_items || [];
+        const boxSplitParticipantsData = data.box_split_participants || [];
+        const characterSortOrdersData = data.character_sort_orders || [];
 
         // 本機為空 -> 直接靜默還原
-        if (localOrdersCount === 0 && localItemsCount === 0) {
+        if (localOrdersCount === 0 && localItemsCount === 0 && localSplitsCount === 0) {
           console.log('🔄 啟動檢測：本機無資料，自動還原雲端備份中...');
-          await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
+          await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
             if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
             if (data.items.length > 0) await db.items.bulkPut(data.items);
             if (salesData.length > 0) await db.sales.bulkPut(salesData);
             if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
+            if (boxSplitsData.length > 0) await db.box_splits.bulkPut(boxSplitsData);
+            if (boxSplitItemsData.length > 0) await db.box_split_items.bulkPut(boxSplitItemsData);
+            if (boxSplitParticipantsData.length > 0) await db.box_split_participants.bulkPut(boxSplitParticipantsData);
+            if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
           });
           localStorage.setItem('last_local_update', export_date || new Date().toISOString());
-          alert('🔄 已自動從 Google Drive 同步並載入您的資產與標籤資料！');
+          alert('🔄 已自動從 Google Drive 同步並載入您的資產、拆團與標籤資料！');
           window.location.reload();
           return;
         }
@@ -148,18 +157,27 @@ function App() {
 
           if (confirmRestore) {
             console.log('🔄 啟動檢測：使用者確認還原較新的雲端資料...');
-            await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, async () => {
+            await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
               await db.orders.clear();
               await db.items.clear();
               await db.sales.clear();
               await db.custom_tags.clear();
+              if (db.box_splits) await db.box_splits.clear();
+              if (db.box_split_items) await db.box_split_items.clear();
+              if (db.box_split_participants) await db.box_split_participants.clear();
+              if (db.character_sort_orders) await db.character_sort_orders.clear();
+
               if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
               if (data.items.length > 0) await db.items.bulkPut(data.items);
               if (salesData.length > 0) await db.sales.bulkPut(salesData);
               if (customTagsData.length > 0) await db.custom_tags.bulkPut(customTagsData);
+              if (boxSplitsData.length > 0) await db.box_splits.bulkPut(boxSplitsData);
+              if (boxSplitItemsData.length > 0) await db.box_split_items.bulkPut(boxSplitItemsData);
+              if (boxSplitParticipantsData.length > 0) await db.box_split_participants.bulkPut(boxSplitParticipantsData);
+              if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
             });
             localStorage.setItem('last_local_update', export_date);
-            alert('✅ 雲端資料與標籤同步還原成功！');
+            alert('✅ 雲端資料、拆團紀錄與標籤同步還原成功！');
             window.location.reload();
             return;
           } else {
