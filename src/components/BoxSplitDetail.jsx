@@ -19,7 +19,7 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
   const safeItems = Array.isArray(items) ? items : [];
   const safeParticipants = Array.isArray(participants) ? participants : [];
 
-  // 1. 預先計算買家在全團的總消費金額與總喊單數量 (用於 amount_first / qty_first 模式的優先權排序)
+  // 1. 全團總統計：計算每位買家在「全品項 / 全團」的總金額與總數量
   const buyerTotalSpend = new Map();
   const buyerTotalQty = new Map();
 
@@ -37,7 +37,7 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
     }
   });
 
-  // 2. 針對每個品項，依模式優先順序排序喊單，並依據庫存 (stock) 進行配分
+  // 2. 針對每一個品項，依據全團統計與模式權重進行排序與配分
   safeItems.forEach(item => {
     if (!item) return;
     const stock = Number(item.stock) || 1;
@@ -45,24 +45,35 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
 
     let itemParts = safeParticipants.filter(p => p && p.item_id === item.id);
 
-    // 依據模式排序 itemParts
     itemParts.sort((a, b) => {
       if (mode === 'allin_time_first') {
         // ALL IN 優先 over 非 ALL IN
         if (a.is_allin && !b.is_allin) return -1;
         if (!a.is_allin && b.is_allin) return 1;
-        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
-      } else if (mode === 'amount_first') {
-        // 總消費金額高者優先
+        // 同為 ALL IN 或皆非 ALL IN 時，以全團總金額作為第二優先
         const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
         const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
         if (spendB !== spendA) return spendB - spendA;
         return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
-      } else if (mode === 'qty_first') {
-        // 總購買數量多者優先
+      } else if (mode === 'amount_first') {
+        // 全品項總消費金額高者優先
+        const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
+        const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+        if (spendB !== spendA) return spendB - spendA;
+        // 金額相同時，全品項總件數做為次要排序
         const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
         const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
         if (qtyB !== qtyA) return qtyB - qtyA;
+        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+      } else if (mode === 'qty_first') {
+        // 全品項總數量多者優先
+        const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
+        const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
+        if (qtyB !== qtyA) return qtyB - qtyA;
+        // 數量相同時，全品項總金額做為次要排序
+        const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
+        const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+        if (spendB !== spendA) return spendB - spendA;
         return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
       } else {
         // 'time_first' 先喊先贏: 依時間排序
@@ -70,14 +81,13 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
       }
     });
 
-    // 配分扣減庫存
     itemParts.forEach(p => {
       if (remainingStock > 0) {
         const take = Math.min(remainingStock, Number(p.qty) || 1);
         allocatedMap.set(p.id, take);
         remainingStock -= take;
       } else {
-        allocatedMap.set(p.id, 0); // 庫存用盡，未能配到
+        allocatedMap.set(p.id, 0);
       }
     });
   });
