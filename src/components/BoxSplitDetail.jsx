@@ -10,89 +10,134 @@ import { compressImage } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
 // ----------------------------------------------------------------------
-// 配分引擎：根據模式 (time_first, amount_first, qty_first, allin_time_first) 與品項庫存 (stock) 配分
+// 配分引擎：根據模式 (time_first, amount_first, qty_first, allin_time_first)、品項庫存 (stock)
+// 以及「無 A 則 Pass」條件進行多輪疊代配分解算
 // ----------------------------------------------------------------------
 export function computeSplitAllocations(split, items = [], participants = [], getItemUnitPrice) {
   const mode = split?.mode || 'time_first';
-  const allocatedMap = new Map();
+  const allocatedMap = new Map(); // participantId -> allocatedQty
+  const passTriggeredSet = new Set(); // participantId -> boolean (是否因無 A 則 Pass 條件被取消喊單)
 
   const safeItems = Array.isArray(items) ? items : [];
   const safeParticipants = Array.isArray(participants) ? participants : [];
 
-  // 1. 全團總統計：計算每位買家在「全品項 / 全團」的總金額與總數量
-  const buyerTotalSpend = new Map();
-  const buyerTotalQty = new Map();
+  let activeParticipants = [...safeParticipants];
 
-  safeParticipants.forEach(p => {
-    if (!p) return;
-    const item = safeItems.find(i => i && i.id === p.item_id);
-    if (item && typeof getItemUnitPrice === 'function') {
-      const uPrice = getItemUnitPrice(item);
+  // 多輪疊代計算 (最高 10 輪確保收斂)
+  for (let iter = 0; iter < 10; iter++) {
+    // 1. 計算當前活性參與者的買家全團消費額與全團數量
+    const buyerTotalSpend = new Map();
+    const buyerTotalQty = new Map();
+
+    activeParticipants.forEach(p => {
+      if (!p) return;
+      const item = safeItems.find(i => i && i.id === p.item_id);
+      if (item && typeof getItemUnitPrice === 'function') {
+        const uPrice = getItemUnitPrice(item);
+        const stock = Number(item.stock) || 1;
+        const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+        const spend = Math.round(singleUnitPrice * (p.qty || 1));
+
+        buyerTotalSpend.set(p.buyer_name, (buyerTotalSpend.get(p.buyer_name) || 0) + spend);
+        buyerTotalQty.set(p.buyer_name, (buyerTotalQty.get(p.buyer_name) || 0) + (p.qty || 1));
+      }
+    });
+
+    // 2. 清空當輪配分映射
+    allocatedMap.clear();
+
+    // 3. 針對每個品項分配庫存
+    safeItems.forEach(item => {
+      if (!item) return;
       const stock = Number(item.stock) || 1;
-      const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
-      const spend = Math.round(singleUnitPrice * (p.qty || 1));
+      let remainingStock = stock;
 
-      buyerTotalSpend.set(p.buyer_name, (buyerTotalSpend.get(p.buyer_name) || 0) + spend);
-      buyerTotalQty.set(p.buyer_name, (buyerTotalQty.get(p.buyer_name) || 0) + (p.qty || 1));
+      let itemParts = activeParticipants.filter(p => p && p.item_id === item.id);
+
+      itemParts.sort((a, b) => {
+        if (mode === 'allin_time_first') {
+          if (a.is_allin && !b.is_allin) return -1;
+          if (!a.is_allin && b.is_allin) return 1;
+          const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
+          const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+          if (spendB !== spendA) return spendB - spendA;
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+        } else if (mode === 'amount_first') {
+          const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
+          const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+          if (spendB !== spendA) return spendB - spendA;
+          const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
+          const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
+          if (qtyB !== qtyA) return qtyB - qtyA;
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+        } else if (mode === 'qty_first') {
+          const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
+          const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
+          if (qtyB !== qtyA) return qtyB - qtyA;
+          const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
+          const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+          if (spendB !== spendA) return spendB - spendA;
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+        } else {
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+        }
+      });
+
+      itemParts.forEach(p => {
+        if (remainingStock > 0) {
+          const take = Math.min(remainingStock, Number(p.qty) || 1);
+          allocatedMap.set(p.id, take);
+          remainingStock -= take;
+        } else {
+          allocatedMap.set(p.id, 0);
+        }
+      });
+    });
+
+    // 4. 檢查是否有活躍參與者觸發「無 A 則 Pass」條件
+    let newlyCancelledIds = new Set();
+
+    activeParticipants.forEach(p => {
+      if (p.pass_rule && p.pass_rule !== 'none' && p.pass_trigger_item_id) {
+        // 檢查該買家是否在「品項 A (pass_trigger_item_id)」獲得中選額度
+        const triggerClaims = activeParticipants.filter(x => x.buyer_name === p.buyer_name && x.item_id === Number(p.pass_trigger_item_id));
+        const totalTriggerAllocated = triggerClaims.reduce((sum, x) => sum + (allocatedMap.get(x.id) || 0), 0);
+
+        if (triggerClaims.length > 0 && totalTriggerAllocated === 0) {
+          // 條件成立：買家未中選品項 A！執行 Pass
+          if (p.pass_rule === 'pass_all') {
+            // 忽略該買家在全團的所有喊單
+            activeParticipants.filter(x => x.buyer_name === p.buyer_name).forEach(x => {
+              newlyCancelledIds.add(x.id);
+              passTriggeredSet.add(x.id);
+            });
+          } else if (p.pass_rule === 'pass_item' && p.pass_target_item_id) {
+            // 僅忽略該買家在特定品項 B (pass_target_item_id) 的喊單
+            activeParticipants.filter(x => x.buyer_name === p.buyer_name && x.item_id === Number(p.pass_target_item_id)).forEach(x => {
+              newlyCancelledIds.add(x.id);
+              passTriggeredSet.add(x.id);
+            });
+          }
+        }
+      }
+    });
+
+    if (newlyCancelledIds.size === 0) {
+      break; // 已達穩定解！
+    }
+
+    // 將被 Pass 的喊單剔除後進行下一輪重新配分
+    activeParticipants = activeParticipants.filter(p => !newlyCancelledIds.has(p.id));
+  }
+
+  // 確保未在配分表中的原始參團紀錄都設為 0
+  safeParticipants.forEach(p => {
+    if (!allocatedMap.has(p.id)) {
+      allocatedMap.set(p.id, 0);
     }
   });
 
-  // 2. 針對每一個品項，依據全團統計與模式權重進行排序與配分
-  safeItems.forEach(item => {
-    if (!item) return;
-    const stock = Number(item.stock) || 1;
-    let remainingStock = stock;
-
-    let itemParts = safeParticipants.filter(p => p && p.item_id === item.id);
-
-    itemParts.sort((a, b) => {
-      if (mode === 'allin_time_first') {
-        // ALL IN 優先 over 非 ALL IN
-        if (a.is_allin && !b.is_allin) return -1;
-        if (!a.is_allin && b.is_allin) return 1;
-        // 同為 ALL IN 或皆非 ALL IN 時，以全團總金額作為第二優先
-        const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
-        const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
-        if (spendB !== spendA) return spendB - spendA;
-        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
-      } else if (mode === 'amount_first') {
-        // 全品項總消費金額高者優先
-        const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
-        const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
-        if (spendB !== spendA) return spendB - spendA;
-        // 金額相同時，全品項總件數做為次要排序
-        const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
-        const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
-        if (qtyB !== qtyA) return qtyB - qtyA;
-        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
-      } else if (mode === 'qty_first') {
-        // 全品項總數量多者優先
-        const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
-        const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
-        if (qtyB !== qtyA) return qtyB - qtyA;
-        // 數量相同時，全品項總金額做為次要排序
-        const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
-        const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
-        if (spendB !== spendA) return spendB - spendA;
-        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
-      } else {
-        // 'time_first' 先喊先贏: 依時間排序
-        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
-      }
-    });
-
-    itemParts.forEach(p => {
-      if (remainingStock > 0) {
-        const take = Math.min(remainingStock, Number(p.qty) || 1);
-        allocatedMap.set(p.id, take);
-        remainingStock -= take;
-      } else {
-        allocatedMap.set(p.id, 0);
-      }
-    });
-  });
-
-  return allocatedMap;
+  return { allocatedMap, passTriggeredSet };
 }
 
 export default function BoxSplitDetail({ splitId, onBack }) {
@@ -166,7 +211,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   }
 
   const currentModeInfo = BOX_SPLIT_MODES.find(m => m.id === split.mode) || BOX_SPLIT_MODES[0];
-  const allocatedMap = computeSplitAllocations(split, items, participants, getItemUnitPrice);
+  const { allocatedMap, passTriggeredSet } = computeSplitAllocations(split, items, participants, getItemUnitPrice);
 
   // 依據全域角色排序庫自動排列品項
   const handleAutoSortByLibrary = async () => {
@@ -519,11 +564,20 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                                     ALL IN
                                   </span>
                                 )}
-                                {allocatedQty === 0 ? (
+                                {passTriggeredSet.has(p.id) ? (
+                                  <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1 rounded" title="因未中選指定品項觸發 Pass 條件">
+                                    🚫 無 A 則 Pass
+                                  </span>
+                                ) : p.pass_rule && p.pass_rule !== 'none' ? (
+                                  <span className="text-[9px] font-bold bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-1 rounded" title="此喊單帶有 Pass 條件">
+                                    ⚡ 帶 Pass 條件
+                                  </span>
+                                ) : null}
+                                {allocatedQty === 0 && !passTriggeredSet.has(p.id) ? (
                                   <span className="text-[9px] font-bold bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-300 px-1 rounded">
                                     候補
                                   </span>
-                                ) : allocatedQty < p.qty ? (
+                                ) : allocatedQty < p.qty && allocatedQty > 0 ? (
                                   <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 rounded">
                                     配到 x{allocatedQty}
                                   </span>
@@ -848,6 +902,21 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
     const pad = (n) => n.toString().padStart(2, '0');
     return `${now.getMonth() + 1}/${now.getDate()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
   });
+
+  // 「無 A 則 Pass」條件狀態
+  const [enablePassRule, setEnablePassRule] = useState(
+    Boolean(existingParticipant?.pass_rule && existingParticipant.pass_rule !== 'none')
+  );
+  const [passRuleType, setPassRuleType] = useState(
+    existingParticipant?.pass_rule === 'pass_all' ? 'pass_all' : 'pass_item'
+  );
+  const [passTriggerItemId, setPassTriggerItemId] = useState(
+    existingParticipant?.pass_trigger_item_id ? String(existingParticipant.pass_trigger_item_id) : ''
+  );
+  const [passTargetItemId, setPassTargetItemId] = useState(
+    existingParticipant?.pass_target_item_id ? String(existingParticipant.pass_target_item_id) : String(itemId)
+  );
+
   const [isSaving, setIsSaving] = useState(false);
 
   const handleToggleAllin = (checked) => {
@@ -861,6 +930,12 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
     e.preventDefault();
     if (!buyerName.trim()) return;
 
+    const passData = {
+      pass_rule: enablePassRule ? passRuleType : 'none',
+      pass_trigger_item_id: enablePassRule && passTriggerItemId ? Number(passTriggerItemId) : null,
+      pass_target_item_id: enablePassRule && passRuleType === 'pass_item' && passTargetItemId ? Number(passTargetItemId) : null
+    };
+
     setIsSaving(true);
     try {
       if (existingParticipant) {
@@ -869,6 +944,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
           qty: Number(qty) || 1,
           is_allin: Boolean(isAllin),
           timestamp: timestamp.trim(),
+          ...passData,
           updated_at: new Date().toISOString()
         });
       } else {
@@ -879,6 +955,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
           qty: Number(qty) || 1,
           is_allin: Boolean(isAllin),
           timestamp: timestamp.trim(),
+          ...passData,
           created_at: new Date().toISOString()
         });
       }
@@ -907,7 +984,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="p-5 space-y-4">
+        <form onSubmit={handleSave} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
           <div className="space-y-1">
             <label className="text-xs font-bold text-gray-700 dark:text-gray-300">參團人員 ID / 姓名</label>
             <input
@@ -955,6 +1032,91 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
               placeholder="如：8/28 14:00"
               className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2 text-xs text-gray-800 dark:text-gray-100"
             />
+          </div>
+
+          {/* 無 A 則 Pass 條件設定區塊 */}
+          <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2">
+            <label className="flex items-center justify-between cursor-pointer p-2.5 bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-xl">
+              <span className="text-xs font-black text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
+                ⚡ 啟用「無 A 則 Pass」條件 (A Pass B)
+              </span>
+              <input
+                type="checkbox"
+                checked={enablePassRule}
+                onChange={(e) => setEnablePassRule(e.target.checked)}
+                className="w-4 h-4 text-purple-600 rounded"
+              />
+            </label>
+
+            {enablePassRule && (
+              <div className="bg-purple-50/50 dark:bg-purple-950/20 p-3 rounded-xl border border-purple-150 dark:border-purple-900/40 space-y-3 text-xs animate-in fade-in duration-200">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-purple-900 dark:text-purple-300 block">
+                    條件觸發：若未配到 / 未中選品項 (A)
+                  </label>
+                  <select
+                    value={passTriggerItemId}
+                    onChange={(e) => setPassTriggerItemId(e.target.value)}
+                    className="w-full bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 font-bold text-xs text-gray-800 dark:text-gray-100"
+                  >
+                    <option value="">-- 請選擇觸發目標品項 A --</option>
+                    {items.map(i => (
+                      <option key={i.id} value={i.id}>{i.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-purple-900 dark:text-purple-300 block">
+                    處理方式 (Pass 動作)
+                  </label>
+                  <div className="space-y-2">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="passRuleType"
+                        value="pass_item"
+                        checked={passRuleType === 'pass_item'}
+                        onChange={() => setPassRuleType('pass_item')}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <span className="font-bold text-gray-800 dark:text-gray-200 block">忽略特定品項 (B) 的喊單</span>
+                      </div>
+                    </label>
+
+                    {passRuleType === 'pass_item' && (
+                      <div className="pl-6 space-y-1">
+                        <select
+                          value={passTargetItemId}
+                          onChange={(e) => setPassTargetItemId(e.target.value)}
+                          className="w-full bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 font-bold text-xs text-gray-800 dark:text-gray-100"
+                        >
+                          <option value="">-- 請選擇被 Pass 的品項 B --</option>
+                          {items.map(i => (
+                            <option key={i.id} value={i.id}>{i.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="passRuleType"
+                        value="pass_all"
+                        checked={passRuleType === 'pass_all'}
+                        onChange={() => setPassRuleType('pass_all')}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <span className="font-bold text-gray-800 dark:text-gray-200 block">忽略該買家在全團所有品項的喊單 (全 Pass)</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="pt-2 flex gap-2">
