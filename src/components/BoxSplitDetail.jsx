@@ -9,6 +9,77 @@ import AddBoxSplitModal, { BOX_SPLIT_MODES } from './AddBoxSplitModal';
 import { compressImage } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
+// ----------------------------------------------------------------------
+// 配分引擎：根據模式 (time_first, amount_first, qty_first, allin_time_first) 與品項庫存 (stock) 配分
+// ----------------------------------------------------------------------
+export function computeSplitAllocations(split, items, participants, getItemUnitPrice) {
+  const mode = split?.mode || 'time_first';
+  const allocatedMap = new Map(); // participantId -> allocatedQty (number)
+
+  // 1. 預先計算買家在全團的總消費金額與總喊單數量 (用於 amount_first / qty_first 模式的優先權排序)
+  const buyerTotalSpend = new Map();
+  const buyerTotalQty = new Map();
+
+  participants.forEach(p => {
+    const item = items.find(i => i.id === p.item_id);
+    if (item) {
+      const uPrice = getItemUnitPrice(item);
+      const stock = Number(item.stock) || 1;
+      const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+      const spend = Math.round(singleUnitPrice * (p.qty || 1));
+
+      buyerTotalSpend.set(p.buyer_name, (buyerTotalSpend.get(p.buyer_name) || 0) + spend);
+      buyerTotalQty.set(p.buyer_name, (buyerTotalQty.get(p.buyer_name) || 0) + (p.qty || 1));
+    }
+  });
+
+  // 2. 針對每個品項，依模式優先順序排序喊單，並依據庫存 (stock) 進行配分
+  items.forEach(item => {
+    const stock = Number(item.stock) || 1;
+    let remainingStock = stock;
+
+    let itemParts = participants.filter(p => p.item_id === item.id);
+
+    // 依據模式排序 itemParts
+    itemParts.sort((a, b) => {
+      if (mode === 'allin_time_first') {
+        // ALL IN 優先 over 非 ALL IN
+        if (a.is_allin && !b.is_allin) return -1;
+        if (!a.is_allin && b.is_allin) return 1;
+        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+      } else if (mode === 'amount_first') {
+        // 總消費金額高者優先
+        const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
+        const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+        if (spendB !== spendA) return spendB - spendA;
+        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+      } else if (mode === 'qty_first') {
+        // 總購買數量多者優先
+        const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
+        const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
+        if (qtyB !== qtyA) return qtyB - qtyA;
+        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+      } else {
+        // 'time_first' 先喊先贏: 依時間排序
+        return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+      }
+    });
+
+    // 配分扣減庫存
+    itemParts.forEach(p => {
+      if (remainingStock > 0) {
+        const take = Math.min(remainingStock, Number(p.qty) || 1);
+        allocatedMap.set(p.id, take);
+        remainingStock -= take;
+      } else {
+        allocatedMap.set(p.id, 0); // 庫存用盡，未能配到
+      }
+    });
+  });
+
+  return allocatedMap;
+}
+
 export default function BoxSplitDetail({ splitId, onBack }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
@@ -408,15 +479,20 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                     <div className="flex flex-wrap gap-2">
                       {itemParticipants.map((p) => {
                         const singleUnitPrice = stock > 0 ? (unitPrice / stock) : unitPrice;
-                        const partCost = Math.round(singleUnitPrice * p.qty);
+                        const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
+                        const partCost = Math.round(singleUnitPrice * allocatedQty);
 
                         return (
                           <div
                             key={p.id}
-                            className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px]"
+                            className={`rounded-xl p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px] border transition-all ${
+                              allocatedQty === 0 
+                                ? 'bg-gray-100/70 dark:bg-gray-800/50 border-dashed border-gray-300 dark:border-gray-700 opacity-60' 
+                                : 'bg-gray-50 dark:bg-gray-750 border-gray-200 dark:border-gray-700'
+                            }`}
                           >
                             <div className="space-y-0.5 flex-1 min-w-0">
-                              <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1 flex-wrap">
                                 <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
                                   {p.buyer_name}
                                 </span>
@@ -425,10 +501,19 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                                     ALL IN
                                   </span>
                                 )}
+                                {allocatedQty === 0 ? (
+                                  <span className="text-[9px] font-bold bg-red-100 dark:bg-red-950/50 text-red-700 dark:text-red-300 px-1 rounded">
+                                    候補
+                                  </span>
+                                ) : allocatedQty < p.qty ? (
+                                  <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1 rounded">
+                                    配到 x{allocatedQty}
+                                  </span>
+                                ) : null}
                               </div>
                               <div className="text-[10px] text-gray-500 flex items-center gap-1">
                                 <strong>x{p.qty}</strong>
-                                <span>• ${partCost}</span>
+                                <span>• {allocatedQty > 0 ? `$${partCost}` : '$0 (未配到)'}</span>
                               </div>
                               {p.timestamp && (
                                 <div className="text-[9px] text-gray-400">
@@ -496,6 +581,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           split={split}
           items={items}
           participants={participants}
+          allocatedMap={allocatedMap}
           getItemUnitPrice={getItemUnitPrice}
           unitSecondShipping={unitSecondShipping}
           onClose={() => setIsReconciliationOpen(false)}
@@ -841,9 +927,17 @@ function AddParticipantModal({ splitId, itemId, items, onClose }) {
 // ----------------------------------------------------------------------
 // 子彈窗 3：買家對帳與文案生成 Modal (ReconciliationModal)
 // ----------------------------------------------------------------------
-function ReconciliationModal({ split, items, participants, getItemUnitPrice, unitSecondShipping, onClose }) {
+function ReconciliationModal({ split, items, participants, allocatedMap, getItemUnitPrice, unitSecondShipping, onClose }) {
   const [selectedBuyer, setSelectedBuyer] = useState('');
   const [isCopied, setIsCopied] = useState(false);
+
+  // 模式標籤對照表
+  const MODE_LABELS = {
+    time_first: '先喊先贏 (按時間排序)',
+    amount_first: '金額多帶優先',
+    qty_first: '數量帶多優先',
+    allin_time_first: 'ALL IN 外加先喊先贏'
+  };
 
   // 整理全團所有獨一無二的參團人員買家 ID
   const allBuyerNames = Array.from(new Set(participants.map(p => p.buyer_name))).filter(Boolean);
@@ -863,20 +957,26 @@ function ReconciliationModal({ split, items, participants, getItemUnitPrice, uni
         const uPrice = getItemUnitPrice(item);
         const stock = Number(item.stock) || 1;
         const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
-        const subTotal = Math.round(singleUnitPrice * p.qty);
-        totalItemsCost += subTotal;
-        totalQuantity += p.qty;
+        const allocatedQty = allocatedMap?.get(p.id) ?? 0;
+        const subTotal = Math.round(singleUnitPrice * allocatedQty);
+
+        if (allocatedQty > 0) {
+          totalItemsCost += subTotal;
+          totalQuantity += allocatedQty;
+        }
 
         itemSummaries.push({
           itemName: item.name,
-          qty: p.qty,
+          claimedQty: p.qty,
+          allocatedQty,
           unitPrice: Math.round(singleUnitPrice),
-          subTotal
+          subTotal,
+          isAllocated: allocatedQty > 0
         });
       }
     });
 
-    const buyerSecondShipping = unitSecondShipping * itemSummaries.length; // 按認領種類數平攤
+    const buyerSecondShipping = unitSecondShipping * itemSummaries.filter(i => i.isAllocated).length; // 按配到成功的種類數平攤
     const finalTotal = totalItemsCost + buyerSecondShipping;
 
     return {
@@ -896,14 +996,29 @@ function ReconciliationModal({ split, items, participants, getItemUnitPrice, uni
     if (!sum) return '';
     let text = `【拆團對帳單 - ${sum.buyerName}】\n`;
     text += `團名：${split.title}\n`;
+    text += `優先模式：${MODE_LABELS[split.mode] || '先喊先贏'}\n`;
     text += `------------------------\n`;
-    text += `認領品項：\n`;
-    sum.itemSummaries.forEach(i => {
-      text += `• ${i.itemName} x ${i.qty} ($${i.subTotal})\n`;
-    });
+    text += `中選配分品項：\n`;
+    const allocatedItems = sum.itemSummaries.filter(i => i.isAllocated);
+    if (allocatedItems.length > 0) {
+      allocatedItems.forEach(i => {
+        text += `• ${i.itemName} x ${i.allocatedQty} ($${i.subTotal})\n`;
+      });
+    } else {
+      text += `（無中選品項 / 候補中）\n`;
+    }
+
+    const unallocatedItems = sum.itemSummaries.filter(i => !i.isAllocated);
+    if (unallocatedItems.length > 0) {
+      text += `未中選(候補)：\n`;
+      unallocatedItems.forEach(i => {
+        text += `• ${i.itemName} x ${i.claimedQty} ($0)\n`;
+      });
+    }
+
     text += `------------------------\n`;
     text += `品項費用小計：NT$ ${sum.totalItemsCost}\n`;
-    if (unitSecondShipping > 0) {
+    if (unitSecondShipping > 0 && sum.buyerSecondShipping > 0) {
       text += `二補運費小計：NT$ ${sum.buyerSecondShipping}\n`;
     }
     text += `應付總金額：NT$ ${sum.finalTotal}\n`;
@@ -981,11 +1096,25 @@ function ReconciliationModal({ split, items, participants, getItemUnitPrice, uni
 
               {/* 品項明細 */}
               <div className="space-y-1.5 text-xs">
-                <span className="font-bold text-gray-500 block">認領品項清單：</span>
+                <span className="font-bold text-gray-500 block">喊單與配分品項清單：</span>
                 {activeSummary.itemSummaries.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-center bg-white dark:bg-gray-900 p-2 rounded-xl border border-gray-150 dark:border-gray-750">
-                    <span>{item.itemName} x <strong>{item.qty}</strong></span>
-                    <span className="font-bold text-purple-700 dark:text-purple-300">NT$ {item.subTotal}</span>
+                  <div 
+                    key={idx} 
+                    className={`flex justify-between items-center p-2 rounded-xl border ${
+                      item.isAllocated 
+                        ? 'bg-white dark:bg-gray-900 border-gray-150 dark:border-gray-750' 
+                        : 'bg-gray-100/60 dark:bg-gray-800/40 border-dashed border-gray-300 dark:border-gray-700 opacity-60'
+                    }`}
+                  >
+                    <div>
+                      <span>{item.itemName} x <strong>{item.allocatedQty}</strong></span>
+                      {item.claimedQty > item.allocatedQty && (
+                        <span className="text-[10px] text-gray-400 ml-1.5">(原喊 x{item.claimedQty})</span>
+                      )}
+                    </div>
+                    <span className={`font-bold ${item.isAllocated ? 'text-purple-700 dark:text-purple-300' : 'text-gray-400'}`}>
+                      {item.isAllocated ? `NT$ ${item.subTotal}` : '未配到 ($0)'}
+                    </span>
                   </div>
                 ))}
               </div>
