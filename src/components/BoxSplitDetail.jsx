@@ -2,7 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Pencil, Sparkles, 
-  Copy, Check, UserPlus, DollarSign, Calculator, Image as ImageIcon, Camera, X 
+  Copy, Check, UserPlus, DollarSign, Calculator, Image as ImageIcon, Camera, X,
+  Table, LayoutGrid, Download
 } from 'lucide-react';
 import { db } from '../db';
 import AddBoxSplitModal, { BOX_SPLIT_MODES } from './AddBoxSplitModal';
@@ -150,6 +151,9 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
   const [copiedBuyer, setCopiedBuyer] = useState(null);
 
+  // 視圖切換狀態：'card' (卡片視圖) | 'sheet' (Sheet 表格試算表視圖)
+  const [viewMode, setViewMode] = useState('card');
+
   // 讀取拆團主表
   const split = useLiveQuery(() => db.box_splits.get(Number(splitId)), [splitId]);
   // 讀取拆團品項 (種類)
@@ -274,9 +278,133 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     }
   };
 
-  // 刪除參團人員紀錄
-  const handleDeleteParticipant = async (participantId) => {
-    await db.box_split_participants.delete(participantId);
+  // 複製單一買家對帳單
+  const handleCopyBuyerBill = (buyerName) => {
+    const buyerParts = participants.filter(p => p.buyer_name === buyerName);
+    let totalItemsCost = 0;
+    const lines = [];
+
+    buyerParts.forEach(p => {
+      const item = items.find(i => i.id === p.item_id);
+      if (item) {
+        const uPrice = getItemUnitPrice(item);
+        const stock = Number(item.stock) || 1;
+        const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+        const allocatedQty = allocatedMap.get(p.id) ?? 0;
+        const subTotal = Math.round(singleUnitPrice * allocatedQty);
+
+        if (allocatedQty > 0) {
+          totalItemsCost += subTotal;
+          lines.push(`- ${item.name} x${allocatedQty} : $${subTotal}`);
+        } else {
+          lines.push(`- ${item.name} x${p.qty} : $0 (未配到)`);
+        }
+      }
+    });
+
+    const allocatedKindsCount = buyerParts.filter(p => (allocatedMap.get(p.id) ?? 0) > 0).length;
+    const buyerSecondShipping = unitSecondShipping * allocatedKindsCount;
+    const finalTotal = totalItemsCost + buyerSecondShipping;
+
+    let text = `【${split.title}】對帳單 - ${buyerName}\n`;
+    text += `--------------------\n`;
+    text += lines.join('\n') + '\n';
+    text += `--------------------\n`;
+    text += `品項小計：$${totalItemsCost}\n`;
+    if (totalSecondShipping > 0) {
+      text += `二補運費：$${buyerSecondShipping}\n`;
+    }
+    text += `應付總計：$${finalTotal}\n`;
+
+    navigator.clipboard.writeText(text);
+    setCopiedBuyer(buyerName);
+    setTimeout(() => setCopiedBuyer(null), 2000);
+    alert(`✨ 已複製 ${buyerName} 的對帳文案至剪貼簿！`);
+  };
+
+  // 匯出整個拆團總表為 CSV (可直接在 Excel / Google Sheets 開啟)
+  const handleExportSheetCSV = () => {
+    if (!split) return;
+
+    let csvContent = '\uFEFF'; // UTF-8 BOM 防中文亂碼
+    csvContent += `【揪拆團總表 Sheet - ${split.title}】\n`;
+    csvContent += `日期,${split.date || ''}\n`;
+    csvContent += `優先模式,${currentModeInfo?.label || ''}\n`;
+    csvContent += `拆團總金額,NT$ ${split.total_amount || 0}\n`;
+    csvContent += `總二補金額,NT$ ${split.second_shipping_fee || 0}\n`;
+    csvContent += `\n`;
+
+    csvContent += `--- 品項種類與配分對帳表 ---\n`;
+    csvContent += `序號,品項名稱,庫存/總數,種類單價,單件金額,已認領數,完售狀態,喊單與配分名單\n`;
+
+    items.forEach((item, idx) => {
+      const uPrice = getItemUnitPrice(item);
+      const stock = Number(item.stock) || 1;
+      const singleUnitPrice = Math.round(stock > 0 ? (uPrice / stock) : uPrice);
+      const itemParts = participants.filter(p => p.item_id === item.id);
+      const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p.qty) || 0), 0);
+      const isSoldOut = totalBoughtQty >= stock;
+
+      const claimantsStr = itemParts.map(p => {
+        const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
+        const status = passTriggeredSet.has(p.id)
+          ? '[無A則Pass]'
+          : allocatedQty === 0
+          ? '[候補]'
+          : allocatedQty < p.qty
+          ? `[配到x${allocatedQty}]`
+          : `[得標x${allocatedQty}]`;
+        return `${p.buyer_name}(喊x${p.qty} ${status})`;
+      }).join('; ');
+
+      const cleanItemName = (item.name || '').replace(/,/g, ' ');
+      csvContent += `${idx + 1},"${cleanItemName}",${stock},${uPrice},${singleUnitPrice},${totalBoughtQty},${isSoldOut ? '完售' : '開放中'},"${claimantsStr}"\n`;
+    });
+
+    csvContent += `\n`;
+    csvContent += `--- 參團買家對帳彙整表 ---\n`;
+    csvContent += `買家ID/姓名,中選品項與數量,品項費用小計,二補運費,應付總金額\n`;
+
+    const allBuyerNames = Array.from(new Set(participants.map(p => p.buyer_name))).filter(Boolean);
+    allBuyerNames.forEach(bName => {
+      const buyerParts = participants.filter(p => p.buyer_name === bName);
+      let totalItemsCost = 0;
+      let allocatedKindsCount = 0;
+      const itemDetails = [];
+
+      buyerParts.forEach(p => {
+        const item = items.find(i => i.id === p.item_id);
+        if (item) {
+          const uPrice = getItemUnitPrice(item);
+          const stock = Number(item.stock) || 1;
+          const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+          const allocatedQty = allocatedMap.get(p.id) ?? 0;
+          const subTotal = Math.round(singleUnitPrice * allocatedQty);
+
+          if (allocatedQty > 0) {
+            totalItemsCost += subTotal;
+            allocatedKindsCount++;
+            itemDetails.push(`${item.name} x${allocatedQty} ($${subTotal})`);
+          }
+        }
+      });
+
+      const buyerSecondShipping = unitSecondShipping * allocatedKindsCount;
+      const finalTotal = totalItemsCost + buyerSecondShipping;
+      const cleanBuyerName = bName.replace(/,/g, ' ');
+
+      csvContent += `"${cleanBuyerName}","${itemDetails.join('; ')}",${totalItemsCost},${buyerSecondShipping},${finalTotal}\n`;
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    const safeTitle = (split.title || '拆團總表').replace(/[\\/:*?"<>|]/g, '_');
+    link.setAttribute('download', `CollectTrack_拆團Sheet_${safeTitle}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -391,8 +519,8 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       </div>
 
       {/* 品項種類管理頭列與按鈕 */}
-      <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <h2 className="text-lg font-black text-gray-900 dark:text-gray-100">品項種類清單 ({items.length})</h2>
           <button
             onClick={handleAutoSortByLibrary}
@@ -404,17 +532,87 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </button>
         </div>
 
-        <button
-          onClick={() => setIsAddItemOpen(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95"
-        >
-          <Plus size={16} />
-          <span>新增種類</span>
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* 視圖切換按鈕組 */}
+          <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('card')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                viewMode === 'card'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs'
+                  : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              <LayoutGrid size={14} />
+              <span>卡片視圖</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('sheet')}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                viewMode === 'sheet'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs'
+                  : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
+              }`}
+            >
+              <Table size={14} />
+              <span>Sheet 表格視圖</span>
+            </button>
+          </div>
+
+          {viewMode === 'sheet' && (
+            <button
+              type="button"
+              onClick={handleExportSheetCSV}
+              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-2xs transition-all active:scale-95"
+              title="匯出此拆團總表為 CSV 檔案 (可於 Excel / Google Sheets 開啟)"
+            >
+              <Download size={14} />
+              <span>匯出 CSV</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsAddItemOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95"
+          >
+            <Plus size={16} />
+            <span>新增種類</span>
+          </button>
+        </div>
       </div>
 
-      {/* 品項種類卡片列表 (手繪稿 3) */}
-      <div className="space-y-4">
+      {viewMode === 'sheet' ? (
+        /* Sheet 表格試算表視圖 */
+        <BoxSplitSheetView
+          split={split}
+          items={items}
+          participants={participants}
+          allocatedMap={allocatedMap}
+          passTriggeredSet={passTriggeredSet}
+          getItemUnitPrice={getItemUnitPrice}
+          unitSecondShipping={unitSecondShipping}
+          onEditItem={(item) => {
+            setEditingItem(item);
+            setIsAddItemOpen(true);
+          }}
+          onDeleteItem={handleDeleteItem}
+          onAddParticipant={(itemId) => {
+            setActiveItemIdForParticipant(itemId);
+            setIsAddParticipantOpen(true);
+          }}
+          onEditParticipant={(p, itemId) => {
+            setEditingParticipant(p);
+            setActiveItemIdForParticipant(itemId);
+            setIsAddParticipantOpen(true);
+          }}
+          onDeleteParticipant={handleDeleteParticipant}
+          onCopyReconciliation={handleCopyBuyerBill}
+        />
+      ) : (
+        /* 卡片視圖 */
+        <div className="space-y-4">
         {items.length > 0 ? (
           items.map((item, idx) => {
             const unitPrice = getItemUnitPrice(item);
@@ -635,6 +833,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </div>
         )}
       </div>
+      )}
 
       {/* 彈窗 1：新增/編輯品項種類 Modal */}
       {isAddItemOpen && (
@@ -1355,6 +1554,293 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------
+// 子組件：拆團 Sheet 表格試算表視圖 (BoxSplitSheetView)
+// ----------------------------------------------------------------------
+function BoxSplitSheetView({ 
+  split, items, participants, allocatedMap, passTriggeredSet, getItemUnitPrice, unitSecondShipping, 
+  onEditItem, onDeleteItem, onAddParticipant, onEditParticipant, onDeleteParticipant, onCopyReconciliation 
+}) {
+  const [sheetTab, setSheetTab] = useState('items'); // 'items' | 'buyers'
+  const allBuyerNames = Array.from(new Set(participants.map(p => p.buyer_name))).filter(Boolean);
+
+  return (
+    <div className="space-y-4 animate-in fade-in duration-200">
+      {/* Sub-Tab 選擇：表一 vs 表二 */}
+      <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-700 pb-2">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSheetTab('items')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              sheetTab === 'items'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            <span>📊 表一：品項與喊單配分總表 ({items.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSheetTab('buyers')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+              sheetTab === 'buyers'
+                ? 'bg-purple-600 text-white shadow-xs'
+                : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+            }`}
+          >
+            <span>👤 表二：參團買家對帳總表 ({allBuyerNames.length})</span>
+          </button>
+        </div>
+      </div>
+
+      {sheetTab === 'items' ? (
+        /* 表一：品項與喊單配分總表 */
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-700 overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-gray-100 dark:bg-gray-750 text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 font-black whitespace-nowrap">
+                <th className="p-3 w-10 text-center">#</th>
+                <th className="p-3 w-14 text-center">圖片</th>
+                <th className="p-3 min-w-[120px]">品項種類</th>
+                <th className="p-3 text-center w-16">庫存</th>
+                <th className="p-3 text-right w-24">單件金額</th>
+                <th className="p-3 text-center w-28">認領進度</th>
+                <th className="p-3 min-w-[280px]">參團人員與配分名單 (Sheet View)</th>
+                <th className="p-3 text-center w-20">操作</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-150 dark:divide-gray-750">
+              {items.length > 0 ? (
+                items.map((item, idx) => {
+                  const uPrice = getItemUnitPrice(item);
+                  const stock = Number(item.stock) || 1;
+                  const singleUnitPrice = Math.round(stock > 0 ? (uPrice / stock) : uPrice);
+                  const itemParts = participants.filter(p => p.item_id === item.id);
+                  const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p.qty) || 0), 0);
+                  const isSoldOut = totalBoughtQty >= stock;
+
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
+                      <td className="p-3 text-center font-bold text-gray-500">{idx + 1}</td>
+                      <td className="p-3 text-center">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-lg border border-gray-200 inline-block" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 inline-flex items-center justify-center text-gray-400">
+                            <ImageIcon size={14} />
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 font-extrabold text-gray-900 dark:text-gray-100">
+                        {item.name}
+                        {item.price_multiplier && item.price_multiplier !== 1.0 && (
+                          <span className="text-[10px] text-gray-400 block font-normal">(倍率: {item.price_multiplier}x)</span>
+                        )}
+                      </td>
+                      <td className="p-3 text-center font-bold">{stock}</td>
+                      <td className="p-3 text-right font-extrabold text-purple-700 dark:text-purple-300">
+                        NT$ {singleUnitPrice}
+                      </td>
+                      <td className="p-3 text-center">
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          isSoldOut ? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
+                        }`}>
+                          {totalBoughtQty} / {stock} {isSoldOut ? '(完售)' : ''}
+                        </span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-wrap gap-1.5 items-center">
+                          {itemParts.map(p => {
+                            const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
+                            return (
+                              <span 
+                                key={p.id} 
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-bold ${
+                                  passTriggeredSet.has(p.id)
+                                    ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 line-through opacity-70'
+                                    : allocatedQty === 0
+                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-dashed border-gray-300 opacity-60'
+                                    : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200'
+                                }`}
+                              >
+                                <span>{p.buyer_name}</span>
+                                <strong className="text-purple-600 dark:text-purple-400">x{p.qty}</strong>
+                                {passTriggeredSet.has(p.id) ? (
+                                  <span className="text-[9px] text-purple-700 font-black">(無A則Pass)</span>
+                                ) : allocatedQty === 0 ? (
+                                  <span className="text-[9px] text-red-600 font-bold">(候補)</span>
+                                ) : allocatedQty < p.qty ? (
+                                  <span className="text-[9px] text-amber-600 font-bold">(配到x{allocatedQty})</span>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => onEditParticipant(p, item.id)}
+                                  className="p-0.5 hover:text-primary rounded text-gray-400 ml-0.5"
+                                  title="編輯喊單"
+                                >
+                                  <Pencil size={10} />
+                                </button>
+                              </span>
+                            );
+                          })}
+
+                          <button
+                            type="button"
+                            onClick={() => onAddParticipant(item.id)}
+                            className="px-2 py-0.5 text-[10px] font-bold text-primary hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-lg border border-dashed border-purple-300 transition-all"
+                          >
+                            + 喊單
+                          </button>
+                        </div>
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => onEditItem(item)}
+                            className="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            title="編輯品項"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDeleteItem(item.id)}
+                            className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
+                            title="刪除品項"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="8" className="p-8 text-center text-gray-400">
+                    尚無品項種類資料
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        /* 表二：參團買家對帳總表 Sheet */
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-700 overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="bg-emerald-700 text-white border-b border-emerald-800 font-black whitespace-nowrap">
+                <th className="p-3 min-w-[120px]">買家 ID / 姓名</th>
+                <th className="p-3 min-w-[240px]">中選配分品項明細</th>
+                <th className="p-3 text-center w-24">中選總件數</th>
+                <th className="p-3 text-right w-24">品項小計</th>
+                <th className="p-3 text-right w-24">二補運費</th>
+                <th className="p-3 text-right w-28">應付總金額</th>
+                <th className="p-3 text-center w-28">對帳文案</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-150 dark:divide-gray-750">
+              {allBuyerNames.length > 0 ? (
+                allBuyerNames.map((bName) => {
+                  const buyerParts = participants.filter(p => p.buyer_name === bName);
+                  const itemSummaries = [];
+                  let totalItemsCost = 0;
+                  let totalQuantity = 0;
+
+                  buyerParts.forEach(p => {
+                    const item = items.find(i => i.id === p.item_id);
+                    if (item) {
+                      const uPrice = getItemUnitPrice(item);
+                      const stock = Number(item.stock) || 1;
+                      const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+                      const allocatedQty = allocatedMap.get(p.id) ?? 0;
+                      const subTotal = Math.round(singleUnitPrice * allocatedQty);
+
+                      if (allocatedQty > 0) {
+                        totalItemsCost += subTotal;
+                        totalQuantity += allocatedQty;
+                      }
+
+                      itemSummaries.push({
+                        itemName: item.name,
+                        allocatedQty,
+                        claimedQty: p.qty,
+                        subTotal,
+                        isAllocated: allocatedQty > 0
+                      });
+                    }
+                  });
+
+                  const allocatedKindsCount = itemSummaries.filter(i => i.isAllocated).length;
+                  const buyerSecondShipping = unitSecondShipping * allocatedKindsCount;
+                  const finalTotal = totalItemsCost + buyerSecondShipping;
+
+                  return (
+                    <tr key={bName} className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
+                      <td className="p-3 font-extrabold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                        <span>👤</span>
+                        <span>{bName}</span>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex flex-wrap gap-1">
+                          {itemSummaries.map((s, i) => (
+                            <span 
+                              key={i} 
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                                s.isAllocated 
+                                  ? 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border border-purple-200' 
+                                  : 'bg-gray-100 text-gray-400 border border-dashed border-gray-300 line-through'
+                              }`}
+                            >
+                              {s.itemName} x{s.allocatedQty} {s.isAllocated ? `($${s.subTotal})` : '(未配到)'}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="p-3 text-center font-bold text-purple-700 dark:text-purple-300">
+                        {totalQuantity} 件
+                      </td>
+                      <td className="p-3 text-right font-bold text-gray-700 dark:text-gray-300">
+                        NT$ {totalItemsCost}
+                      </td>
+                      <td className="p-3 text-right font-bold text-purple-700 dark:text-purple-300">
+                        NT$ {buyerSecondShipping}
+                      </td>
+                      <td className="p-3 text-right font-black text-emerald-600 dark:text-emerald-400 text-sm">
+                        NT$ {finalTotal}
+                      </td>
+                      <td className="p-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => onCopyReconciliation(bName)}
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-2xs transition-all active:scale-95 flex items-center gap-1 mx-auto"
+                        >
+                          <Copy size={11} />
+                          <span>複製文案</span>
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="7" className="p-8 text-center text-gray-400">
+                    尚無買家參團紀錄
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
