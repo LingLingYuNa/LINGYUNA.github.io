@@ -100,6 +100,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const [isAddItemOpen, setIsAddItemOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isAddParticipantOpen, setIsAddParticipantOpen] = useState(false);
+  const [editingParticipant, setEditingParticipant] = useState(null);
   const [activeItemIdForParticipant, setActiveItemIdForParticipant] = useState(null);
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
   const [copiedBuyer, setCopiedBuyer] = useState(null);
@@ -539,14 +540,28 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                               )}
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => handleDeleteParticipant(p.id)}
-                              className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
-                              title="刪除參團者"
-                            >
-                              <X size={13} />
-                            </button>
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEditingParticipant(p);
+                                  setActiveItemIdForParticipant(p.item_id);
+                                  setIsAddParticipantOpen(true);
+                                }}
+                                className="p-1 text-gray-400 hover:text-primary rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+                                title="編輯參團者"
+                              >
+                                <Pencil size={12} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteParticipant(p.id)}
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+                                title="刪除參團者"
+                              >
+                                <X size={12} />
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -579,15 +594,17 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         />
       )}
 
-      {/* 彈窗 2：新增參團人員 Modal */}
+      {/* 彈窗 2：新增/編輯參團人員 Modal */}
       {isAddParticipantOpen && activeItemIdForParticipant && (
         <AddParticipantModal
           splitId={splitId}
           itemId={activeItemIdForParticipant}
+          existingParticipant={editingParticipant}
           items={items}
           onClose={() => {
             setIsAddParticipantOpen(false);
             setActiveItemIdForParticipant(null);
+            setEditingParticipant(null);
           }}
         />
       )}
@@ -819,13 +836,14 @@ function AddItemModal({ splitId, existingItem, onClose }) {
 // ----------------------------------------------------------------------
 // 子彈窗 2：新增參團人員 (AddParticipantModal)
 // ----------------------------------------------------------------------
-function AddParticipantModal({ splitId, itemId, items, onClose }) {
+function AddParticipantModal({ splitId, itemId, existingParticipant, items, onClose }) {
   const currentItem = items.find(i => i.id === itemId);
 
-  const [buyerName, setBuyerName] = useState('');
-  const [qty, setQty] = useState('1');
-  const [isAllin, setIsAllin] = useState(false);
+  const [buyerName, setBuyerName] = useState(existingParticipant?.buyer_name || '');
+  const [qty, setQty] = useState(existingParticipant?.qty ? String(existingParticipant.qty) : '1');
+  const [isAllin, setIsAllin] = useState(Boolean(existingParticipant?.is_allin));
   const [timestamp, setTimestamp] = useState(() => {
+    if (existingParticipant?.timestamp) return existingParticipant.timestamp;
     const now = new Date();
     const pad = (n) => n.toString().padStart(2, '0');
     return `${now.getMonth() + 1}/${now.getDate()} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
@@ -845,19 +863,29 @@ function AddParticipantModal({ splitId, itemId, items, onClose }) {
 
     setIsSaving(true);
     try {
-      await db.box_split_participants.add({
-        box_split_id: Number(splitId),
-        item_id: Number(itemId),
-        buyer_name: buyerName.trim(),
-        qty: Number(qty) || 1,
-        is_allin: Boolean(isAllin),
-        timestamp: timestamp.trim(),
-        created_at: new Date().toISOString()
-      });
+      if (existingParticipant) {
+        await db.box_split_participants.update(existingParticipant.id, {
+          buyer_name: buyerName.trim(),
+          qty: Number(qty) || 1,
+          is_allin: Boolean(isAllin),
+          timestamp: timestamp.trim(),
+          updated_at: new Date().toISOString()
+        });
+      } else {
+        await db.box_split_participants.add({
+          box_split_id: Number(splitId),
+          item_id: Number(itemId),
+          buyer_name: buyerName.trim(),
+          qty: Number(qty) || 1,
+          is_allin: Boolean(isAllin),
+          timestamp: timestamp.trim(),
+          created_at: new Date().toISOString()
+        });
+      }
       onClose();
     } catch (err) {
-      console.error('新增參團人員失敗:', err);
-      alert('登記失敗');
+      console.error('儲存參團人員失敗:', err);
+      alert('儲存失敗');
     } finally {
       setIsSaving(false);
     }
@@ -869,7 +897,9 @@ function AddParticipantModal({ splitId, itemId, items, onClose }) {
         
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
           <div>
-            <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">登記參團人員</h3>
+            <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">
+              {existingParticipant ? '編輯參團人員' : '登記參團人員'}
+            </h3>
             <span className="text-[10px] text-purple-600 font-bold block">品項：{currentItem?.name || '未知種類'}</span>
           </div>
           <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full">
