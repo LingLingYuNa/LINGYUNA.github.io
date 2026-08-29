@@ -407,7 +407,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                               )}
                             </div>
                             <div className="text-[10px] text-gray-500 flex items-center gap-1">
-                              <span>數量: <strong>x{p.qty}</strong></span>
+                              <strong>x{p.qty}</strong>
                               <span>• ${unitPrice * p.qty}</span>
                             </div>
                             {p.timestamp && (
