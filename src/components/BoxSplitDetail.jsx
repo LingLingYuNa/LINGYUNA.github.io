@@ -12,17 +12,21 @@ import { useHardwareBack } from '../hooks/useHardwareBack';
 // ----------------------------------------------------------------------
 // 配分引擎：根據模式 (time_first, amount_first, qty_first, allin_time_first) 與品項庫存 (stock) 配分
 // ----------------------------------------------------------------------
-export function computeSplitAllocations(split, items, participants, getItemUnitPrice) {
+export function computeSplitAllocations(split, items = [], participants = [], getItemUnitPrice) {
   const mode = split?.mode || 'time_first';
-  const allocatedMap = new Map(); // participantId -> allocatedQty (number)
+  const allocatedMap = new Map();
+
+  const safeItems = Array.isArray(items) ? items : [];
+  const safeParticipants = Array.isArray(participants) ? participants : [];
 
   // 1. 預先計算買家在全團的總消費金額與總喊單數量 (用於 amount_first / qty_first 模式的優先權排序)
   const buyerTotalSpend = new Map();
   const buyerTotalQty = new Map();
 
-  participants.forEach(p => {
-    const item = items.find(i => i.id === p.item_id);
-    if (item) {
+  safeParticipants.forEach(p => {
+    if (!p) return;
+    const item = safeItems.find(i => i && i.id === p.item_id);
+    if (item && typeof getItemUnitPrice === 'function') {
       const uPrice = getItemUnitPrice(item);
       const stock = Number(item.stock) || 1;
       const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
@@ -34,11 +38,12 @@ export function computeSplitAllocations(split, items, participants, getItemUnitP
   });
 
   // 2. 針對每個品項，依模式優先順序排序喊單，並依據庫存 (stock) 進行配分
-  items.forEach(item => {
+  safeItems.forEach(item => {
+    if (!item) return;
     const stock = Number(item.stock) || 1;
     let remainingStock = stock;
 
-    let itemParts = participants.filter(p => p.item_id === item.id);
+    let itemParts = safeParticipants.filter(p => p && p.item_id === item.id);
 
     // 依據模式排序 itemParts
     itemParts.sort((a, b) => {
@@ -127,6 +132,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
   // 計算特定品項種類單價
   const getItemUnitPrice = (item) => {
+    if (!item) return 0;
     if (item.manual_price !== undefined && item.manual_price !== null && item.manual_price !== '') {
       return Number(item.manual_price) || 0;
     }
@@ -136,6 +142,20 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     }
     return Math.round(averageUnitPrice);
   };
+
+  if (!split) {
+    return (
+      <div className="p-8 text-center text-gray-500">
+        <p>載入中或拆團不存在...</p>
+        <button onClick={onBack} className="mt-4 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold">
+          返回列表
+        </button>
+      </div>
+    );
+  }
+
+  const currentModeInfo = BOX_SPLIT_MODES.find(m => m.id === split.mode) || BOX_SPLIT_MODES[0];
+  const allocatedMap = computeSplitAllocations(split, items, participants, getItemUnitPrice);
 
   // 依據全域角色排序庫自動排列品項
   const handleAutoSortByLibrary = async () => {
@@ -202,19 +222,6 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const handleDeleteParticipant = async (participantId) => {
     await db.box_split_participants.delete(participantId);
   };
-
-  if (!split) {
-    return (
-      <div className="p-8 text-center text-gray-500">
-        <p>載入中或拆團不存在...</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold">
-          返回列表
-        </button>
-      </div>
-    );
-  }
-
-  const currentModeInfo = BOX_SPLIT_MODES.find(m => m.id === split.mode) || BOX_SPLIT_MODES[0];
 
   return (
     <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32">
