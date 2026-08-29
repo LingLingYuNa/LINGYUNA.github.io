@@ -390,43 +390,48 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
                   {itemParticipants.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
-                      {itemParticipants.map((p) => (
-                        <div
-                          key={p.id}
-                          className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px]"
-                        >
-                          <div className="space-y-0.5 flex-1 min-w-0">
-                            <div className="flex items-center gap-1">
-                              <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
-                                {p.buyer_name}
-                              </span>
-                              {p.is_allin && (
-                                <span className="text-[9px] font-black bg-amber-400 text-black px-1 rounded">
-                                  ALL IN
+                      {itemParticipants.map((p) => {
+                        const singleUnitPrice = stock > 0 ? (unitPrice / stock) : unitPrice;
+                        const partCost = Math.round(singleUnitPrice * p.qty);
+
+                        return (
+                          <div
+                            key={p.id}
+                            className="bg-gray-50 dark:bg-gray-750 border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px]"
+                          >
+                            <div className="space-y-0.5 flex-1 min-w-0">
+                              <div className="flex items-center gap-1">
+                                <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
+                                  {p.buyer_name}
                                 </span>
+                                {p.is_allin && (
+                                  <span className="text-[9px] font-black bg-amber-400 text-black px-1 rounded">
+                                    ALL IN
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-gray-500 flex items-center gap-1">
+                                <strong>x{p.qty}</strong>
+                                <span>• ${partCost}</span>
+                              </div>
+                              {p.timestamp && (
+                                <div className="text-[9px] text-gray-400">
+                                  🕒 {p.timestamp}
+                                </div>
                               )}
                             </div>
-                            <div className="text-[10px] text-gray-500 flex items-center gap-1">
-                              <strong>x{p.qty}</strong>
-                              <span>• ${unitPrice * p.qty}</span>
-                            </div>
-                            {p.timestamp && (
-                              <div className="text-[9px] text-gray-400">
-                                🕒 {p.timestamp}
-                              </div>
-                            )}
-                          </div>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteParticipant(p.id)}
-                            className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
-                            title="刪除參團者"
-                          >
-                            <X size={13} />
-                          </button>
-                        </div>
-                      ))}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteParticipant(p.id)}
+                              className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+                              title="刪除參團者"
+                            >
+                              <X size={13} />
+                            </button>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <p className="text-xs text-gray-400 italic">尚無參團人員登記 (可點擊右上角新增參團人)</p>
@@ -819,14 +824,16 @@ function ReconciliationModal({ split, items, participants, getItemUnitPrice, uni
       const item = items.find(i => i.id === p.item_id);
       if (item) {
         const uPrice = getItemUnitPrice(item);
-        const subTotal = uPrice * p.qty;
+        const stock = Number(item.stock) || 1;
+        const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+        const subTotal = Math.round(singleUnitPrice * p.qty);
         totalItemsCost += subTotal;
         totalQuantity += p.qty;
 
         itemSummaries.push({
           itemName: item.name,
           qty: p.qty,
-          unitPrice: uPrice,
+          unitPrice: Math.round(singleUnitPrice),
           subTotal
         });
       }
