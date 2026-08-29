@@ -382,16 +382,6 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                         {isSoldOut && (
                           <span className="text-[10px] bg-red-100 text-red-700 font-bold px-1.5 rounded">完售</span>
                         )}
-                        {totalBoughtQty > stock && (
-                          <button
-                            type="button"
-                            onClick={() => db.box_split_items.update(item.id, { stock: totalBoughtQty })}
-                            className="text-[10px] font-bold bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-900/60 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-800 transition-all cursor-pointer active:scale-95"
-                            title="點擊將庫存設定為已認領的總數量"
-                          >
-                            ⚠️ 已認領({totalBoughtQty})超過庫存({stock})，點此修正庫存為{totalBoughtQty}
-                          </button>
-                        )}
                       </div>
                     </div>
                   </div>
