@@ -195,8 +195,13 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
   const [copiedBuyer, setCopiedBuyer] = useState(null);
 
-  // 視圖切換狀態：'sheet' (Sheet 表格試算表視圖) | 'card' (卡片視圖)
-  const [viewMode, setViewMode] = useState('sheet');
+  // 視圖切換狀態：電腦版預設 'sheet' (Sheet 表格試算表視圖)，手機版預設 'card' (卡片視圖)
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      return 'sheet';
+    }
+    return 'card';
+  });
 
   // 讀取拆團主表
   const split = useLiveQuery(() => db.box_splits.get(Number(splitId)), [splitId]);
