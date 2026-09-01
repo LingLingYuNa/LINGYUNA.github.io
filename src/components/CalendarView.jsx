@@ -137,7 +137,7 @@ export default function CalendarView({ onOrderClick }) {
   return (
     <div className="space-y-4 pb-32">
       {/* 日曆主卡片 */}
-      <div className="bg-white dark:bg-gray-800 rounded-3xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/80 transition-colors">
+      <div className="bg-white dark:bg-gray-800 rounded-none p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black transition-colors">
         {/* 月份切換標頭 */}
         <div className="flex items-center justify-between mb-4 px-1">
           <h2 className="text-base font-bold text-gray-800 dark:text-gray-150">
@@ -146,7 +146,7 @@ export default function CalendarView({ onOrderClick }) {
           <div className="flex items-center gap-1.5">
             <button
               onClick={handlePrevMonth}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-none text-gray-500 dark:text-gray-400 transition-colors"
             >
               <ChevronLeft size={18} />
             </button>
@@ -156,13 +156,13 @@ export default function CalendarView({ onOrderClick }) {
                 setCurrentDate(today);
                 setSelectedDate(today);
               }}
-              className="text-xs font-semibold px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-primary-dark dark:text-primary transition-colors"
+              className="text-xs font-semibold px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-none text-primary-dark dark:text-primary transition-colors"
             >
               今天
             </button>
             <button
               onClick={handleNextMonth}
-              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400 transition-colors"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-none text-gray-500 dark:text-gray-400 transition-colors"
             >
               <ChevronRight size={18} />
             </button>
@@ -199,7 +199,7 @@ export default function CalendarView({ onOrderClick }) {
               <button
                 key={idx}
                 onClick={() => setSelectedDate(cell.date)}
-                className={`aspect-square rounded-2xl flex flex-col items-center justify-between p-1.5 relative transition-all active:scale-95 ${
+                className={`aspect-square rounded-none flex flex-col items-center justify-between p-1.5 relative transition-all active:scale-95 ${
                   cell.isCurrentMonth ? 'text-gray-800 dark:text-gray-200' : 'text-gray-300 dark:text-gray-600'
                 } ${
                   isSelected 
@@ -215,10 +215,10 @@ export default function CalendarView({ onOrderClick }) {
                 {/* 紅綠圓點 */}
                 <div className="flex gap-1 mb-0.5">
                   {hasOrder && (
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-red-400'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-none ${isSelected ? 'bg-white' : 'bg-red-400'}`} />
                   )}
                   {hasSale && (
-                    <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-secondary'}`} />
+                    <span className={`w-1.5 h-1.5 rounded-none ${isSelected ? 'bg-white' : 'bg-secondary'}`} />
                   )}
                 </div>
               </button>
@@ -239,8 +239,8 @@ export default function CalendarView({ onOrderClick }) {
         </div>
 
         {!hasRecords ? (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 border-dashed p-8 text-center flex flex-col items-center transition-colors">
-            <div className="w-12 h-12 bg-gray-50 dark:bg-gray-700/50 rounded-full flex justify-center items-center mb-2.5 text-gray-300 dark:text-gray-500">
+          <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black border-dashed p-8 text-center flex flex-col items-center transition-colors">
+            <div className="w-12 h-12 bg-gray-50 dark:bg-gray-700/50 rounded-none flex justify-center items-center mb-2.5 text-gray-300 dark:text-gray-500">
               <Info size={22} />
             </div>
             <p className="text-xs font-bold text-gray-500 dark:text-gray-400">此日無收支紀錄</p>
@@ -257,10 +257,10 @@ export default function CalendarView({ onOrderClick }) {
                 <div
                   key={order.id}
                   onClick={() => onOrderClick && onOrderClick(order.id)}
-                  className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex justify-between items-center hover:shadow-md dark:hover:bg-gray-750 active:scale-[0.99] transition-all cursor-pointer"
+                  className="bg-white dark:bg-gray-800 p-3.5 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black flex justify-between items-center hover:shadow-md dark:hover:bg-gray-750 active:scale-[0.99] transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-none bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 flex items-center justify-center shrink-0">
                       <ShoppingBag size={18} />
                     </div>
                     <div>
@@ -276,7 +276,7 @@ export default function CalendarView({ onOrderClick }) {
                       const statusInfo = getStatusStyle(order.status);
                       return (
                         <span
-                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full inline-block mt-1 scale-90 origin-right whitespace-nowrap shadow-sm ${statusInfo.color}`}
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded-none inline-block mt-1 scale-90 origin-right whitespace-nowrap shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${statusInfo.color}`}
                         >
                           {statusInfo.dot} {statusInfo.label}
                         </span>
@@ -293,10 +293,10 @@ export default function CalendarView({ onOrderClick }) {
               return (
                 <div
                   key={sale.id}
-                  className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex justify-between items-center transition-colors"
+                  className="bg-white dark:bg-gray-800 p-3.5 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black flex justify-between items-center transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-secondary-light/40 dark:bg-secondary-dark/20 text-secondary-dark dark:text-secondary flex items-center justify-center shrink-0">
+                    <div className="w-9 h-9 rounded-none bg-secondary-light/40 dark:bg-secondary-dark/20 text-secondary-dark dark:text-secondary flex items-center justify-center shrink-0">
                       <DollarSign size={18} />
                     </div>
                     <div>

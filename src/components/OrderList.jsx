@@ -481,34 +481,50 @@ export default function OrderList({ onOrderClick, currentTab }) {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl flex gap-0.5 transition-colors">
+          <div className="bg-white dark:bg-gray-800 p-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none flex gap-1">
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`p-2 font-black transition-all border-2 ${
+                viewMode === 'list' 
+                  ? 'bg-[#FFE66D] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'
+              }`}
               title="訂單清單"
             >
-              <List size={18} />
+              <List size={18} strokeWidth={2.5} />
             </button>
             <button
               onClick={() => setViewMode('items')}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === 'items' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`p-2 font-black transition-all border-2 ${
+                viewMode === 'items' 
+                  ? 'bg-[#FFE66D] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'
+              }`}
               title="物品清單"
             >
-              <Boxes size={18} />
+              <Boxes size={18} strokeWidth={2.5} />
             </button>
             <button
               onClick={() => setViewMode('gallery')}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === 'gallery' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`p-2 font-black transition-all border-2 ${
+                viewMode === 'gallery' 
+                  ? 'bg-[#FFE66D] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'
+              }`}
               title="圖牆模式"
             >
-              <LayoutGrid size={18} />
+              <LayoutGrid size={18} strokeWidth={2.5} />
             </button>
             <button
               onClick={() => setViewMode('calendar')}
-              className={`p-1.5 rounded-lg transition-all ${viewMode === 'calendar' ? 'bg-white dark:bg-gray-700 shadow-sm text-gray-800 dark:text-gray-100' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`p-2 font-black transition-all border-2 ${
+                viewMode === 'calendar' 
+                  ? 'bg-[#FFE66D] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'
+              }`}
               title="日曆模式"
             >
-              <Calendar size={18} />
+              <Calendar size={18} strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -519,40 +535,38 @@ export default function OrderList({ onOrderClick, currentTab }) {
         // --- 列表模式 ---
         <div className="space-y-4">
           {/* 支出 / 收入 / 待歸屬 三分頁 Tab */}
-          <div className="flex bg-gray-100/80 dark:bg-gray-800/80 p-1 rounded-2xl transition-colors gap-1">
+          <div className="flex bg-white dark:bg-gray-800 p-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none gap-1">
             <button
               onClick={() => setListType('expenses')}
-              className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
+              className={`flex-1 py-2 text-center text-xs font-black rounded-none transition-all uppercase border-2 ${
                 listType === 'expenses' 
-                  ? 'bg-primary text-white shadow-sm shadow-primary/20' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-[#FF6B6B] text-white border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               支出 (Expenses)
             </button>
             <button
               onClick={() => setListType('incomes')}
-              className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
+              className={`flex-1 py-2 text-center text-xs font-black rounded-none transition-all uppercase border-2 ${
                 listType === 'incomes' 
-                  ? 'bg-secondary text-white shadow-sm shadow-secondary/20' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-[#4ECDC4] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               收入 (Incomes)
             </button>
             <button
               onClick={() => setListType('unassigned')}
-              className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1 ${
+              className={`flex-1 py-2 text-center text-xs font-black rounded-none transition-all flex items-center justify-center gap-1 uppercase border-2 ${
                 listType === 'unassigned' 
-                  ? 'bg-secondary-dark text-white shadow-sm shadow-secondary-dark/20' 
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  ? 'bg-[#FFE66D] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
+                  : 'border-transparent text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
               <span>待歸屬</span>
               {items && items.filter(i => !i.order_id).length > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                  listType === 'unassigned' ? 'bg-white/30 text-white' : 'bg-secondary-dark/20 text-secondary-dark dark:text-secondary-light'
-                }`}>
+                <span className="text-[10px] px-1.5 py-0.2 border border-black bg-black text-white font-black">
                   {items.filter(i => !i.order_id).length}
                 </span>
               )}
@@ -564,22 +578,22 @@ export default function OrderList({ onOrderClick, currentTab }) {
             {/* 搜尋與按鈕組合 */}
             <div className="flex gap-2 items-center">
               <div className="relative flex-1">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 dark:text-gray-500">
-                  <Search size={18} />
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-black dark:text-gray-400">
+                  <Search size={18} strokeWidth={2.5} />
                 </span>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={listType === 'expenses' ? "搜尋訂單名稱、來源、商品、角色..." : "搜尋買家暱稱、商品名稱..."}
-                  className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
+                  className="w-full pl-10 pr-10 py-2.5 bg-white dark:bg-gray-800 border-4 border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-sm font-bold focus:outline-none placeholder:text-gray-500 text-black dark:text-white"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-500 hover:text-black dark:hover:text-white"
                   >
-                    <X size={16} />
+                    <X size={16} strokeWidth={2.5} />
                   </button>
                 )}
               </div>
@@ -588,7 +602,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 <button
                   type="button"
                   onClick={() => setIsReconOpen(true)}
-                  className="px-3 py-2.5 bg-secondary text-white font-bold text-xs rounded-xl shadow-sm shadow-secondary/20 hover:bg-secondary-dark transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 animate-in fade-in"
+                  className="px-3.5 py-2.5 bg-[#4ECDC4] text-black font-black text-xs border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer uppercase"
                   title="生成買家對帳單"
                 >
                   <span>對帳單</span>
@@ -599,7 +613,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
               <button
                 type="button"
                 onClick={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}
-                className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
+                className="px-3.5 py-2.5 bg-[#FFE66D] text-black font-black text-xs border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center gap-1 shrink-0 select-none cursor-pointer uppercase"
                 title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
               >
                 <span>{dateSort === 'desc' ? '新➔舊' : '舊➔新'}</span>
@@ -611,12 +625,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   setIsSelectMode(!isSelectMode);
                   setSelectedIds([]);
                 }}
-                className={`px-3 py-2.5 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 ${
+                className={`px-3.5 py-2.5 font-black text-xs border-2 border-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all flex items-center gap-1.5 shrink-0 select-none cursor-pointer uppercase ${
                   isSelectMode
-                    ? 'bg-gray-750 text-gray-200 border border-gray-600 shadow-sm'
-                    : listType === 'expenses'
-                      ? 'bg-primary-light/50 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light hover:bg-primary-light dark:hover:bg-primary-dark/30 shadow-sm shadow-primary/5'
-                      : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-450 hover:bg-emerald-100 dark:hover:bg-emerald-950/30 shadow-sm shadow-emerald-500/5'
+                    ? 'bg-black text-white'
+                    : 'bg-[#FF6B6B] text-white'
                 }`}
               >
                 <span>{isSelectMode ? '取消' : '選取'}</span>
@@ -630,7 +642,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   <select
                     value={selectedBuyer}
                     onChange={(e) => setSelectedBuyer(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl px-3 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100"
+                    className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3 py-2 text-xs appearance-none focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100"
                   >
                     <option value="">全部買家</option>
                     {uniqueBuyers.map(buyer => (
@@ -651,16 +663,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
           {listType === 'expenses' ? (
             // 支出分頁 (Orders)
             orders.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
-                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-none flex items-center justify-center mb-4">
                   <PackageOpen size={32} />
                 </div>
                 <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無訂單</h3>
                 <p className="text-sm text-gray-400 dark:text-gray-400">點擊右下角的 + 號<br/>開始記錄你的第一筆週邊吧！</p>
               </div>
             ) : filteredOrders.length === 0 ? (
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
-                <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-none flex items-center justify-center mb-4">
                   <Search size={32} />
                 </div>
                 <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的紀錄</h3>
@@ -684,10 +696,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             onOrderClick && onOrderClick(order.id);
                           }
                         }}
-                        className={`px-4 py-3.5 rounded-2xl shadow-sm border flex justify-between items-center transition-all duration-200 cursor-pointer ${
+                        className={`px-4 py-3.5 rounded-none border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex justify-between items-center transition-all duration-200 cursor-pointer ${
                           isSelected 
-                            ? 'bg-primary-light/10 border-primary shadow-sm dark:bg-primary-dark/10' 
-                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.98]'
+                            ? 'bg-[#FFE66D] text-black' 
+                            : 'bg-white dark:bg-gray-800 hover:translate-x-[2px] hover:translate-y-[2px]'
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -701,7 +713,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => toggleSelection(order.id)}
-                                className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
+                                className="w-4.5 h-4.5 rounded-none border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
                               />
                             </div>
                           )}
@@ -710,11 +722,11 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                               {/* 左側標籤 */}
                               {order.tags && order.tags[0] ? (
-                                <span className="text-[10px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-md font-bold shrink-0">
+                                <span className="text-[10px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-none font-bold shrink-0">
                                   {order.tags[0]}
                                 </span>
                               ) : (
-                                <span className="text-[10px] bg-gray-100 dark:bg-gray-750 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-md font-bold shrink-0">
+                                <span className="text-[10px] bg-gray-100 dark:bg-gray-750 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-none font-bold shrink-0">
                                   無標籤
                                 </span>
                               )}
@@ -749,14 +761,14 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                 onClick={() => {
                                   onOrderClick && onOrderClick(order.id);
                                 }}
-                                className="text-gray-400 hover:text-primary-dark dark:hover:text-primary p-1.5 rounded-lg transition-colors hover:bg-primary-light/30 dark:hover:bg-gray-700/50"
+                                className="text-gray-400 hover:text-primary-dark dark:hover:text-primary p-1.5 rounded-none transition-colors hover:bg-primary-light/30 dark:hover:bg-gray-700/50"
                                 title="編輯記帳"
                               >
                                 <Pencil size={15} />
                               </button>
                               <button
                                 onClick={() => handleDeleteOrder(order.id)}
-                                className="text-gray-400 hover:text-red-500 p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                                className="text-gray-400 hover:text-red-500 p-1.5 rounded-none transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
                                 title="刪除記帳"
                               >
                                 <Trash2 size={15} />
@@ -778,10 +790,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
                           onOrderClick && onOrderClick(order.id);
                         }
                       }}
-                      className={`p-4 rounded-2xl shadow-sm border flex justify-between items-center transition-all duration-200 cursor-pointer ${
+                      className={`p-4 rounded-none border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex justify-between items-center transition-all duration-200 cursor-pointer ${
                         isSelected 
-                          ? 'bg-primary-light/10 border-primary shadow-sm dark:bg-primary-dark/10' 
-                          : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.98]'
+                          ? 'bg-[#FFE66D] text-black' 
+                          : 'bg-white dark:bg-gray-800 hover:translate-x-[2px] hover:translate-y-[2px]'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0 pr-2">
@@ -795,7 +807,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               type="checkbox"
                               checked={isSelected}
                               onChange={() => toggleSelection(order.id)}
-                              className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
+                              className="w-4.5 h-4.5 rounded-none border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
                             />
                           </div>
                         )}
@@ -849,7 +861,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                           const statusInfo = getStatusStyle(order.status);
                           return (
                             <span 
-                              className={`text-xs px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1 shadow-sm transition-all ${statusInfo.color}`}
+                              className={`text-xs px-2.5 py-1 rounded-none whitespace-nowrap inline-flex items-center gap-1 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all ${statusInfo.color}`}
                             >
                               <span>{statusInfo.dot}</span>
                               <span>{statusInfo.label}</span>
@@ -860,7 +872,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                           const deadlineInfo = getDeadlineInfo(order.payment_deadline);
                           if (!deadlineInfo) return null;
                           return (
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all border ${deadlineInfo.colorClass}`}>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-none font-bold transition-all border ${deadlineInfo.colorClass}`}>
                               {deadlineInfo.text}
                             </span>
                           );
@@ -873,7 +885,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                 e.stopPropagation();
                                 setEditingOrder(order);
                               }}
-                              className="text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary p-1.5 rounded-lg transition-colors hover:bg-primary-light/30 dark:hover:bg-gray-700/50"
+                              className="text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary p-1.5 rounded-none transition-colors hover:bg-primary-light/30 dark:hover:bg-gray-700/50"
                               title="編輯訂單"
                             >
                               <Pencil size={16} />
@@ -883,7 +895,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                 e.stopPropagation();
                                 handleDeleteOrder(order.id);
                               }}
-                              className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                              className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1.5 rounded-none transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
                               title="刪除訂單"
                             >
                               <Trash2 size={16} />
@@ -944,15 +956,15 @@ export default function OrderList({ onOrderClick, currentTab }) {
               const selectedTotalSum = selectedItemsList.reduce((sum, i) => sum + (Number(i?.price || 0) * Number(i?.quantity || 1)), 0);
 
               return unassignedList.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
-                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-full flex items-center justify-center mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                  <div className="w-16 h-16 bg-amber-50 dark:bg-amber-950/40 text-amber-500 rounded-none flex items-center justify-center mb-4">
                     <PackageOpen size={32} />
                   </div>
                   <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無獨立待歸屬物品</h3>
                   <p className="text-sm text-gray-400 dark:text-gray-400 mb-4">先單獨登記的戰利品或週邊會顯示於此<br/>方便隨時一鍵併入指定訂單</p>
                   <button
                     onClick={() => setIsAddStandaloneOpen(true)}
-                    className="px-4 py-2 bg-secondary-dark text-white text-xs font-bold rounded-xl shadow-md hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1.5"
+                    className="px-4 py-2 bg-secondary-dark text-white text-xs font-bold rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1.5"
                   >
                     <Plus size={16} />
                     <span>單獨新增第一筆物品</span>
@@ -961,12 +973,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
               ) : (
                 <div className="space-y-4 pb-32 relative">
                   {/* 控制列 */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 rounded-2xl">
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-3.5 bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 rounded-none">
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={toggleSelectAll}
-                        className="px-2.5 py-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 text-gray-700 dark:text-gray-200 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                        className="px-2.5 py-1 bg-white dark:bg-gray-800 border-2 border-black hover:bg-gray-50 text-gray-700 dark:text-gray-200 rounded-none text-xs font-bold transition-all flex items-center gap-1.5"
                       >
                         {isAllSelected ? <CheckSquare size={16} className="text-primary" /> : <Square size={16} className="text-gray-400" />}
                         <span>全選 ({safeSelectedIds.length}/{unassignedList.length})</span>
@@ -979,7 +991,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                     <button
                       type="button"
                       onClick={() => setIsAddStandaloneOpen(true)}
-                      className="px-3 py-1.5 bg-secondary-dark text-white rounded-xl text-xs font-bold shadow-sm hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1 shrink-0"
+                      className="px-3 py-1.5 bg-secondary-dark text-white rounded-none text-xs font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-secondary-dark/90 active:scale-95 transition-all flex items-center gap-1 shrink-0"
                     >
                       <Plus size={14} />
                       <span>新增獨立物品</span>
@@ -997,7 +1009,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         <div 
                           key={item.id}
                           onClick={() => toggleItemSelect(item.id)}
-                          className={`bg-white dark:bg-gray-800 rounded-2xl p-4 border shadow-sm space-y-3 transition-all flex flex-col justify-between cursor-pointer select-none ${
+                          className={`bg-white dark:bg-gray-800 rounded-none p-4 border shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] space-y-3 transition-all flex flex-col justify-between cursor-pointer select-none ${
                             isSelected 
                               ? 'border-primary ring-2 ring-primary/20 bg-primary-light/10 dark:bg-primary-dark/10' 
                               : 'border-gray-150 dark:border-gray-750 hover:border-secondary/50'
@@ -1013,10 +1025,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               <img 
                                 src={coverImg} 
                                 alt={item.name || '物品照片'}
-                                className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
+                                className="w-16 h-16 object-cover rounded-none border-2 border-black shrink-0" 
                               />
                             ) : (
-                              <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
+                              <div className="w-16 h-16 rounded-none bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
                                 <PackageOpen size={24} />
                               </div>
                             )}
@@ -1026,7 +1038,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                 <h4 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
                                   {item.name || '未命名物品'}
                                 </h4>
-                                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 shrink-0">
+                                <span className="text-[10px] px-2 py-0.5 rounded-none font-bold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-200/50 shrink-0">
                                   待歸屬
                                 </span>
                               </div>
@@ -1060,7 +1072,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               onClick={() => {
                                 setAssigningItem(item);
                               }}
-                              className="flex-1 py-2 px-3 bg-primary text-white rounded-xl text-xs font-bold shadow-xs hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-1.5"
+                              className="flex-1 py-2 px-3 bg-primary text-white rounded-none text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-primary-dark active:scale-95 transition-all flex items-center justify-center gap-1.5"
                             >
                               <PackageOpen size={14} />
                               <span>單獨歸屬</span>
@@ -1069,7 +1081,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             <button
                               type="button"
                               onClick={() => setEditingStandaloneItem(item)}
-                              className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-colors"
+                              className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-none transition-colors"
                               title="編輯物品"
                             >
                               <Pencil size={15} />
@@ -1082,7 +1094,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                   setSelectedUnassignedIds(prev => (prev || []).filter(id => id !== item.id));
                                 }
                               }}
-                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-colors"
+                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-none transition-colors"
                               title="刪除物品"
                             >
                               <Trash2 size={15} />
@@ -1095,7 +1107,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
 
                   {/* 多選勾選懸浮操作列 */}
                   {safeSelectedIds.length > 0 && (
-                    <div className="fixed bottom-20 left-4 right-4 max-w-lg mx-auto bg-gray-900/95 dark:bg-gray-800/95 text-white p-3.5 rounded-2xl shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 border border-gray-700/60 z-50 animate-in slide-in-from-bottom-5">
+                    <div className="fixed bottom-20 left-4 right-4 max-w-lg mx-auto bg-gray-900/95 dark:bg-gray-800/95 text-white p-3.5 rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] backdrop-blur-md flex items-center justify-between gap-3 border border-gray-700/60 z-50 animate-in slide-in-from-bottom-5">
                       <div className="min-w-0 flex-1">
                         <div className="font-bold text-sm flex items-center gap-1.5">
                           <CheckSquare size={16} className="text-primary" />
@@ -1113,7 +1125,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             setAssigningItem(null);
                             setAssigningItems(selectedItemsList);
                           }}
-                          className="px-3.5 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-all flex items-center gap-1.5"
+                          className="px-3.5 py-2 bg-primary hover:bg-primary-dark text-white rounded-none text-xs font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all flex items-center gap-1.5"
                         >
                           <PackageOpen size={14} />
                           <span>歸屬至訂單</span>
@@ -1126,7 +1138,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               setSelectedUnassignedIds([]);
                             }
                           }}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-xl transition-colors"
+                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded-none transition-colors"
                           title="批量刪除"
                         >
                           <Trash2 size={16} />
@@ -1134,7 +1146,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         <button
                           type="button"
                           onClick={() => setSelectedUnassignedIds([])}
-                          className="p-2 text-gray-400 hover:text-white rounded-xl transition-colors text-xs font-bold"
+                          className="p-2 text-gray-400 hover:text-white rounded-none transition-colors text-xs font-bold"
                           title="取消選擇"
                         >
                           <X size={16} />
@@ -1154,16 +1166,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 return dateSort === 'desc' ? timeB - timeA : timeA - timeB;
               });
               return sales.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
-                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-300 dark:text-emerald-500 rounded-full flex items-center justify-center mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                  <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-300 dark:text-emerald-500 rounded-none flex items-center justify-center mb-4">
                     <DollarSign size={32} />
                   </div>
                   <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">目前尚無回血收入</h3>
                   <p className="text-sm text-gray-400 dark:text-gray-400">當你在訂單內將物品售出後<br/>回血紀錄就會顯示於此！</p>
                 </div>
               ) : sortedFilteredSales.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
-                  <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+                <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-6 transition-colors">
+                  <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-none flex items-center justify-center mb-4">
                     <Search size={32} />
                   </div>
                   <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的紀錄</h3>
@@ -1185,12 +1197,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             toggleSelection(sale.id);
                           }
                         }}
-                        className={`p-4 rounded-2xl shadow-sm border flex justify-between items-center transition-all duration-200 ${
+                        className={`p-4 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border flex justify-between items-center transition-all duration-200 ${
                           isSelectMode ? 'cursor-pointer' : ''
                         } ${
                           isSelected 
-                            ? 'bg-secondary-light/10 border-secondary shadow-sm dark:bg-secondary-dark/10' 
-                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md'
+                            ? 'bg-secondary-light/10 border-secondary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:bg-secondary-dark/10' 
+                            : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
@@ -1204,14 +1216,14 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => toggleSelection(sale.id)}
-                                className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-secondary focus:ring-secondary accent-secondary cursor-pointer"
+                                className="w-4.5 h-4.5 rounded-none border-gray-300 dark:border-gray-600 text-secondary focus:ring-secondary accent-secondary cursor-pointer"
                               />
                             </div>
                           )}
 
                           {/* 圖片預覽 */}
                           {sale.image ? (
-                            <div className="relative w-11 h-11 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                            <div className="relative w-11 h-11 shrink-0 rounded-none overflow-hidden border-2 border-black">
                               <img 
                                 src={sale.image} 
                                 alt={item?.name} 
@@ -1227,7 +1239,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               </div>
                             </div>
                           ) : item?.image ? (
-                            <div className="relative w-11 h-11 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700">
+                            <div className="relative w-11 h-11 shrink-0 rounded-none overflow-hidden border-2 border-black">
                               <img 
                                 src={item.image} 
                                 alt={item.name} 
@@ -1243,7 +1255,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               </div>
                             </div>
                           ) : (
-                            <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 dark:text-emerald-450 rounded-xl flex items-center justify-center shrink-0">
+                            <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-500 dark:text-emerald-450 rounded-none flex items-center justify-center shrink-0">
                               <DollarSign size={20} />
                             </div>
                           )}
@@ -1283,7 +1295,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                     });
                                   }
                                 }}
-                                className="text-gray-400 dark:text-gray-500 hover:text-secondary-dark dark:hover:text-secondary p-1.5 rounded-lg transition-colors hover:bg-emerald-50 dark:hover:bg-gray-700/50"
+                                className="text-gray-400 dark:text-gray-500 hover:text-secondary-dark dark:hover:text-secondary p-1.5 rounded-none transition-colors hover:bg-emerald-50 dark:hover:bg-gray-700/50"
                                 title="編輯紀錄"
                               >
                                 <Pencil size={14} />
@@ -1300,7 +1312,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                     }
                                   }
                                 }}
-                                className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1.5 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                                className="text-gray-400 dark:text-gray-500 hover:text-red-500 p-1.5 rounded-none transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
                                 title="刪除紀錄"
                               >
                                 <Trash2 size={14} />
@@ -1330,7 +1342,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜尋商品名稱、角色、訂單名稱或來源..."
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
               />
               {searchQuery && (
                 <button
@@ -1346,7 +1358,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
             <button
               type="button"
               onClick={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}
-              className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
+              className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-black text-gray-700 dark:text-gray-200 font-bold text-xs rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
               title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
             >
               <span>{dateSort === 'desc' ? '新➔舊' : '舊➔新'}</span>
@@ -1359,10 +1371,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 setIsSelectMode(!isSelectMode);
                 setSelectedIds([]);
               }}
-              className={`px-3 py-2.5 font-bold text-xs rounded-xl shadow-sm transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 ${
+              className={`px-3 py-2.5 font-bold text-xs rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 ${
                 isSelectMode
-                  ? 'bg-gray-750 text-gray-200 border border-gray-600 shadow-sm'
-                  : 'bg-primary-light/50 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light hover:bg-primary-light dark:hover:bg-primary-dark/30 shadow-sm shadow-primary/5'
+                  ? 'bg-gray-750 text-gray-200 border border-gray-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                  : 'bg-primary-light/50 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light hover:bg-primary-light dark:hover:bg-primary-dark/30 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] shadow-primary/5'
               }`}
             >
               <span>{isSelectMode ? '取消' : '選取'}</span>
@@ -1370,16 +1382,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
           </div>
 
           {items.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
-              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-none flex items-center justify-center mb-4">
                 <Boxes size={32} />
               </div>
               <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">物品清單空空如也</h3>
               <p className="text-sm text-gray-400 dark:text-gray-400">新增週邊物品時，就會在這裡列出喔！</p>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
-              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-none flex items-center justify-center mb-4">
                 <Search size={32} />
               </div>
               <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的物品</h3>
@@ -1410,12 +1422,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         onOrderClick && onOrderClick(item.order_id);
                       }
                     }}
-                    className={`p-4 rounded-2xl shadow-sm border flex items-center justify-between transition-all duration-200 ${
+                    className={`p-4 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border flex items-center justify-between transition-all duration-200 ${
                       isSelectMode ? 'cursor-pointer' : ''
                     } ${
                       isSelected 
-                        ? 'bg-primary-light/10 border-primary shadow-sm dark:bg-primary-dark/10' 
-                        : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-md active:scale-[0.99]'
+                        ? 'bg-primary-light/10 border-primary shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:bg-primary-dark/10' 
+                        : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700/80 hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:scale-[0.99]'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -1429,17 +1441,17 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => toggleSelection(item.id)}
-                            className="w-4.5 h-4.5 rounded-full border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
+                            className="w-4.5 h-4.5 rounded-none border-gray-300 dark:border-gray-600 text-primary focus:ring-primary accent-primary cursor-pointer"
                           />
                         </div>
                       )}
 
                       {item.image ? (
-                        <div className="w-12 h-12 shrink-0 rounded-xl overflow-hidden border border-gray-100 dark:border-gray-750">
+                        <div className="w-12 h-12 shrink-0 rounded-none overflow-hidden border border-gray-100 dark:border-gray-750">
                           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 bg-primary-light/35 dark:bg-primary-dark/20 text-primary dark:text-primary-light rounded-xl flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 bg-primary-light/35 dark:bg-primary-dark/20 text-primary dark:text-primary-light rounded-none flex items-center justify-center shrink-0">
                           <PackageOpen size={22} />
                         </div>
                       )}
@@ -1485,7 +1497,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                       <span className="font-black text-gray-800 dark:text-gray-100 text-sm">
                         NT$ {costTWD.toLocaleString()}
                       </span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold transition-all shadow-sm ${statusInfo.color}`}>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-none font-bold transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${statusInfo.color}`}>
                         {statusInfo.dot} {statusInfo.label}
                       </span>
                     </div>
@@ -1509,7 +1521,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="搜尋商品名稱、角色、訂單名稱或來源..."
-                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
+                className="w-full pl-10 pr-10 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all placeholder:text-gray-400 dark:placeholder:text-gray-500 text-gray-900 dark:text-gray-100"
               />
               {searchQuery && (
                 <button
@@ -1525,7 +1537,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
             <button
               type="button"
               onClick={() => setDateSort(dateSort === 'desc' ? 'asc' : 'desc')}
-              className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
+              className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border-2 border-black text-gray-700 dark:text-gray-200 font-bold text-xs rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
               title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
             >
               <span>{dateSort === 'desc' ? '新➔舊' : '舊➔新'}</span>
@@ -1533,16 +1545,16 @@ export default function OrderList({ onOrderClick, currentTab }) {
           </div>
 
           {items.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
-              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-blue-50 dark:bg-blue-950/40 text-blue-300 dark:text-blue-500 rounded-none flex items-center justify-center mb-4">
                 <ImageIcon size={32} />
               </div>
               <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">圖牆空空如也</h3>
               <p className="text-sm text-gray-400 dark:text-gray-400">新增物品時，就會顯示在這裡喔！</p>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
-              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-full flex items-center justify-center mb-4">
+            <div className="bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black p-8 flex flex-col items-center justify-center text-center mt-10 transition-colors">
+              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700/50 text-gray-300 dark:text-gray-500 rounded-none flex items-center justify-center mb-4">
                 <Search size={32} />
               </div>
               <h3 className="text-gray-800 dark:text-gray-100 font-bold mb-1">找不到符合的物品</h3>
@@ -1563,7 +1575,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   <div 
                     key={item.id}
                     onClick={() => setSelectedItem(item)}
-                    className="aspect-square bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden relative cursor-pointer group hover:shadow-md transition-all active:scale-[0.98]"
+                    className="aspect-square bg-white dark:bg-gray-800 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black overflow-hidden relative cursor-pointer group hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-[0.98]"
                   >
                     {item.image ? (
                       <div className="w-full h-full relative">
@@ -1622,9 +1634,9 @@ export default function OrderList({ onOrderClick, currentTab }) {
       {/* 底部玻璃質感懸浮對帳/總計條 */}
       {isSelectMode && (
         <div className="fixed bottom-20 md:bottom-8 left-1/2 md:left-[calc(50%+128px)] -translate-x-1/2 w-full max-w-md px-4 z-50 animate-in slide-in-from-bottom-5 duration-300">
-          <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/80 rounded-2xl shadow-xl px-4 py-3 flex items-center justify-between gap-4 transition-colors">
+          <div className="bg-[#FFE66D] text-black border-4 border-black rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] px-4 py-3 flex items-center justify-between gap-4 transition-colors">
             <div className="min-w-0">
-              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider block">
+              <span className="text-[10px] font-black text-black uppercase tracking-wider block">
                 已選取對帳項目
               </span>
               <div className="flex items-baseline gap-1.5 mt-0.5">
@@ -1659,7 +1671,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                     }
                   }
                 }}
-                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-lg transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
+                className="px-3 py-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-bold text-xs rounded-none transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
               >
                 {(() => {
                   const currentFilteredListSize = viewMode === 'items' 
@@ -1676,7 +1688,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   setIsSelectMode(false);
                   setSelectedIds([]);
                 }}
-                className="p-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-lg transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
+                className="p-1.5 bg-gray-100 dark:bg-gray-850 hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-none transition-all active:scale-95 border border-gray-200/30 dark:border-gray-700/30"
                 title="關閉選取"
               >
                 <X size={15} />
