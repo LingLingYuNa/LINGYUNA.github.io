@@ -641,23 +641,14 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </div>
         </div>
 
-        {/* 模式與計算說明 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t-2 border-black text-xs">
-          <div className="flex items-center gap-2 bg-[#FFE66D] text-black p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        {/* 優先模式說明條 */}
+        <div className="pt-2 border-t-2 border-black text-xs">
+          <div className="flex items-center gap-2 bg-[#FFE66D] text-black p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] w-full">
             <Settings size={18} strokeWidth={2.5} className="shrink-0" />
             <div>
               <span className="font-black uppercase block">{currentModeInfo.label}</span>
               <span className="text-[10px] font-mono font-bold block">{currentModeInfo.desc}</span>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between bg-white dark:bg-gray-700 text-black dark:text-white p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            <span className="font-black uppercase">倍率計算單價：</span>
-            <span className={`font-black px-2 py-0.5 border border-black text-xs ${
-              split.use_multiplier ? 'bg-[#4ECDC4] text-black' : 'bg-gray-200 text-black'
-            }`}>
-              {split.use_multiplier ? '✓ 已開啟 (支援倍率調整)' : '✕ 未開啟 (平均單價)'}
-            </span>
           </div>
         </div>
       </div>
