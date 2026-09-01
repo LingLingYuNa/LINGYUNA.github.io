@@ -31,7 +31,7 @@ class LocalErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-none border-2 border-red-300 text-center my-4 space-y-3">
-          <h4 className="font-black text-base">⚠️ 表格視圖繪製時發生異常</h4>
+          <h4 className="font-black text-base">表格視圖繪製時發生異常</h4>
           <p className="text-xs font-mono break-all">{this.state.error?.toString()}</p>
           <button
             type="button"
@@ -371,7 +371,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const handleAutoSortByLibrary = async () => {
     if (items.length === 0) return;
     if (characterOrders.length === 0) {
-      alert('ℹ️ 角色排序庫目前為空，請先至排序庫新增角色優先順序！');
+      alert('角色排序庫目前為空，請先至排序庫新增角色優先順序！');
       return;
     }
 
@@ -697,7 +697,6 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         <div className="pt-2 space-y-2">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-[#f7f1df] dark:bg-gray-750 p-2.5 border-2 border-black">
             <span className="text-xs font-black text-black dark:text-white uppercase shrink-0 flex items-center gap-1">
-              <span>🔥</span>
               <span>熱度價差模式：</span>
             </span>
 
@@ -711,7 +710,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                     : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
                 }`}
               >
-                🚫 不調價
+                不調價
               </button>
               <button
                 type="button"
@@ -723,7 +722,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                 }`}
                 title="極小價差 (low): 線性 scale=0.5，最高與最低價差控制在 20%~30% 以內"
               >
-                📉 極小價差 (low)
+                極小價差 (low)
               </button>
               <button
                 type="button"
@@ -735,7 +734,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                 }`}
                 title="標準階梯 (balanced): 線性 scale=1.0，各階呈均勻等差遞減"
               >
-                ⚖️ 標準階梯 (balanced)
+                標準階梯 (balanced)
               </button>
               <button
                 type="button"
@@ -747,17 +746,17 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                 }`}
                 title="大價差 (high): 非線性 Power Curve 次方分佈，頂階高承擔、底階大幅折扣"
               >
-                🔥 大價差 (high)
+                大價差 (high)
               </button>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-[11px] font-mono font-bold">
             <div className="flex-1 bg-gray-50 dark:bg-gray-700 p-2 border-2 border-black text-gray-700 dark:text-gray-200">
-              {spreadMode === 'none' && '💡 均價模式：所有品項均價平攤，無熱度差價。'}
-              {spreadMode === 'low' && '💡 極小價差 (low)：最高與最低價差精準控制在平均單價 20%~30% 以內。'}
-              {(spreadMode === 'balanced' || spreadMode === 'normal') && '💡 標準階梯 (balanced)：各階呈均勻等差遞減，溫和分配價差。'}
-              {(spreadMode === 'high' || spreadMode === 'aggressive') && '💡 大價差 (high)：頂階大幅拉高承擔、底階大幅打折，熱門高承擔。'}
+              {spreadMode === 'none' && '均價模式：所有品項均價平攤，無熱度差價。'}
+              {spreadMode === 'low' && '極小價差 (low)：最高與最低價差精準控制在平均單價 20%~30% 以內。'}
+              {(spreadMode === 'balanced' || spreadMode === 'normal') && '標準階梯 (balanced)：各階呈均勻等差遞減，溫和分配價差。'}
+              {(spreadMode === 'high' || spreadMode === 'aggressive') && '大價差 (high)：頂階大幅拉高承擔、底階大幅打折，熱門高承擔。'}
             </div>
             <div className="bg-[#FFE66D] text-black p-2 border-2 border-black flex items-center gap-1.5 shrink-0">
               <Settings size={14} strokeWidth={2.5} />
@@ -1159,7 +1158,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
             {/* Subtitle / Tip */}
             <div className="px-4 py-2 bg-white dark:bg-gray-800 border-b-2 border-black text-xs font-mono font-bold text-gray-700 dark:text-gray-300">
-              💡 順序第 1 位為【熱門角】，末位為【冷門角】。您可直接修改數字或點擊上下鈕調整熱度排名！
+              順序第 1 位為【熱門角】，末位為【冷門角】。您可直接修改數字或點擊上下鈕調整熱度排名！
             </div>
 
             {/* List */}
@@ -1230,7 +1229,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                 onClick={handleAutoSortByLibrary}
                 className="px-3 py-1.5 bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-2 border-black font-black text-xs hover:bg-purple-200 cursor-pointer"
               >
-                ✨ 依全域角色庫自動排序
+                依全域角色庫自動排序
               </button>
               <button
                 type="button"

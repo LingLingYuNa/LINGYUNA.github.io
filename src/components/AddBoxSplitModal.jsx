@@ -243,8 +243,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
-                  <span className="text-sm">🚫</span>
-                  <span className="font-bold mt-0.5">不調價</span>
+                  <span className="font-bold">不調價</span>
                   <span className="text-[9px] font-mono text-gray-500 font-normal">均價平攤</span>
                 </button>
                 <button
@@ -256,8 +255,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
-                  <span className="text-sm">📉</span>
-                  <span className="font-bold mt-0.5">極小價差</span>
+                  <span className="font-bold">極小價差</span>
                   <span className="text-[9px] font-mono text-gray-700 font-normal">low (20%內)</span>
                 </button>
                 <button
@@ -269,8 +267,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
-                  <span className="text-sm">⚖️</span>
-                  <span className="font-bold mt-0.5">標準階梯</span>
+                  <span className="font-bold">標準階梯</span>
                   <span className="text-[9px] font-mono text-gray-700 font-normal">balanced (等差)</span>
                 </button>
                 <button
@@ -282,8 +279,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
-                  <span className="text-sm">🔥</span>
-                  <span className="font-bold mt-0.5">大價差</span>
+                  <span className="font-bold">大價差</span>
                   <span className="text-[9px] font-mono text-white/90 font-normal">high (次方曲線)</span>
                 </button>
               </div>
