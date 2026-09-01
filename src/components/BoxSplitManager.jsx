@@ -61,7 +61,7 @@ export default function BoxSplitManager() {
   }
 
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32 bg-[#FAF8F5] dark:bg-gray-900 min-h-screen">
+    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32 bg-[#f7f1df] dark:bg-[#121212] min-h-screen">
       
       {/* 頁面標題區 */}
       <header className="px-1 mt-2 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">

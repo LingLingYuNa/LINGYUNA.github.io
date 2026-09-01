@@ -1755,7 +1755,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 
                 return (
                   <div className="space-y-3">
-                    <div className="aspect-square bg-[#FAF8F5] dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center relative group">
+                    <div className="aspect-square bg-[#f7f1df] dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center relative group">
                       {itemImages.length > 0 ? (
                         <div className="w-full h-full relative">
                           {isUrl(itemImages[activeImgIndex]) ? (

@@ -43,9 +43,9 @@ export default function SplitOrder() {
   const finalTwdFee = sharedForeignFee * er;
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#121212]">
+    <div className="min-h-screen bg-[#f7f1df] dark:bg-[#121212]">
       {/* 頂部功能切換選項卡 (Sticky Sub-Tab) */}
-      <div className="bg-[#FAF8F5] dark:bg-[#121212] border-b-4 border-black sticky top-0 z-20">
+      <div className="bg-[#f7f1df] dark:bg-[#121212] border-b-4 border-black sticky top-0 z-20">
         <div className="max-w-4xl mx-auto px-4 flex justify-center py-2">
           <div className="flex bg-white dark:bg-gray-800 p-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
             <button
@@ -80,7 +80,7 @@ export default function SplitOrder() {
       {activeSubTab === 'split_box' ? (
         <BoxSplitManager />
       ) : (
-        <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32 bg-[#FAF8F5] dark:bg-[#121212]">
+        <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32 bg-[#f7f1df] dark:bg-[#121212]">
           {/* 標題區 */}
           <header className="px-1 mt-2 mb-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">🧮 專屬計算機</h1>

@@ -12,7 +12,7 @@
   }
   
   body {
-    @apply bg-[#FAF8F5] text-black dark:bg-[#121212] dark:text-white transition-colors duration-200;
+    @apply bg-[#f7f1df] text-black dark:bg-[#121212] dark:text-white transition-colors duration-200;
   }
 
   /* 強制將所有通用的 rounded-* 重置為 rounded-none (遵循 Neo-Brutalist Playful 絕對禁止圓角規範) */

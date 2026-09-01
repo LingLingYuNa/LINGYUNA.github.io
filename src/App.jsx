@@ -318,8 +318,8 @@ function App() {
   };
 
   return (
-    // 最外層容器：手機版與電腦版皆統一採用相同的 #FAF8F5 (深色模式 #121212) 質感背景
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#121212] max-w-md mx-auto md:max-w-none md:mx-0 relative pb-20 md:pb-0 shadow-2xl md:shadow-none overflow-hidden md:overflow-visible font-sans text-black dark:text-white transition-colors duration-200 md:flex">
+    // 最外層容器：手機版與電腦版皆統一採用相同的 #f7f1df (深色模式 #121212) 質感背景
+    <div className="min-h-screen bg-[#f7f1df] dark:bg-[#121212] max-w-md mx-auto md:max-w-none md:mx-0 relative pb-20 md:pb-0 shadow-2xl md:shadow-none overflow-hidden md:overflow-visible font-sans text-black dark:text-white transition-colors duration-200 md:flex">
       
       {/* 電腦版左側邊欄 */}
       <Sidebar 
@@ -327,10 +327,10 @@ function App() {
         onTabChange={handleTabChange} 
       />
       
-      {/* 主要內容區：電腦版移除灰色覆蓋，與手機版背景 100% 同步 */}
+      {/* 主要內容區：電腦版與手機版背景 100% 同步 #f7f1df */}
       <main 
         onScroll={handleScroll}
-        className="flex-1 h-full overflow-y-auto md:ml-64 md:p-8 md:min-h-screen bg-[#FAF8F5] dark:bg-[#121212]"
+        className="flex-1 h-full overflow-y-auto md:ml-64 md:p-8 md:min-h-screen bg-[#f7f1df] dark:bg-[#121212]"
       >
         {selectedOrderId ? (
           <OrderDetail 
