@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { getDeadlineInfo } from '../utils';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive } from '../utils/googleDriveSync';
-import { Cloud, RefreshCw, LogOut, Zap, Package } from 'lucide-react';
+import { Cloud, RefreshCw, LogOut, Zap, Package, Inbox } from 'lucide-react';
 
 export default function Dashboard({ onQuickAdd, onOrderClick }) {
   // 1. 新增狀態來管理當前檢視的月份，預設為當前時間
@@ -408,7 +408,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
           {sortedMonthlyOrders.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col items-center justify-center text-center h-44 transition-colors">
               <div className="w-12 h-12 bg-[#FFE66D] border-2 border-black flex items-center justify-center mb-3">
-                
+                <Inbox size={24} className="text-black" strokeWidth={2.5} />
               </div>
               <p className="text-sm font-black text-black dark:text-white uppercase">本月尚無任何紀錄</p>
               <p className="text-xs text-gray-700 dark:text-gray-300 font-mono mt-1 font-bold">當月新增的訂單與日常記帳會顯示在這裡</p>

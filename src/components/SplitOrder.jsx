@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calculator, Package, Sparkles } from 'lucide-react';
+import { Calculator, Package, Sparkles, Scale } from 'lucide-react';
 import { EXCHANGE_RATES } from '../constants';
 import BoxSplitManager from './BoxSplitManager';
 
@@ -195,7 +195,7 @@ export default function SplitOrder() {
           {/* 重量分攤試算器 */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/80 space-y-5 transition-colors mt-6 animate-in fade-in duration-305">
             <div className="flex items-center gap-2 pb-1.5 border-b border-gray-100 dark:border-gray-700/60">
-              <span className="text-lg"></span>
+              <Scale size={18} className="text-purple-600 dark:text-purple-300" />
               <h2 className="text-base font-bold text-gray-800 dark:text-gray-200">集運運費重量分攤試算</h2>
             </div>
 

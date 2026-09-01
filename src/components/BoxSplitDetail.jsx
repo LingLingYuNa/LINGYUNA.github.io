@@ -1786,7 +1786,6 @@ function BoxSplitSheetView({
                   return (
                     <tr key={bName} className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
                       <td className="p-3 font-extrabold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
-                        <span></span>
                         <span>{bName}</span>
                       </td>
                       <td className="p-3">
