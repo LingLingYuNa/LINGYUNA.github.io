@@ -463,9 +463,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     buyerParts.forEach(p => {
       const item = items.find(i => i.id === p.item_id);
       if (item) {
-        const uPrice = getItemUnitPrice(item);
-        const stock = Number(item.stock) || 1;
-        const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+        const singleUnitPrice = getItemUnitPrice(item);
         const allocatedQty = allocatedMap.get(p.id) ?? 0;
         const subTotal = Math.round(singleUnitPrice * allocatedQty);
 
@@ -514,9 +512,8 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     csvContent += `序號,品項名稱,庫存/總數,種類單價,單件金額,已認領數,完售狀態,喊單與配分名單\n`;
 
     items.forEach((item, idx) => {
-      const uPrice = getItemUnitPrice(item);
+      const singleUnitPrice = getItemUnitPrice(item);
       const stock = Number(item.stock) || 1;
-      const singleUnitPrice = Math.round(stock > 0 ? (uPrice / stock) : uPrice);
       const itemParts = participants.filter(p => p.item_id === item.id);
       const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p.qty) || 0), 0);
       const isSoldOut = totalBoughtQty >= stock;
@@ -963,10 +960,10 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
                     <div className="text-xs text-gray-600 dark:text-gray-300 mt-1 space-y-0.5">
                       <div>
-                        <span className="font-bold text-gray-500">單價：</span>
+                        <span className="font-bold text-gray-500">單件單價：</span>
                         <span className="font-extrabold text-purple-700 dark:text-purple-300">NT$ {unitPrice}</span>
                         {stock > 1 && (
-                          <span className="text-[11px] font-bold text-gray-500 ml-1.5">(單件約 ${Math.round(unitPrice / stock)})</span>
+                          <span className="text-[11px] font-bold text-gray-500 ml-1.5">(種類小計 $NT$ {unitPrice * stock})</span>
                         )}
                         {split.use_multiplier && (
                           <span className="text-[10px] text-gray-400 ml-1.5">(倍率: {item.price_multiplier || 1.0}x)</span>
@@ -1006,7 +1003,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                   {itemParticipants.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {itemParticipants.map((p) => {
-                        const singleUnitPrice = stock > 0 ? (unitPrice / stock) : unitPrice;
+                        const singleUnitPrice = unitPrice;
                         const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
                         const partCost = Math.round(singleUnitPrice * allocatedQty);
 
@@ -1735,9 +1732,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
     buyerParts.forEach(p => {
       const item = items.find(i => i.id === p.item_id);
       if (item) {
-        const uPrice = getItemUnitPrice(item);
-        const stock = Number(item.stock) || 1;
-        const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+        const singleUnitPrice = getItemUnitPrice(item);
         const allocatedQty = allocatedMap?.get(p.id) ?? 0;
         const subTotal = Math.round(singleUnitPrice * allocatedQty);
 
@@ -2014,9 +2009,8 @@ function BoxSplitSheetView({
               {safeItems.length > 0 ? (
                 safeItems.map((item, idx) => {
                   if (!item) return null;
-                  const uPrice = safeGetUnitPrice(item);
+                  const singleUnitPrice = safeGetUnitPrice(item);
                   const stock = Number(item.stock) || 1;
-                  const singleUnitPrice = Math.round(stock > 0 ? (uPrice / stock) : uPrice);
                   const itemParts = safeParticipants.filter(p => p && p.item_id === item.id);
                   const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p?.qty) || 0), 0);
                   const isSoldOut = totalBoughtQty >= stock;
