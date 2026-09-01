@@ -1549,7 +1549,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
               <p className="text-sm text-gray-400 dark:text-gray-400">請嘗試不同的關鍵字或標籤篩選</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32">
+            <div className="grid grid-cols-2 min-[768px]:grid-cols-4 min-[1080px]:grid-cols-6 gap-4 pb-32">
               {filteredItems.map(item => {
                 const associatedOrder = orders?.find(o => o.id === item.order_id);
                 const currencySymbol = associatedOrder 

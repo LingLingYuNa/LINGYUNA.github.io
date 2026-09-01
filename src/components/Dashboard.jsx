@@ -245,15 +245,15 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       {/* 頂部數據與切換區 - 電腦版 3 欄佈局，手機版維持垂直排列 */}
       <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
         {/* 月份切換器 (Month Selector) */}
-        <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200 md:order-1">
+        <div className="flex items-center justify-between gap-2 bg-white dark:bg-gray-800 px-3 sm:px-4 py-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200 md:order-1">
           <button 
             onClick={handlePrevMonth}
-            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[-1px] active:translate-x-[1px] transition-all"
+            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[-1px] active:translate-x-[1px] transition-all shrink-0"
           >
             &lt;
           </button>
-          <div className="relative flex items-center gap-1.5 cursor-pointer py-1 px-3 bg-[#4ECDC4]/20 border-2 border-black">
-            <span className="font-mono font-black text-black dark:text-white text-sm tracking-wide">
+          <div className="relative flex items-center justify-center gap-1.5 cursor-pointer py-1 px-3 bg-[#4ECDC4]/20 border-2 border-black text-center min-w-0">
+            <span className="font-mono font-black text-black dark:text-white text-sm tracking-wide whitespace-nowrap text-center">
               {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
             </span>
             <input 
@@ -262,11 +262,10 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
               onChange={handleMonthInput}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
             />
-            
           </div>
           <button 
             onClick={handleNextMonth}
-            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[1px] active:translate-x-[-1px] transition-all"
+            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[1px] active:translate-x-[-1px] transition-all shrink-0"
           >
             &gt;
           </button>
@@ -371,18 +370,18 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
                 </div>
                 
                 {isLinked ? (
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0 min-[768px]:max-[1079px]:flex-col min-[768px]:max-[1079px]:items-stretch min-[768px]:max-[1079px]:gap-1.5">
                     <button
                       onClick={handleConnect}
                       disabled={isSyncing}
-                      className="px-3 py-1.5 bg-[#FFE66D] hover:bg-[#FFE66D]/90 text-black text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-1 select-none cursor-pointer"
+                      className="px-3 py-1.5 bg-[#FFE66D] hover:bg-[#FFE66D]/90 text-black text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 select-none cursor-pointer"
                     >
                       <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
                       <span>同步</span>
                     </button>
                     <button
                       onClick={handleDisconnect}
-                      className="p-2 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer"
+                      className="p-1.5 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer flex items-center justify-center"
                       title="中斷連結"
                     >
                       <LogOut size={14} />
