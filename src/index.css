@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,26 +6,40 @@
 
 @layer base {
   html {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100 transition-colors duration-200;
+    @apply bg-[#FAF8F5] text-black dark:bg-[#121212] dark:text-white transition-colors duration-200;
+  }
+
+  /* 強制將所有通用的 rounded-* 重置為 rounded-none (遵循 Neo-Brutalist Playful 絕對禁止圓角規範) */
+  *, ::before, ::after {
+    border-radius: 0px !important;
   }
 }
 
-/* 自訂精緻滾動條 */
+/* 俏皮野獸派硬質邊框滾動條 */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #FFFFFF;
+  border-left: 2px solid #000000;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-200 dark:bg-gray-800 rounded-full;
+  background: #FF6B6B;
+  border: 2px solid #000000;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-300 dark:bg-gray-700;
+  background: #4ECDC4;
+}
+
+/* 鍵盤 Focus 強制高對比實體框 */
+:focus-visible {
+  outline: 3px solid #000000 !important;
+  box-shadow: 4px 4px 0px 0px #4ECDC4 !important;
 }

@@ -20,20 +20,20 @@ export const DEFAULT_TAGS = [
 ];
 
 export const STATUS_COLORS = {
-  '已喊單': '#3B82F6',
-  '已匯款/下單': '#F59E0B',
-  '已到貨': '#9D4EDD',
-  '已到手/完成': '#10B981',
-  '已完成': '#10B981',
-  '異常/缺件': '#EF4444'
+  '已喊單': '#95E1D3',
+  '已匯款/下單': '#FFE66D',
+  '已到貨': '#FF6B6B',
+  '已到手/完成': '#4ECDC4',
+  '已完成': '#4ECDC4',
+  '異常/缺件': '#F38181'
 };
 
 export const ORDER_STATUSES = [
-  { value: '已喊單', label: '已喊單', dot: '🔵', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300' },
-  { value: '已匯款/下單', label: '已匯款/下單', dot: '🟠', color: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300' },
-  { value: '已到貨', label: '已到貨', dot: '🟣', color: 'bg-purple-100 text-purple-800 dark:bg-purple-800 dark:text-purple-100 font-bold ring-2 ring-purple-400 shadow-md animate-pulse' },
-  { value: '已完成', label: '已完成', dot: '🟢', color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' },
-  { value: '異常/缺件', label: '異常/缺件', dot: '🔴', color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300' }
+  { value: '已喊單', label: '已喊單', dot: '🔵', color: 'bg-[#95E1D3] text-black border-2 border-black font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none' },
+  { value: '已匯款/下單', label: '已匯款/下單', dot: '🟠', color: 'bg-[#FFE66D] text-black border-2 border-black font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none' },
+  { value: '已到貨', label: '已到貨', dot: '🟣', color: 'bg-[#FF6B6B] text-white border-2 border-black font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none animate-bounce' },
+  { value: '已完成', label: '已完成', dot: '🟢', color: 'bg-[#4ECDC4] text-black border-2 border-black font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none' },
+  { value: '異常/缺件', label: '異常/缺件', dot: '🔴', color: 'bg-[#F38181] text-black border-2 border-black font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] rounded-none' }
 ];
 
 export const getStatusStyle = (status) => {
@@ -43,7 +43,7 @@ export const getStatusStyle = (status) => {
       matched = ORDER_STATUSES.find(s => s.value === '已完成');
     }
   }
-  return matched || { label: status || '未知', dot: '⚪', color: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300' };
+  return matched || { label: status || '未知', dot: '⚪', color: 'bg-white text-black border-2 border-black font-black rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' };
 };
 
 export const PAYMENT_METHODS = ['現金', '信用卡', 'ATM/轉帳', '電子支付', '貨到付款'];
@@ -55,4 +55,3 @@ export const PAYMENT_METHOD_ICONS = {
   '電子支付': '📱',
   '貨到付款': '📦'
 };
-

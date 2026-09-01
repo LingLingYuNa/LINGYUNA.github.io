@@ -205,39 +205,39 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       <header className="flex justify-between items-end mt-2 px-1">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">總覽</h1>
+            <h1 className="text-3xl font-black uppercase text-black dark:text-white tracking-wider">總覽</h1>
             {isLinked ? (
-              <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-50 dark:bg-emerald-950/30 text-emerald-650 dark:text-emerald-450 px-2 py-0.5 rounded-full border border-emerald-100/30 dark:border-emerald-900/30 font-bold shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="inline-flex items-center gap-1.5 text-xs bg-[#4ECDC4] text-black font-black px-2.5 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                <span className="w-2 h-2 rounded-none bg-black animate-pulse"></span>
                 雲端備份中
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] bg-amber-50 dark:bg-amber-950/20 text-amber-650 dark:text-amber-450 px-2 py-0.5 rounded-full border border-amber-100/30 dark:border-amber-900/30 font-bold shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              <span className="inline-flex items-center gap-1.5 text-xs bg-[#FFE66D] text-black font-black px-2.5 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
+                <span className="w-2 h-2 rounded-none bg-black"></span>
                 未同步備份
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">本月資產與回血追蹤</p>
+          <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 font-mono font-bold">本月資產與回血追蹤 (COLLECTTRACK DASHBOARD)</p>
         </div>
       </header>
 
       {/* 雲端備份提醒橫幅 */}
       {!isLinked && (
-        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm animate-in slide-in-from-top-4 duration-300">
+        <div className="bg-[#FFE66D] text-black border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rotate-[-0.5deg]">
           <div className="flex items-start gap-3">
-            <span className="text-xl shrink-0 mt-0.5">⚠️</span>
+            <span className="text-2xl shrink-0 mt-0.5">⚡</span>
             <div>
-              <h3 className="text-sm font-bold text-amber-800 dark:text-amber-300">未啟用雲端自動備份</h3>
-              <p className="text-xs text-amber-600 dark:text-amber-400/80 mt-0.5">目前資料僅儲存在本機瀏覽器，清理快取或換手機可能導致資料遺失！</p>
+              <h3 className="text-sm font-black uppercase text-black">未啟用雲端自動備份</h3>
+              <p className="text-xs font-bold text-gray-800 mt-0.5">目前資料僅儲存在本機瀏覽器，清理快取或換手機可能導致資料遺失！</p>
             </div>
           </div>
           <button
             onClick={handleConnect}
             disabled={isSyncing}
-            className="self-start sm:self-center px-4 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-amber-500/20 flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+            className="self-start sm:self-center px-4 py-2.5 bg-[#FF6B6B] hover:bg-[#FF6B6B]/90 active:scale-95 disabled:opacity-50 text-white text-xs font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <span>{isSyncing ? '連接中...' : '☁️ 立即連結 Google 備份'}</span>
+            <span>{isSyncing ? '連接中...' : '☁️ 立即連結 GOOGLE 備份'}</span>
           </button>
         </div>
       )}
@@ -245,15 +245,15 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       {/* 頂部數據與切換區 - 電腦版 3 欄佈局，手機版維持垂直排列 */}
       <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
         {/* 月份切換器 (Month Selector) */}
-        <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 rounded-2xl border border-gray-100 dark:border-gray-700/80 shadow-sm transition-colors duration-200 md:order-1">
+        <div className="flex items-center justify-between bg-white dark:bg-gray-800 px-4 py-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200 md:order-1">
           <button 
             onClick={handlePrevMonth}
-            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-colors font-black select-none text-base"
+            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[-1px] active:translate-x-[1px] transition-all"
           >
             &lt;
           </button>
-          <div className="relative flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition-opacity py-1 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50">
-            <span className="font-bold text-gray-800 dark:text-gray-100 text-sm select-none tracking-wide">
+          <div className="relative flex items-center gap-1.5 cursor-pointer py-1 px-3 bg-[#4ECDC4]/20 border-2 border-black">
+            <span className="font-mono font-black text-black dark:text-white text-sm tracking-wide">
               {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
             </span>
             <input 
@@ -262,50 +262,50 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
               onChange={handleMonthInput}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
             />
-            <span className="text-xs text-gray-400">📅</span>
+            <span className="text-xs text-black">📅</span>
           </div>
           <button 
             onClick={handleNextMonth}
-            className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-colors font-black select-none text-base"
+            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[1px] active:translate-x-[-1px] transition-all"
           >
             &gt;
           </button>
         </div>
 
         {/* 核心數據區塊 (2x2 Grid) */}
-        <div className="grid grid-cols-2 gap-3 md:contents">
+        <div className="grid grid-cols-2 gap-4 md:contents">
           {/* 本月支出 */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex flex-col justify-between transition-colors md:order-2">
-            <span className="text-[11px] text-gray-500 dark:text-gray-400 font-semibold mb-1">本月支出 (Monthly Expense)</span>
-            <span className="text-xl font-bold text-primary-dark dark:text-primary mt-1">{formatMoney(monthlyTotalExpense)}</span>
+          <div className="bg-[#FF6B6B] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-1deg] flex flex-col justify-between md:order-2">
+            <span className="text-xs font-black uppercase tracking-wider mb-1">本月支出 (EXPENSE)</span>
+            <span className="text-2xl font-black mt-1 font-mono">{formatMoney(monthlyTotalExpense)}</span>
           </div>
           
           {/* 本月收入 (已回血) */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex flex-col justify-between transition-colors md:order-3">
-            <span className="text-[11px] text-secondary-dark dark:text-secondary font-bold mb-1">本月收入 (Monthly Income)</span>
-            <span className="text-xl font-bold text-secondary-dark dark:text-secondary mt-1">{formatMoney(monthlyTotalIncome)}</span>
+          <div className="bg-[#4ECDC4] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[1deg] flex flex-col justify-between md:order-3">
+            <span className="text-xs font-black uppercase tracking-wider mb-1">本月收入 (INCOME)</span>
+            <span className="text-2xl font-black mt-1 font-mono">{formatMoney(monthlyTotalIncome)}</span>
           </div>
 
           {/* 未回款 */}
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex flex-col justify-between transition-colors md:order-5">
-            <span className="text-[11px] text-gray-500 dark:text-gray-400 font-semibold mb-1">未回款 (Pending Return)</span>
-            <span className="text-xl font-bold text-amber-500 dark:text-amber-400 mt-1">{formatMoney(pendingReturn)}</span>
+          <div className="bg-[#FFE66D] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between md:order-5">
+            <span className="text-xs font-black uppercase tracking-wider mb-1">未回款 (PENDING)</span>
+            <span className="text-2xl font-black mt-1 font-mono">{formatMoney(pendingReturn)}</span>
           </div>
 
-          {/* 自留資產淨值 - 使用特別的漸層底色強調重點 (歷史累計) */}
-          <div className="bg-gradient-to-br from-primary to-primary-dark p-4 rounded-2xl shadow-sm border border-transparent flex flex-col justify-between text-white shadow-primary/20 transition-all md:order-6">
-            <span className="text-[11px] text-primary-light font-semibold mb-1">自留資產 (Net Asset)</span>
-            <span className="text-xl font-bold mt-1">{formatMoney(netAssetValue)}</span>
+          {/* 自留資產淨值 (歷史累計) */}
+          <div className="bg-[#95E1D3] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between transition-all md:order-6">
+            <span className="text-xs font-black uppercase tracking-wider mb-1">自留資產 (NET ASSET)</span>
+            <span className="text-2xl font-black mt-1 font-mono">{formatMoney(netAssetValue)}</span>
           </div>
         </div>
 
         {/* ⚡ 快速記帳按鈕 */}
         <button 
           onClick={onQuickAdd}
-          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-4 px-4 rounded-2xl shadow-md shadow-amber-500/10 hover:shadow-lg hover:shadow-amber-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 select-none md:order-4 md:py-0 md:h-full"
+          className="w-full bg-[#FF6B6B] text-white font-black py-4 px-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] active:scale-95 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center justify-center gap-2 select-none md:order-4 cursor-pointer uppercase tracking-wider text-base"
         >
-          <span className="text-base">⚡</span>
-          <span className="text-sm tracking-wide">極簡生活記帳 (Quick Add)</span>
+          <span className="text-xl">⚡</span>
+          <span>極簡生活記帳 (QUICK ADD)</span>
         </button>
       </div>
 
@@ -316,31 +316,31 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
         <div className="space-y-6">
           {/* ⏳ 待繳費提醒通知區塊 */}
           {unpaidOrders.length > 0 && (
-            <section className="px-1 space-y-2.5">
+            <section className="px-1 space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+                <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                   <span>⏳</span> 待繳費提醒
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 rounded-full">
+                <span className="text-xs font-black px-2.5 py-0.5 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   {unpaidOrders.length} 筆待辦
                 </span>
               </div>
-              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
                 {unpaidOrders.map(order => (
                   <div
                     key={order.id}
                     onClick={() => onOrderClick && onOrderClick(order.id)}
-                    className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex items-center justify-between transition-all hover:shadow-md active:scale-[0.98] cursor-pointer"
+                    className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer flex items-center justify-between"
                   >
                     <div className="min-w-0 pr-2">
-                      <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate font-sans">
+                      <h3 className="font-black text-black dark:text-white text-sm truncate uppercase">
                         {order.title || order.source}
                       </h3>
-                      <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1 font-semibold truncate">
+                      <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 font-mono font-bold truncate">
                         來源：{order.source} | 繳費期限: {order.payment_deadline}
                       </p>
                     </div>
-                    <div className={`px-2.5 py-1.5 rounded-xl text-[10px] font-black shrink-0 ${order.deadlineInfo.colorClass}`}>
+                    <div className="px-3 py-1.5 bg-[#FFE66D] text-black border-2 border-black font-black text-xs shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                       {order.deadlineInfo.text}
                     </div>
                   </div>
@@ -350,49 +350,49 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
           )}
 
           {/* ☁️ 雲端備份與同步狀態常駐區塊 */}
-          <section className="px-1 space-y-2.5">
-            <h2 className="text-base font-black text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+          <section className="px-1 space-y-3">
+            <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
               <span>☁️</span> 雲端同步狀態
             </h2>
-            <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 transition-colors">
+            <div className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2.5 rounded-xl shrink-0 ${isLinked ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500' : 'bg-gray-50 dark:bg-gray-800 text-gray-450 dark:text-gray-500'}`}>
-                    <Cloud size={20} />
+                  <div className={`p-3 border-2 border-black shrink-0 ${isLinked ? 'bg-[#4ECDC4] text-black' : 'bg-gray-200 text-black'}`}>
+                    <Cloud size={20} strokeWidth={2.5} />
                   </div>
                   <div className="min-w-0">
-                    <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
-                      {isLinked ? 'Google 雲端已連結' : '未連結 Google 帳號'}
+                    <h4 className="text-sm font-black text-black dark:text-white uppercase truncate">
+                      {isLinked ? 'GOOGLE 雲端已連結' : '未連結 GOOGLE 帳號'}
                     </h4>
-                    <p className="text-[10px] text-gray-450 dark:text-gray-500 mt-0.5 font-medium leading-relaxed">
+                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 font-mono font-bold">
                       {isLinked ? '已啟用防丟失背景 5 秒自動同步' : '資料僅保存在本機，清除快取恐遺失'}
                     </p>
                   </div>
                 </div>
                 
                 {isLinked ? (
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-2 shrink-0">
                     <button
                       onClick={handleConnect}
                       disabled={isSyncing}
-                      className="px-2.5 py-1.5 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-650 text-gray-600 dark:text-gray-300 text-[10px] font-bold rounded-xl transition-all flex items-center gap-1 select-none border border-gray-100 dark:border-gray-600"
+                      className="px-3 py-1.5 bg-[#FFE66D] hover:bg-[#FFE66D]/90 text-black text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-1 select-none cursor-pointer"
                     >
-                      <RefreshCw size={10} className={isSyncing ? 'animate-spin' : ''} />
-                      <span>立即同步</span>
+                      <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
+                      <span>同步</span>
                     </button>
                     <button
                       onClick={handleDisconnect}
-                      className="p-2 bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 dark:text-red-400 rounded-xl transition-all border border-red-100/10"
+                      className="p-2 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer"
                       title="中斷連結"
                     >
-                      <LogOut size={12} />
+                      <LogOut size={14} />
                     </button>
                   </div>
                 ) : (
                   <button
                     onClick={handleConnect}
                     disabled={isSyncing}
-                    className="px-3.5 py-2 bg-gradient-to-r from-primary to-primary-dark text-white text-[11px] font-bold rounded-xl hover:shadow-md hover:shadow-primary/20 active:scale-95 transition-all select-none shrink-0"
+                    className="px-4 py-2 bg-[#FF6B6B] text-white text-xs font-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all cursor-pointer shrink-0 uppercase"
                   >
                     {isSyncing ? '連結中...' : '立即登入'}
                   </button>
@@ -404,51 +404,51 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
 
         {/* 右側資訊欄：本月新增紀錄 */}
         <section className="px-1">
-          <h2 className="text-base font-bold text-gray-800 dark:text-gray-200 mb-3">本月新增紀錄</h2>
+          <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider mb-3">本月新增紀錄</h2>
           {sortedMonthlyOrders.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-6 flex flex-col items-center justify-center text-center h-40 transition-colors">
-              <div className="w-12 h-12 bg-gray-50 dark:bg-gray-700/40 rounded-full flex items-center justify-center mb-3">
+            <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col items-center justify-center text-center h-44 transition-colors">
+              <div className="w-12 h-12 bg-[#FFE66D] border-2 border-black flex items-center justify-center mb-3">
                 <span className="text-xl">📭</span>
               </div>
-              <p className="text-sm font-medium text-gray-400 dark:text-gray-400">本月尚無任何紀錄</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">當月新增的訂單與日常記帳會顯示在這裡</p>
+              <p className="text-sm font-black text-black dark:text-white uppercase">本月尚無任何紀錄</p>
+              <p className="text-xs text-gray-700 dark:text-gray-300 font-mono mt-1 font-bold">當月新增的訂單與日常記帳會顯示在這裡</p>
             </div>
           ) : (
-            <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
               {sortedMonthlyOrders.map(order => {
                 const isDaily = order.order_type === 'daily';
                 const displayTitle = order.title || (isDaily ? '日常支出' : order.source);
                 const amountTWD = order.total_amount_twd !== undefined 
                   ? order.total_amount_twd 
                   : Math.round(order.total_amount * (order.exchange_rate || 1));
-                const dateStr = order.created_at ? order.created_at.slice(5, 10).replace('-', '/') : ''; // MM/DD
+                const dateStr = order.created_at ? order.created_at.slice(5, 10).replace('-', '/') : '';
                 
                 return (
                   <div
                     key={order.id}
                     onClick={() => onOrderClick && onOrderClick(order.id)}
-                    className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 flex items-center justify-between transition-all hover:shadow-md active:scale-[0.98] cursor-pointer"
+                    className="bg-white dark:bg-gray-800 p-3.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
                   >
-                    <div className="min-w-0 pr-2 flex items-center gap-2.5">
-                      <span className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm shrink-0 ${
-                        isDaily ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-500' : 'bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light'
+                    <div className="min-w-0 pr-2 flex items-center gap-3">
+                      <span className={`w-9 h-9 border-2 border-black flex items-center justify-center text-sm shrink-0 font-black ${
+                        isDaily ? 'bg-[#FFE66D] text-black' : 'bg-[#4ECDC4] text-black'
                       }`}>
                         {isDaily ? '⚡' : '📦'}
                       </span>
                       <div className="min-w-0">
-                        <h3 className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
+                        <h3 className="font-black text-black dark:text-white text-sm truncate uppercase">
                           {displayTitle}
                         </h3>
-                        <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5 font-semibold truncate">
+                        <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 font-mono font-bold truncate">
                           {isDaily ? '日常記帳' : `來源：${order.source}`} {order.tags && order.tags.length > 0 && `| ${order.tags.join(', ')}`}
                         </p>
                       </div>
                     </div>
                     <div className="text-right shrink-0 flex flex-col items-end">
-                      <span className="text-sm font-bold text-gray-800 dark:text-gray-150">
+                      <span className="text-sm font-black text-black dark:text-white font-mono">
                         NT$ {amountTWD.toLocaleString()}
                       </span>
-                      <span className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 font-mono">
+                      <span className="text-[10px] text-black dark:text-gray-300 font-mono font-bold">
                         {dateStr}
                       </span>
                     </div>
@@ -462,4 +462,5 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
     </div>
   );
 }
+
 

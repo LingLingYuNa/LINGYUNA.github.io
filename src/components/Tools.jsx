@@ -345,20 +345,20 @@ export default function Tools() {
 
 
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-200 pb-32">
+    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-[#FAF8F5] dark:bg-gray-900 min-h-screen text-black dark:text-white transition-colors duration-200 pb-32">
       {/* 標題區 */}
       <header className="px-1 mt-2 mb-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">系統工具</h1>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">備份與管理你的本地資料庫</p>
+        <h1 className="text-3xl font-black uppercase tracking-wider text-black dark:text-white">系統工具</h1>
+        <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 font-mono font-bold">備份與管理你的本地資料庫 (TOOLS & DATA MANAGEMENT)</p>
       </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
         {/* 資料安全提示面板 */}
-        <div className="md:col-span-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-2xl p-4 flex gap-3 shadow-sm">
-          <ShieldAlert className="text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" size={20} />
+        <div className="md:col-span-2 bg-[#FFE66D] text-black border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex gap-3 rotate-[-0.5deg]">
+          <ShieldAlert className="text-black shrink-0 mt-0.5" size={24} strokeWidth={2.5} />
           <div>
-            <h3 className="text-amber-800 dark:text-amber-300 font-bold text-sm mb-1">隱私與本地存儲安全</h3>
-            <p className="text-xs text-amber-700 dark:text-amber-400/90 leading-relaxed font-medium">
+            <h3 className="font-black text-sm uppercase text-black mb-1">隱私與本地存儲安全</h3>
+            <p className="text-xs font-bold text-gray-900 leading-relaxed">
               CollectTrack 採用無後端的純本地儲存 (IndexedDB)，資料 100% 留在你的手機內。建議你**定期使用下方功能匯出備份**，或**連結 Google Drive 雲端同步**，以免更換手機或清除瀏覽器快取時遺失心血。
             </p>
           </div>
@@ -368,23 +368,23 @@ export default function Tools() {
         <div className="space-y-6">
           {/* 本地備份與還原 */}
           <section className="space-y-3">
-            <h3 className="px-1 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              <DatabaseBackup size={18} className="text-gray-500" />
+            <h3 className="px-1 text-sm font-black uppercase text-black dark:text-white flex items-center gap-2">
+              <DatabaseBackup size={18} strokeWidth={2.5} />
               本地備份與還原
             </h3>
             
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden space-y-0.5 bg-black">
               {/* 匯出按鈕 */}
               <button 
                 onClick={handleExport}
                 disabled={isExporting || isImporting}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors border-b border-gray-100 dark:border-gray-700/80 disabled:opacity-50"
+                className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 hover:bg-[#FFE66D] active:translate-x-[2px] active:translate-y-[2px] transition-all border-b-4 border-black disabled:opacity-50 cursor-pointer"
               >
                 <div className="flex flex-col text-left">
-                  <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">匯出 JSON 備份檔</span>
-                  <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">將所有資料打包下載到裝置中</span>
+                  <span className="font-black text-black dark:text-white text-sm uppercase">匯出 JSON 備份檔</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">將所有資料打包下載到裝置中</span>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#FF6B6B] text-white border-2 border-black font-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <Download size={20} strokeWidth={2.5} />
                 </div>
               </button>
@@ -393,13 +393,13 @@ export default function Tools() {
               <button 
                 onClick={triggerImport}
                 disabled={isExporting || isImporting}
-                className="w-full flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-700 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 hover:bg-[#4ECDC4] active:translate-x-[2px] active:translate-y-[2px] transition-all disabled:opacity-50 cursor-pointer"
               >
                 <div className="flex flex-col text-left">
-                  <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">匯入還原資料</span>
-                  <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">從之前的備份檔還原或合併資料</span>
+                  <span className="font-black text-black dark:text-white text-sm uppercase">匯入還原資料</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">從之前的備份檔還原或合併資料</span>
                 </div>
-                <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <div className="w-10 h-10 bg-[#4ECDC4] text-black border-2 border-black font-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <Upload size={20} strokeWidth={2.5} />
                 </div>
               </button>
@@ -417,27 +417,27 @@ export default function Tools() {
 
           {/* 雲端同步 Google Drive */}
           <section className="space-y-3">
-            <h3 className="px-1 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              <Cloud size={18} className="text-blue-500 dark:text-blue-400" />
-              雲端同步 (Google Drive)
+            <h3 className="px-1 text-sm font-black uppercase text-black dark:text-white flex items-center gap-2">
+              <Cloud size={18} strokeWidth={2.5} />
+              雲端同步 (GOOGLE DRIVE)
             </h3>
 
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 space-y-4">
+            <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 space-y-4">
               {/* 狀態列 */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2.5 h-2.5 rounded-full ${isLinked ? 'bg-emerald-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'}`} />
-                  <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
-                    {isLinked ? '已連結 Google 帳號' : '尚未連結 Google 帳號'}
+                  <div className={`w-3 h-3 border border-black ${isLinked ? 'bg-[#4ECDC4] animate-pulse' : 'bg-gray-300'}`} />
+                  <span className="text-xs font-black text-black dark:text-white uppercase">
+                    {isLinked ? '已連結 GOOGLE 帳號' : '尚未連結 GOOGLE 帳號'}
                   </span>
                 </div>
                 {isLinked && (
                   <button 
                     onClick={handleDisconnect}
                     disabled={isSyncing}
-                    className="text-xs text-red-500 hover:text-red-600 font-bold flex items-center gap-1 transition-colors disabled:opacity-50"
+                    className="text-xs text-[#FF6B6B] font-black uppercase flex items-center gap-1 transition-colors disabled:opacity-50 cursor-pointer"
                   >
-                    <LogOut size={12} />
+                    <LogOut size={14} />
                     解除連結
                   </button>
                 )}
@@ -446,13 +446,13 @@ export default function Tools() {
               {/* 核心說明與按鈕 */}
               {!isLinked ? (
                 <div className="space-y-4">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold leading-relaxed">
                     連結您的 Google 帳號後，CollectTrack 會直接將資料備份至您個人的雲端硬碟。此功能僅限存取由本 App 建立的檔案 (CollectTrack_Backup.json)，安全有保障。
                   </p>
                   <button
                     onClick={handleConnect}
                     disabled={isSyncing}
-                    className="w-full py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-sm shadow-blue-500/10 active:scale-[0.99] transition-all disabled:opacity-50"
+                    className="w-full py-3 px-4 bg-[#FF6B6B] text-white font-black text-sm uppercase flex items-center justify-center gap-2 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all cursor-pointer disabled:opacity-50"
                   >
                     {isSyncing ? (
                       <>
@@ -462,37 +462,37 @@ export default function Tools() {
                     ) : (
                       <>
                         <Cloud size={16} />
-                        <span>連結 Google 帳號</span>
+                        <span>連結 GOOGLE 帳號</span>
                       </>
                     )}
                   </button>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed font-medium">
-                    您已將此裝置與 Google 帳號連結。備份檔案會以私有格式存放在您雲端硬碟的 <span className="font-semibold text-gray-700 dark:text-gray-300">CollectTrack_Backup.json</span> 中。
+                  <p className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold leading-relaxed">
+                    您已將此裝置與 Google 帳號連結。備份檔案會以私有格式存放在您雲端硬碟的 <span className="font-black text-black dark:text-white">CollectTrack_Backup.json</span> 中。
                   </p>
 
                   {/* 背景自動同步 Toggle */}
-                  <div className="p-4 bg-gray-50 dark:bg-gray-900/40 rounded-2xl border border-gray-100 dark:border-gray-800/80 flex items-center justify-between transition-colors">
+                  <div className="p-4 bg-[#FFE66D] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                     <div className="flex flex-col text-left">
-                      <span className="font-bold text-gray-800 dark:text-gray-100 text-xs sm:text-sm flex items-center gap-1">
-                        🔄 背景自動同步 (Auto Sync)
+                      <span className="font-black uppercase text-xs sm:text-sm flex items-center gap-1">
+                        🔄 背景自動同步 (AUTO SYNC)
                       </span>
-                      <span className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-500 font-medium mt-0.5">
+                      <span className="text-[10px] sm:text-xs font-mono font-bold mt-0.5">
                         記帳與異動時背景備份，啟動時自動還原或提醒
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={handleToggleAutoSync}
-                      className={`w-12 h-7 rounded-full transition-all relative outline-none focus:outline-none ${
-                        isAutoSync ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                      className={`w-14 h-8 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all relative outline-none ${
+                        isAutoSync ? 'bg-[#4ECDC4]' : 'bg-gray-200'
                       }`}
                     >
                       <div
-                        className={`w-5 h-5 rounded-full bg-white absolute top-1 transition-all shadow-md ${
-                          isAutoSync ? 'left-6' : 'left-1'
+                        className={`w-6 h-6 bg-black border border-black absolute top-0.5 transition-all ${
+                          isAutoSync ? 'left-6 bg-black' : 'left-0.5 bg-white'
                         }`}
                       />
                     </button>
@@ -500,9 +500,9 @@ export default function Tools() {
 
                   {/* 同步中 Loading 顯示 */}
                   {isSyncing && (
-                    <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 rounded-xl flex items-center gap-2.5">
-                      <RefreshCw size={16} className="text-blue-500 animate-spin" />
-                      <span className="text-xs text-blue-700 dark:text-blue-300 font-bold">{syncStatusText || '同步中，請稍候...'}</span>
+                    <div className="p-3 bg-[#4ECDC4] text-black border-2 border-black font-black text-xs flex items-center gap-2.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      <RefreshCw size={16} className="animate-spin" />
+                      <span>{syncStatusText || '同步中，請稍候...'}</span>
                     </div>
                   )}
 
@@ -511,7 +511,7 @@ export default function Tools() {
                     <button
                       onClick={handleCloudBackup}
                       disabled={isSyncing}
-                      className="py-3 px-4 rounded-xl bg-primary text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-primary-dark active:scale-[0.99] transition-all disabled:opacity-50 animate-fade-in"
+                      className="py-3 px-4 bg-[#FF6B6B] text-white font-black text-xs sm:text-sm uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <Upload size={16} />
                       <span>備份至雲端</span>
@@ -519,7 +519,7 @@ export default function Tools() {
                     <button
                       onClick={handleCloudRestore}
                       disabled={isSyncing}
-                      className="py-3 px-4 rounded-xl bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-650 active:scale-[0.99] transition-all disabled:opacity-50"
+                      className="py-3 px-4 bg-[#FFE66D] text-black font-black text-xs sm:text-sm uppercase border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                     >
                       <Download size={16} />
                       <span>從雲端還原</span>
@@ -535,8 +535,8 @@ export default function Tools() {
         <div className="space-y-6">
           {/* 標籤與角色管理 */}
           <section className="space-y-3">
-            <h3 className="px-1 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              <Tags size={18} className="text-gray-500" />
+            <h3 className="px-1 text-sm font-black uppercase text-black dark:text-white flex items-center gap-2">
+              <Tags size={18} strokeWidth={2.5} />
               標籤與角色管理
             </h3>
             
@@ -544,13 +544,13 @@ export default function Tools() {
             <button 
               type="button"
               onClick={() => setIsTagRoleManagerOpen(true)}
-              className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-750"
+              className="w-full bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex items-center justify-between hover:bg-[#FFE66D] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
             >
               <div className="flex flex-col text-left">
-                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">🏷️ 標籤與角色管理中心</span>
-                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">全域修改/刪除已使用之標籤與角色</span>
+                <span className="font-black text-black dark:text-white text-sm uppercase">🏷️ 標籤與角色管理中心</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">全域修改/刪除已使用之標籤與角色</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#FF6B6B] text-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
                 <Tags size={20} strokeWidth={2.5} />
               </div>
             </button>
@@ -559,15 +559,15 @@ export default function Tools() {
             <button 
               type="button"
               onClick={() => setIsIpRolesManagerOpen(true)}
-              className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-750"
+              className="w-full bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex items-center justify-between hover:bg-[#4ECDC4] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
             >
               <div className="flex flex-col text-left">
-                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
+                <span className="font-black text-black dark:text-white text-sm uppercase flex items-center gap-1.5">
                   ⚙️ IP 常用角色推薦管理
                 </span>
-                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">編輯原神、崩鐵等 IP 常用推薦角色清單</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">編輯原神、崩鐵等 IP 常用推薦角色清單</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-pink-50 dark:bg-pink-950/40 text-pink-600 dark:text-pink-400 flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#FFE66D] text-black border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
                 <Settings size={20} strokeWidth={2.5} />
               </div>
             </button>
@@ -576,13 +576,13 @@ export default function Tools() {
             <button 
               type="button"
               onClick={() => setIsTagManagerOpen(true)}
-              className="w-full bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/40 active:bg-gray-100 dark:active:bg-gray-750"
+              className="w-full bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex items-center justify-between hover:bg-[#95E1D3] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
             >
               <div className="flex flex-col text-left">
-                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">自訂快速標籤清單</span>
-                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">設定記帳常用標籤之排列順序</span>
+                <span className="font-black text-black dark:text-white text-sm uppercase">自訂快速標籤清單</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">設定記帳常用標籤之排列順序</span>
               </div>
-              <div className="w-10 h-10 rounded-full bg-primary-light dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#4ECDC4] text-black border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
                 <Settings size={20} strokeWidth={2.5} />
               </div>
             </button>
@@ -590,25 +590,25 @@ export default function Tools() {
 
           {/* 系統設定 */}
           <section className="space-y-3">
-            <h3 className="px-1 text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              <Settings size={18} className="text-gray-500" />
+            <h3 className="px-1 text-sm font-black uppercase text-black dark:text-white flex items-center gap-2">
+              <Settings size={18} strokeWidth={2.5} />
               系統設定
             </h3>
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 p-5 flex items-center justify-between transition-colors">
+            <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex items-center justify-between">
               <div className="flex flex-col text-left">
-                <span className="font-bold text-gray-800 dark:text-gray-100 text-sm">深色模式 (Dark Mode)</span>
-                <span className="text-xs text-gray-400 dark:text-gray-400 font-medium mt-0.5">切換系統配色為深色主題</span>
+                <span className="font-black text-black dark:text-white text-sm uppercase">深色模式 (DARK MODE)</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">切換系統配色為深色主題</span>
               </div>
               {/* 切換 Toggle 按鈕 */}
               <button
                 onClick={toggleDarkMode}
-                className={`w-14 h-8 rounded-full transition-all relative outline-none focus:outline-none ${
-                  isDarkMode ? 'bg-primary' : 'bg-gray-200'
+                className={`w-14 h-8 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all relative outline-none ${
+                  isDarkMode ? 'bg-[#FF6B6B]' : 'bg-gray-200'
                 }`}
               >
                 <div
-                  className={`w-6 h-6 rounded-full bg-white absolute top-1 transition-all shadow-md ${
-                    isDarkMode ? 'left-7' : 'left-1'
+                  className={`w-6 h-6 border border-black absolute top-0.5 transition-all ${
+                    isDarkMode ? 'left-6 bg-black' : 'left-0.5 bg-white'
                   }`}
                 />
               </button>
@@ -634,3 +634,4 @@ export default function Tools() {
     </div>
   );
 }
+
