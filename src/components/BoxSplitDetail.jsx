@@ -195,8 +195,8 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
   const [copiedBuyer, setCopiedBuyer] = useState(null);
 
-  // 視圖切換狀態：'card' (卡片視圖) | 'sheet' (Sheet 表格試算表視圖)
-  const [viewMode, setViewMode] = useState('card');
+  // 視圖切換狀態：'sheet' (Sheet 表格試算表視圖) | 'card' (卡片視圖)
+  const [viewMode, setViewMode] = useState('sheet');
 
   // 讀取拆團主表
   const split = useLiveQuery(() => db.box_splits.get(Number(splitId)), [splitId]);
