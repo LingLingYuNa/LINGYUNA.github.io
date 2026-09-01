@@ -587,12 +587,12 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         /* Sheet 表格試算表視圖 */
         <BoxSplitSheetView
           split={split}
-          items={items}
-          participants={participants}
-          allocatedMap={allocatedMap}
-          passTriggeredSet={passTriggeredSet}
+          items={items || []}
+          participants={participants || []}
+          allocatedMap={allocatedMap || new Map()}
+          passTriggeredSet={passTriggeredSet || new Set()}
           getItemUnitPrice={getItemUnitPrice}
-          unitSecondShipping={unitSecondShipping}
+          unitSecondShipping={unitSecondShipping || 0}
           onEditItem={(item) => {
             setEditingItem(item);
             setIsAddItemOpen(true);
@@ -1562,11 +1562,30 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
 // 子組件：拆團 Sheet 表格試算表視圖 (BoxSplitSheetView)
 // ----------------------------------------------------------------------
 function BoxSplitSheetView({ 
-  split, items, participants, allocatedMap, passTriggeredSet, getItemUnitPrice, unitSecondShipping, 
-  onEditItem, onDeleteItem, onAddParticipant, onEditParticipant, onDeleteParticipant, onCopyReconciliation 
+  split, 
+  items = [], 
+  participants = [], 
+  allocatedMap = new Map(), 
+  passTriggeredSet = new Set(), 
+  getItemUnitPrice = () => 0, 
+  unitSecondShipping = 0, 
+  onEditItem, 
+  onDeleteItem, 
+  onAddParticipant, 
+  onEditParticipant, 
+  onDeleteParticipant, 
+  onCopyReconciliation 
 }) {
   const [sheetTab, setSheetTab] = useState('items'); // 'items' | 'buyers'
-  const allBuyerNames = Array.from(new Set(participants.map(p => p.buyer_name))).filter(Boolean);
+
+  const safeItems = Array.isArray(items) ? items : [];
+  const safeParticipants = Array.isArray(participants) ? participants : [];
+  const safeAllocatedMap = allocatedMap || new Map();
+  const safePassTriggeredSet = passTriggeredSet || new Set();
+  const safeGetUnitPrice = typeof getItemUnitPrice === 'function' ? getItemUnitPrice : () => 0;
+  const safeUnitSecondShipping = Number(unitSecondShipping) || 0;
+
+  const allBuyerNames = Array.from(new Set(safeParticipants.map(p => p?.buyer_name))).filter(Boolean);
 
   return (
     <div className="space-y-4 animate-in fade-in duration-200">
@@ -1582,7 +1601,7 @@ function BoxSplitSheetView({
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
-            <span>表一：品項與喊單配分總表 ({items.length})</span>
+            <span>表一：品項與喊單配分總表 ({safeItems.length})</span>
           </button>
 
           <button
@@ -1604,7 +1623,7 @@ function BoxSplitSheetView({
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-700 overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-100 dark:bg-gray-750 text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 font-black whitespace-nowrap">
+              <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 font-black whitespace-nowrap">
                 <th className="p-3 w-10 text-center">#</th>
                 <th className="p-3 w-14 text-center">圖片</th>
                 <th className="p-3 min-w-[120px]">品項種類</th>
@@ -1615,18 +1634,19 @@ function BoxSplitSheetView({
                 <th className="p-3 text-center w-20">操作</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-150 dark:divide-gray-750">
-              {items.length > 0 ? (
-                items.map((item, idx) => {
-                  const uPrice = getItemUnitPrice(item);
+            <tbody className="divide-y divide-gray-150 dark:divide-gray-700">
+              {safeItems.length > 0 ? (
+                safeItems.map((item, idx) => {
+                  if (!item) return null;
+                  const uPrice = safeGetUnitPrice(item);
                   const stock = Number(item.stock) || 1;
                   const singleUnitPrice = Math.round(stock > 0 ? (uPrice / stock) : uPrice);
-                  const itemParts = participants.filter(p => p.item_id === item.id);
-                  const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p.qty) || 0), 0);
+                  const itemParts = safeParticipants.filter(p => p && p.item_id === item.id);
+                  const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p?.qty) || 0), 0);
                   const isSoldOut = totalBoughtQty >= stock;
 
                   return (
-                    <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
+                    <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="p-3 text-center font-bold text-gray-500">{idx + 1}</td>
                       <td className="p-3 text-center">
                         {item.image ? (
@@ -1639,7 +1659,7 @@ function BoxSplitSheetView({
                       </td>
                       <td className="p-3 font-extrabold text-gray-900 dark:text-gray-100">
                         {item.name}
-                        {item.price_multiplier && item.price_multiplier !== 1.0 && (
+                        {item.price_multiplier && Number(item.price_multiplier) !== 1.0 && (
                           <span className="text-[10px] text-gray-400 block font-normal">(倍率: {item.price_multiplier}x)</span>
                         )}
                       </td>
@@ -1657,12 +1677,15 @@ function BoxSplitSheetView({
                       <td className="p-3">
                         <div className="flex flex-wrap gap-1.5 items-center">
                           {itemParts.map(p => {
-                            const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
+                            if (!p) return null;
+                            const allocatedQty = safeAllocatedMap.get(p.id) ?? (p.qty || 0);
+                            const isPass = safePassTriggeredSet.has(p.id);
+
                             return (
                               <span 
                                 key={p.id} 
                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-bold ${
-                                  passTriggeredSet.has(p.id)
+                                  isPass
                                     ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 line-through opacity-70'
                                     : allocatedQty === 0
                                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-500 border-dashed border-gray-300 opacity-60'
@@ -1671,7 +1694,7 @@ function BoxSplitSheetView({
                               >
                                 <span>{p.buyer_name}</span>
                                 <strong className="text-purple-600 dark:text-purple-400">x{p.qty}</strong>
-                                {passTriggeredSet.has(p.id) ? (
+                                {isPass ? (
                                   <span className="text-[9px] text-purple-700 font-black">(無A則Pass)</span>
                                 ) : allocatedQty === 0 ? (
                                   <span className="text-[9px] text-red-600 font-bold">(候補)</span>
@@ -1680,7 +1703,7 @@ function BoxSplitSheetView({
                                 ) : null}
                                 <button
                                   type="button"
-                                  onClick={() => onEditParticipant(p, item.id)}
+                                  onClick={() => onEditParticipant && onEditParticipant(p, item.id)}
                                   className="p-0.5 hover:text-primary rounded text-gray-400 ml-0.5"
                                   title="編輯喊單"
                                 >
@@ -1692,7 +1715,7 @@ function BoxSplitSheetView({
 
                           <button
                             type="button"
-                            onClick={() => onAddParticipant(item.id)}
+                            onClick={() => onAddParticipant && onAddParticipant(item.id)}
                             className="px-2 py-0.5 text-[10px] font-bold text-primary hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-lg border border-dashed border-purple-300 transition-all"
                           >
                             + 喊單
@@ -1703,7 +1726,7 @@ function BoxSplitSheetView({
                         <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
-                            onClick={() => onEditItem(item)}
+                            onClick={() => onEditItem && onEditItem(item)}
                             className="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                             title="編輯品項"
                           >
@@ -1711,7 +1734,7 @@ function BoxSplitSheetView({
                           </button>
                           <button
                             type="button"
-                            onClick={() => onDeleteItem(item.id)}
+                            onClick={() => onDeleteItem && onDeleteItem(item.id)}
                             className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
                             title="刪除品項"
                           >
@@ -1747,21 +1770,23 @@ function BoxSplitSheetView({
                 <th className="p-3 text-center w-28">對帳文案</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-150 dark:divide-gray-750">
+            <tbody className="divide-y divide-gray-150 dark:divide-gray-700">
               {allBuyerNames.length > 0 ? (
                 allBuyerNames.map((bName) => {
-                  const buyerParts = participants.filter(p => p.buyer_name === bName);
+                  if (!bName) return null;
+                  const buyerParts = safeParticipants.filter(p => p && p.buyer_name === bName);
                   const itemSummaries = [];
                   let totalItemsCost = 0;
                   let totalQuantity = 0;
 
                   buyerParts.forEach(p => {
-                    const item = items.find(i => i.id === p.item_id);
+                    if (!p) return;
+                    const item = safeItems.find(i => i && i.id === p.item_id);
                     if (item) {
-                      const uPrice = getItemUnitPrice(item);
+                      const uPrice = safeGetUnitPrice(item);
                       const stock = Number(item.stock) || 1;
                       const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
-                      const allocatedQty = allocatedMap.get(p.id) ?? 0;
+                      const allocatedQty = safeAllocatedMap.get(p.id) ?? 0;
                       const subTotal = Math.round(singleUnitPrice * allocatedQty);
 
                       if (allocatedQty > 0) {
@@ -1770,9 +1795,9 @@ function BoxSplitSheetView({
                       }
 
                       itemSummaries.push({
-                        itemName: item.name,
+                        itemName: item.name || '未命名品項',
                         allocatedQty,
-                        claimedQty: p.qty,
+                        claimedQty: p.qty || 0,
                         subTotal,
                         isAllocated: allocatedQty > 0
                       });
@@ -1780,11 +1805,11 @@ function BoxSplitSheetView({
                   });
 
                   const allocatedKindsCount = itemSummaries.filter(i => i.isAllocated).length;
-                  const buyerSecondShipping = unitSecondShipping * allocatedKindsCount;
+                  const buyerSecondShipping = safeUnitSecondShipping * allocatedKindsCount;
                   const finalTotal = totalItemsCost + buyerSecondShipping;
 
                   return (
-                    <tr key={bName} className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
+                    <tr key={bName} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="p-3 font-extrabold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                         <span>{bName}</span>
                       </td>
@@ -1819,7 +1844,7 @@ function BoxSplitSheetView({
                       <td className="p-3 text-center">
                         <button
                           type="button"
-                          onClick={() => onCopyReconciliation(bName)}
+                          onClick={() => onCopyReconciliation && onCopyReconciliation(bName)}
                           className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-2xs transition-all active:scale-95 flex items-center gap-1 mx-auto"
                         >
                           <Copy size={11} />
