@@ -820,7 +820,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
               className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#FF6B6B] hover:bg-red-500 text-white border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer shrink-0"
             >
               <Plus size={16} strokeWidth={3} />
-              <span>+ 新增種類</span>
+              <span>新增種類</span>
             </button>
           </div>
         </div>
@@ -987,7 +987,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                       className="text-xs font-bold text-primary hover:text-primary-dark flex items-center gap-1 px-2.5 py-1 bg-purple-50 dark:bg-purple-950/30 border border-purple-150 dark:border-purple-900 rounded-none transition-all active:scale-95"
                     >
                       <UserPlus size={13} />
-                      <span>+ 登記參團人員</span>
+                      <span>登記參團人員</span>
                     </button>
                   </div>
 
