@@ -13,9 +13,9 @@ export default function Sidebar({ currentTab, onTabChange }) {
     <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 bg-[#f7f1df] dark:bg-[#121212] border-r-4 border-black dark:border-white transition-colors duration-200 z-30">
       {/* LOGO 區：俏皮野獸派大膽塊面與硬陰影 */}
       <div className="px-5 py-5 border-b-4 border-black dark:border-white shrink-0 bg-[#FFE66D] dark:bg-gray-800">
-        <div className="flex items-center gap-3 bg-[#FF6B6B] text-black p-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-[-1.5deg]">
-          <div className="w-8 h-8 bg-black text-white flex items-center justify-center border-2 border-black shrink-0">
-            <Package size={20} strokeWidth={2.5} />
+        <div className="flex items-center gap-3 bg-[#FF6B6B] text-black p-2.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-[-1.5deg]">
+          <div className="w-10 h-10 bg-white border-2 border-black shrink-0 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <img src="/logo.jpg" alt="CollectTrack Logo" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <h1 className="font-black text-black uppercase tracking-wider text-base leading-tight truncate">CollectTrack</h1>

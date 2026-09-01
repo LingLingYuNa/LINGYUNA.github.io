@@ -205,6 +205,9 @@ export default function Dashboard({ onOrderClick }) {
       <header className="flex justify-between items-end mt-2 px-1">
         <div>
           <div className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-white border-2 border-black shrink-0 overflow-hidden shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] md:hidden">
+              <img src="/logo.jpg" alt="CollectTrack Logo" className="w-full h-full object-cover" />
+            </div>
             <h1 className="text-3xl font-black uppercase text-black dark:text-white tracking-wider">總覽</h1>
             {isLinked ? (
               <span className="inline-flex items-center gap-1.5 text-xs bg-[#4ECDC4] text-black font-black px-2.5 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
