@@ -242,48 +242,75 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const totalStock = items.reduce((sum, i) => sum + (Number(i.stock) || 1), 0) || 1;
   const baseAvg = totalBoxAmount > 0 ? (totalBoxAmount / totalStock) : 50;
 
-  // 熱度調價階梯映射表
+  // 熱度調價階梯映射表 (四步演算法：有效均價 -> 權重斜率 -> 步長 5 取整 -> 殘差修補)
   const adjustedPriceMap = React.useMemo(() => {
     if (!items || items.length === 0) return new Map();
     const map = new Map();
     const N = items.length;
+    const step = 5; // 步長限制為 5 (結尾 0 或 5)
 
-    if (priceAdjustType === 'none') {
-      items.forEach(item => map.set(item.id, Math.round(baseAvg)));
+    if (priceAdjustType === 'none' || !priceAdjustType) {
+      const avg = Math.round(baseAvg);
+      items.forEach(item => map.set(item.id, avg));
       return map;
     }
+
+    // 步驟 1：有效平均單價 P_avg = baseAvg
+    // 步驟 2：設定價差權重 (W_i) 與 StepScale
+    let weights = [];
+    let stepScale = 0;
 
     if (priceAdjustType === 'normal') {
-      // 普通調價：溫和階梯差價 (例如：40, 35, 30, 25, 20)
-      const step = Math.max(5, Math.round(baseAvg * 0.15));
-      const rawPrices = items.map((item, idx) => {
-        const rankOffset = ((N - 1) / 2) - idx;
-        return Math.max(5, baseAvg + rankOffset * step);
+      // 普通調價：小階梯 (例如 40, 35, 30, 25, 20)
+      stepScale = Math.max(5, Math.round(baseAvg * 0.15));
+      weights = items.map((_, idx) => ((N - 1) / 2) - idx);
+    } else if (priceAdjustType === 'aggressive') {
+      // 暴力調價：大階梯 (例如 90, 30, 15, 10, 5)
+      stepScale = Math.max(10, Math.round(baseAvg * 0.35));
+      weights = items.map((_, idx) => {
+        if (idx === 0) return Math.max(3.0, (N - 1) * 1.5);
+        if (idx === 1 && N >= 4) return 0.8;
+        if (idx < N - 1) return 0.2 - idx * 0.3;
+        return -((N - 1) * 0.8);
       });
-      const rawSum = rawPrices.reduce((sum, p, idx) => sum + p * (Number(items[idx].stock) || 1), 0);
-      const scale = (totalBoxAmount > 0 && rawSum > 0) ? (totalBoxAmount / rawSum) : 1;
-      items.forEach((item, idx) => {
-        map.set(item.id, Math.round(rawPrices[idx] * scale));
-      });
-      return map;
     }
 
-    if (priceAdjustType === 'aggressive') {
-      // 暴力調價：熱門陡峭調高，冷門大幅調低 (例如：80, 25, 25, 15, 10)
-      const rawPrices = items.map((item, idx) => {
-        if (idx === 0) return baseAvg * 2.5; // 熱門首選
-        if (idx === 1 && N >= 4) return baseAvg * 0.9;
-        if (idx < N - 1) return baseAvg * 0.7;
-        return Math.max(5, baseAvg * 0.35); // 冷門末尾
-      });
-      const rawSum = rawPrices.reduce((sum, p, idx) => sum + p * (Number(items[idx].stock) || 1), 0);
-      const scale = (totalBoxAmount > 0 && rawSum > 0) ? (totalBoxAmount / rawSum) : 1;
-      items.forEach((item, idx) => {
-        map.set(item.id, Math.round(rawPrices[idx] * scale));
-      });
-      return map;
+    // 步驟 3：初步計價與步長取整 (round to step = 5)
+    const priceObjects = items.map((item, idx) => {
+      const rawP = baseAvg + (weights[idx] * stepScale);
+      const roundedP = Math.max(5, Math.round(rawP / step) * step);
+      return { id: item.id, qty: Number(item.stock) || 1, price: roundedP };
+    });
+
+    // 步驟 4：殘差修補 (Greedy Residual Adjustment) 確保總和無落差
+    const targetTotal = Number(totalBoxAmount) || 0;
+    if (targetTotal > 0) {
+      let currentSum = priceObjects.reduce((sum, p) => sum + p.price * p.qty, 0);
+      let residual = targetTotal - currentSum; // R = T - sum(P_i * Q_i)
+
+      if (residual > 0) {
+        // 總額不足：優先從熱門品項向上加 5 元
+        let idx = 0;
+        while (residual >= step && idx < N) {
+          priceObjects[idx].price += step;
+          residual -= priceObjects[idx].qty * step;
+          idx = (idx + 1) % Math.min(N, 3);
+        }
+      } else if (residual < 0) {
+        // 總額溢出：優先從冷門品項向下扣減 5 元
+        let idx = N - 1;
+        while (residual <= -step && idx >= 0) {
+          if (priceObjects[idx].price - step >= 5) {
+            priceObjects[idx].price -= step;
+            residual += priceObjects[idx].qty * step;
+          }
+          idx--;
+          if (idx < 0) idx = N - 1;
+        }
+      }
     }
 
+    priceObjects.forEach(p => map.set(p.id, p.price));
     return map;
   }, [items, totalBoxAmount, priceAdjustType, baseAvg]);
 
