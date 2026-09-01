@@ -30,13 +30,13 @@ class LocalErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-2xl border-2 border-red-300 text-center my-4 space-y-3">
+        <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-none border-2 border-red-300 text-center my-4 space-y-3">
           <h4 className="font-black text-base">⚠️ 表格視圖繪製時發生異常</h4>
           <p className="text-xs font-mono break-all">{this.state.error?.toString()}</p>
           <button
             type="button"
             onClick={() => this.setState({ hasError: false, error: null })}
-            className="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl shadow-xs hover:bg-red-700 active:scale-95 transition-all"
+            className="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-red-700 active:scale-95 transition-all"
           >
             重試載入
           </button>
@@ -256,7 +256,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     return (
       <div className="p-8 text-center text-gray-500">
         <p>載入中或拆團不存在...</p>
-        <button onClick={onBack} className="mt-4 px-4 py-2 bg-primary text-white rounded-xl text-xs font-bold">
+        <button onClick={onBack} className="mt-4 px-4 py-2 bg-primary text-white rounded-none text-xs font-bold">
           返回列表
         </button>
       </div>
@@ -470,7 +470,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       <div className="flex items-center justify-between">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light transition-colors py-1.5 px-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs"
+          className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light transition-colors py-1.5 px-3 rounded-none bg-white dark:bg-gray-800 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
         >
           <ArrowLeft size={16} />
           <span>返回拆團列表</span>
@@ -479,14 +479,14 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsReconciliationOpen(true)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95"
+            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
           >
             <DollarSign size={14} />
             <span>買家對帳管家</span>
           </button>
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xs transition-colors"
+            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-none bg-white dark:bg-gray-800 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-colors"
             title="編輯拆團設定"
           >
             <Pencil size={16} />
@@ -494,13 +494,13 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         </div>
       </div>
 
-      {/* 手繪稿 3 頂部資訊區塊 */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-150 dark:border-gray-750 space-y-4">
+      {/* 頂部資訊區塊 (俏皮野獸派黑邊硬陰影卡片) */}
+      <div className="bg-white dark:bg-gray-800 rounded-none p-5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border-4 border-black space-y-4">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl font-black text-gray-900 dark:text-gray-100">{split.title}</h1>
-              <span className="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+              <h1 className="text-2xl font-black text-black dark:text-white uppercase">{split.title}</h1>
+              <span className="px-2.5 py-0.5 rounded-none text-xs font-black bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                 {split.status}
               </span>
             </div>
@@ -509,7 +509,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             {split.tags && split.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {split.tags.map((t, idx) => (
-                  <span key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[11px] font-semibold px-2 py-0.5 rounded-md">
+                  <span key={idx} className="bg-[#4ECDC4] text-black text-[10px] font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
                     #{t}
                   </span>
                 ))}
@@ -518,27 +518,27 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </div>
 
           <div className="text-right shrink-0">
-            <span className="text-[10px] font-bold text-gray-400 block uppercase tracking-wider">拆團總金額</span>
-            <span className="text-2xl font-black text-primary-dark dark:text-primary-light">
+            <span className="text-[10px] font-black text-black dark:text-gray-400 block uppercase tracking-wider">拆團總金額</span>
+            <span className="text-2xl font-black text-black dark:text-white font-mono">
               NT$ {split.total_amount ? Number(split.total_amount).toLocaleString() : '0'}
             </span>
           </div>
         </div>
 
         {/* 模式與計算說明 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-700/60 text-xs">
-          <div className="flex items-center gap-2 bg-purple-50/60 dark:bg-purple-950/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-900/40">
-            <Settings size={18} className="text-purple-700 dark:text-purple-300" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t-2 border-black text-xs">
+          <div className="flex items-center gap-2 bg-[#FFE66D] text-black p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <Settings size={18} strokeWidth={2.5} className="shrink-0" />
             <div>
-              <span className="font-bold text-purple-900 dark:text-purple-300 block">{currentModeInfo.label}</span>
-              <span className="text-[10px] text-purple-700 dark:text-purple-400 block">{currentModeInfo.desc}</span>
+              <span className="font-black uppercase block">{currentModeInfo.label}</span>
+              <span className="text-[10px] font-mono font-bold block">{currentModeInfo.desc}</span>
             </div>
           </div>
 
-          <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-900/50 p-2.5 rounded-xl border border-gray-150 dark:border-gray-750">
-            <span className="font-bold text-gray-600 dark:text-gray-400">倍率計算單價：</span>
-            <span className={`font-bold px-2 py-0.5 rounded-md text-[11px] ${
-              split.use_multiplier ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+          <div className="flex items-center justify-between bg-white dark:bg-gray-700 text-black dark:text-white p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <span className="font-black uppercase">倍率計算單價：</span>
+            <span className={`font-black px-2 py-0.5 border border-black text-xs ${
+              split.use_multiplier ? 'bg-[#4ECDC4] text-black' : 'bg-gray-200 text-black'
             }`}>
               {split.use_multiplier ? '✓ 已開啟 (支援倍率調整)' : '✕ 未開啟 (平均單價)'}
             </span>
@@ -546,11 +546,11 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         </div>
       </div>
 
-      {/* 手繪稿 3：總二補金額與單二補金額計算框 */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border-2 border-gray-900 dark:border-gray-100 space-y-2">
+      {/* 總二補金額與單二補金額計算框 */}
+      <div className="bg-[#95E1D3] text-black rounded-none p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2 flex-1">
-            <label className="text-sm font-black text-gray-900 dark:text-gray-100 whitespace-nowrap">
+            <label className="text-sm font-black uppercase whitespace-nowrap">
               總二補金額：
             </label>
             <input
@@ -559,15 +559,15 @@ export default function BoxSplitDetail({ splitId, onBack }) {
               value={split.second_shipping_fee || ''}
               onChange={(e) => handleUpdateSecondShipping(e.target.value)}
               placeholder="(自填數字)"
-              className="w-36 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-36 bg-white border-2 border-black rounded-none px-3 py-1.5 text-sm font-mono font-bold text-black focus:outline-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
             />
           </div>
 
-          <div className="bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 px-3.5 py-1.5 rounded-xl text-right shrink-0">
-            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-bold block">
+          <div className="bg-white border-2 border-black px-3.5 py-1.5 rounded-none text-right shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+            <span className="text-[10px] font-black uppercase text-black block">
               單二補金額 (總二補金額除以總種類數量)：
             </span>
-            <span className="text-base font-black text-purple-900 dark:text-purple-200">
+            <span className="text-base font-black font-mono text-black">
               NT$ {unitSecondShipping.toLocaleString()}
             </span>
           </div>
@@ -580,7 +580,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           <h2 className="text-lg font-black text-gray-900 dark:text-gray-100">品項種類清單 ({items.length})</h2>
           <button
             onClick={handleAutoSortByLibrary}
-            className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/40 hover:bg-purple-200 border border-purple-300 dark:border-purple-800 px-2.5 py-1 rounded-xl transition-all active:scale-95"
+            className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/40 hover:bg-purple-200 border border-purple-300 dark:border-purple-800 px-2.5 py-1 rounded-none transition-all active:scale-95"
             title="點擊依全域角色排序庫自動排列品項"
           >
             <Sparkles size={13} />
@@ -590,11 +590,11 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
         <div className="flex items-center gap-2 flex-wrap">
           {/* 視圖切換按鈕組 */}
-          <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-xl border border-gray-200 dark:border-gray-700 flex items-center gap-1">
+          <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-none border-2 border-black flex items-center gap-1">
             <button
               type="button"
               onClick={() => setViewMode('card')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-none text-xs font-bold transition-all flex items-center gap-1 ${
                 viewMode === 'card'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs'
                   : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
@@ -606,7 +606,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             <button
               type="button"
               onClick={() => setViewMode('sheet')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-2.5 py-1 rounded-none text-xs font-bold transition-all flex items-center gap-1 ${
                 viewMode === 'sheet'
                   ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs'
                   : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
@@ -621,7 +621,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             <button
               type="button"
               onClick={handleExportSheetCSV}
-              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-2xs transition-all active:scale-95"
+              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-bold shadow-2xs transition-all active:scale-95"
               title="匯出此拆團總表為 CSV 檔案 (可於 Excel / Google Sheets 開啟)"
             >
               <Download size={14} />
@@ -631,7 +631,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
           <button
             onClick={() => setIsAddItemOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-none text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
           >
             <Plus size={16} />
             <span>新增種類</span>
@@ -682,7 +682,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             return (
               <div 
                 key={item.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 space-y-3 relative transition-all"
+                className="bg-white dark:bg-gray-800 rounded-none p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black space-y-3 relative transition-all"
               >
                 {/* 種類 Header */}
                 <div className="flex items-start gap-3">
@@ -716,10 +716,10 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                     <img 
                       src={item.image} 
                       alt={item.name} 
-                      className="w-16 h-16 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
+                      className="w-16 h-16 object-cover rounded-none border-2 border-black shrink-0" 
                     />
                   ) : (
-                    <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center text-gray-400 shrink-0">
+                    <div className="w-16 h-16 rounded-none bg-gray-100 dark:bg-gray-700 flex flex-col items-center justify-center text-gray-400 shrink-0">
                       <ImageIcon size={20} />
                       <span className="text-[9px] mt-0.5">圖片</span>
                     </div>
@@ -737,14 +737,14 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                             setEditingItem(item);
                             setIsAddItemOpen(true);
                           }}
-                          className="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="p-1 text-gray-400 hover:text-primary rounded-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           title="編輯種類品項"
                         >
                           <Pencil size={16} />
                         </button>
                         <button
                           onClick={() => handleDeleteItem(item.id)}
-                          className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                          className="p-1 text-gray-400 hover:text-red-600 rounded-none hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                           title="刪除種類"
                         >
                           <Trash2 size={16} />
@@ -787,7 +787,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                         setActiveItemIdForParticipant(item.id);
                         setIsAddParticipantOpen(true);
                       }}
-                      className="text-xs font-bold text-primary hover:text-primary-dark flex items-center gap-1 px-2.5 py-1 bg-purple-50 dark:bg-purple-950/30 border border-purple-150 dark:border-purple-900 rounded-xl transition-all active:scale-95"
+                      className="text-xs font-bold text-primary hover:text-primary-dark flex items-center gap-1 px-2.5 py-1 bg-purple-50 dark:bg-purple-950/30 border border-purple-150 dark:border-purple-900 rounded-none transition-all active:scale-95"
                     >
                       <UserPlus size={13} />
                       <span>+ 登記參團人員</span>
@@ -804,7 +804,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                         return (
                           <div
                             key={p.id}
-                            className={`rounded-xl p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px] border transition-all ${
+                            className={`rounded-none p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px] border transition-all ${
                               allocatedQty === 0 
                                 ? 'bg-gray-100/70 dark:bg-gray-800/50 border-dashed border-gray-300 dark:border-gray-700 opacity-60' 
                                 : 'bg-gray-50 dark:bg-gray-750 border-gray-200 dark:border-gray-700'
@@ -858,7 +858,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                                   setActiveItemIdForParticipant(p.item_id);
                                   setIsAddParticipantOpen(true);
                                 }}
-                                className="p-1 text-gray-400 hover:text-primary rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+                                className="p-1 text-gray-400 hover:text-primary rounded-none hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
                                 title="編輯參團者"
                               >
                                 <Pencil size={12} />
@@ -866,7 +866,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteParticipant(p.id)}
-                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-none hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shrink-0"
                                 title="刪除參團者"
                               >
                                 <X size={12} />
@@ -884,7 +884,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             );
           })
         ) : (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-150 dark:border-gray-750 text-gray-400 space-y-2 flex flex-col items-center">
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-none border border-gray-150 dark:border-gray-750 text-gray-400 space-y-2 flex flex-col items-center">
             <Package size={36} className="text-gray-400" />
             <p className="text-xs font-medium">目前尚無品項種類。</p>
             <p className="text-[10px]">點擊右上角「+ 新增種類」按鈕新增角色或品項！</p>
@@ -1013,13 +1013,13 @@ function AddItemModal({ splitId, existingItem, onClose }) {
 
   return (
     <div className="fixed inset-0 z-[70] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
-      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-md rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-md rounded-t-3xl md:rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
           <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">
             {existingItem ? '編輯種類品項' : '新增種類品項'}
           </h3>
-          <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full">
+          <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-none">
             <X size={20} />
           </button>
         </div>
@@ -1033,7 +1033,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例如：鍾離、胡桃、徽章A..."
-              className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100"
+              className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100"
             />
           </div>
 
@@ -1046,7 +1046,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
                 required
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100 font-bold"
+                className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100 font-bold"
               />
             </div>
 
@@ -1059,7 +1059,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
                 value={priceMultiplier}
                 onChange={(e) => setPriceMultiplier(e.target.value)}
                 placeholder="1.0"
-                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100"
+                className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100"
               />
             </div>
           </div>
@@ -1072,7 +1072,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
               value={manualPrice}
               onChange={(e) => setManualPrice(e.target.value)}
               placeholder="留空則自動計算平均或倍率單價"
-              className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100"
+              className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100"
             />
           </div>
 
@@ -1081,24 +1081,24 @@ function AddItemModal({ splitId, existingItem, onClose }) {
             <label className="text-xs font-bold text-gray-700 dark:text-gray-300">種類圖片 (選填)</label>
             <div className="flex items-center gap-3">
               {image ? (
-                <div className="w-16 h-16 rounded-xl border border-gray-200 overflow-hidden relative group shrink-0">
+                <div className="w-16 h-16 rounded-none border border-gray-200 overflow-hidden relative group shrink-0">
                   <img src={image} alt="預覽" className="w-full h-full object-cover" />
                   <button type="button" onClick={() => setImage('')} className="absolute inset-0 bg-black/60 text-white flex items-center justify-center opacity-0 group-hover:opacity-100">
                     <X size={16} />
                   </button>
                 </div>
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 border border-dashed border-gray-300">
+                <div className="w-16 h-16 rounded-none bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 shrink-0 border border-dashed border-gray-300">
                   <ImageIcon size={20} />
                 </div>
               )}
 
               <div className="flex-1 space-y-1.5">
                 <div className="grid grid-cols-2 gap-2">
-                  <button type="button" onClick={() => cameraInputRef.current?.click()} className="py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1">
+                  <button type="button" onClick={() => cameraInputRef.current?.click()} className="py-1.5 bg-gray-100 dark:bg-gray-800 rounded-none text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1">
                     <Camera size={13} /> 拍照
                   </button>
-                  <button type="button" onClick={() => albumInputRef.current?.click()} className="py-1.5 bg-gray-100 dark:bg-gray-800 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1">
+                  <button type="button" onClick={() => albumInputRef.current?.click()} className="py-1.5 bg-gray-100 dark:bg-gray-800 rounded-none text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1">
                     <ImageIcon size={13} /> 相簿
                   </button>
                 </div>
@@ -1111,7 +1111,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     placeholder="貼上圖片網址..."
-                    className="flex-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-2.5 py-1 text-xs"
+                    className="flex-1 bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-2.5 py-1 text-xs"
                   />
                   <button
                     type="button"
@@ -1121,7 +1121,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
                         setUrlInput('');
                       }
                     }}
-                    className="px-2.5 py-1 bg-gray-200 dark:bg-gray-700 rounded-xl text-xs font-bold"
+                    className="px-2.5 py-1 bg-gray-200 dark:bg-gray-700 rounded-none text-xs font-bold"
                   >
                     套用
                   </button>
@@ -1132,10 +1132,10 @@ function AddItemModal({ splitId, existingItem, onClose }) {
         </form>
 
         <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700/80 flex gap-2 shrink-0">
-          <button type="button" onClick={onClose} className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold text-xs">
+          <button type="button" onClick={onClose} className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-bold text-xs">
             取消
           </button>
-          <button type="button" onClick={handleSave} disabled={isSaving || !name.trim()} className="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold text-xs">
+          <button type="button" onClick={handleSave} disabled={isSaving || !name.trim()} className="flex-1 py-2.5 bg-primary text-white rounded-none font-bold text-xs">
             儲存種類
           </button>
         </div>
@@ -1227,7 +1227,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
 
   return (
     <div className="fixed inset-0 z-[75] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
-      <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 md:max-w-md">
+      <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl md:rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 md:max-w-md">
         
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
           <div>
@@ -1236,7 +1236,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
             </h3>
             <span className="text-[10px] text-purple-600 font-bold block">品項：{currentItem?.name || '未知種類'}</span>
           </div>
-          <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-full">
+          <button type="button" onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-none">
             <X size={20} />
           </button>
         </div>
@@ -1250,7 +1250,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
               value={buyerName}
               onChange={(e) => setBuyerName(e.target.value)}
               placeholder="例如：小明, @user123..."
-              className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100 font-bold"
+              className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100 font-bold"
             />
           </div>
 
@@ -1263,12 +1263,12 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
                 required
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100 font-bold"
+                className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2.5 text-xs text-gray-800 dark:text-gray-100 font-bold"
               />
             </div>
 
             <div className="space-y-1 flex flex-col justify-end">
-              <label className="flex items-center gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl cursor-pointer">
+              <label className="flex items-center gap-2 p-2.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-none cursor-pointer">
                 <input
                   type="checkbox"
                   checked={isAllin}
@@ -1287,13 +1287,13 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
               value={timestamp}
               onChange={(e) => setTimestamp(e.target.value)}
               placeholder="如：8/28 14:00"
-              className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2 text-xs text-gray-800 dark:text-gray-100"
+              className="w-full bg-gray-50 dark:bg-gray-800 border-2 border-black rounded-none px-3.5 py-2 text-xs text-gray-800 dark:text-gray-100"
             />
           </div>
 
           {/* 無 A 則 Pass 條件設定區塊 */}
           <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2">
-            <label className="flex items-center justify-between cursor-pointer p-2.5 bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-xl">
+            <label className="flex items-center justify-between cursor-pointer p-2.5 bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-none">
               <span className="text-xs font-black text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
                 啟用「無 A 則 Pass」條件 (A Pass B)
               </span>
@@ -1306,7 +1306,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
             </label>
 
             {enablePassRule && (
-              <div className="bg-purple-50/50 dark:bg-purple-950/20 p-3 rounded-xl border border-purple-150 dark:border-purple-900/40 space-y-3 text-xs animate-in fade-in duration-200">
+              <div className="bg-purple-50/50 dark:bg-purple-950/20 p-3 rounded-none border border-purple-150 dark:border-purple-900/40 space-y-3 text-xs animate-in fade-in duration-200">
                 <div className="space-y-1">
                   <label className="text-[11px] font-bold text-purple-900 dark:text-purple-300 block">
                     條件觸發：若未配到 / 未中選品項 (A)
@@ -1314,7 +1314,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
                   <select
                     value={passTriggerItemId}
                     onChange={(e) => setPassTriggerItemId(e.target.value)}
-                    className="w-full bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 font-bold text-xs text-gray-800 dark:text-gray-100"
+                    className="w-full bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-none px-3 py-2 font-bold text-xs text-gray-800 dark:text-gray-100"
                   >
                     <option value="">-- 請選擇觸發目標品項 A --</option>
                     {items.map(i => (
@@ -1347,7 +1347,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
                         <select
                           value={passTargetItemId}
                           onChange={(e) => setPassTargetItemId(e.target.value)}
-                          className="w-full bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-xl px-3 py-2 font-bold text-xs text-gray-800 dark:text-gray-100"
+                          className="w-full bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-800 rounded-none px-3 py-2 font-bold text-xs text-gray-800 dark:text-gray-100"
                         >
                           <option value="">-- 請選擇被 Pass 的品項 B --</option>
                           {items.map(i => (
@@ -1377,10 +1377,10 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
           </div>
 
           <div className="pt-2 flex gap-2">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold text-xs">
+            <button type="button" onClick={onClose} className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-bold text-xs">
               取消
             </button>
-            <button type="submit" disabled={isSaving || !buyerName.trim()} className="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold text-xs">
+            <button type="submit" disabled={isSaving || !buyerName.trim()} className="flex-1 py-2.5 bg-primary text-white rounded-none font-bold text-xs">
               確認登記
             </button>
           </div>
@@ -1502,7 +1502,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
 
   return (
     <div className="fixed inset-0 z-[80] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
-      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg rounded-t-3xl md:rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-emerald-600 text-white shrink-0">
@@ -1510,7 +1510,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
             <DollarSign size={20} />
             <h3 className="font-bold text-base">買家對帳與文案生成管家</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-white/80 hover:text-white rounded-full">
+          <button type="button" onClick={onClose} className="p-1 text-white/80 hover:text-white rounded-none">
             <X size={20} />
           </button>
         </div>
@@ -1528,9 +1528,9 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
                     key={b}
                     type="button"
                     onClick={() => setSelectedBuyer(b)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                    className={`px-3 py-1.5 rounded-none text-xs font-bold transition-all border ${
                       selectedBuyer === b
-                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -1545,7 +1545,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
 
           {/* 買家帳單詳情 */}
           {activeSummary && (
-            <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-4 border border-gray-200 dark:border-gray-700 space-y-3 animate-in fade-in duration-200">
+            <div className="bg-gray-50 dark:bg-gray-800 rounded-none p-4 border-2 border-black space-y-3 animate-in fade-in duration-200">
               <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-gray-700">
                 <span className="font-black text-sm text-gray-900 dark:text-gray-100">
                   對帳對象：{activeSummary.buyerName}
@@ -1553,7 +1553,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
                 <button
                   type="button"
                   onClick={() => handleCopy(activeSummary)}
-                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95"
+                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
                 >
                   {isCopied ? <Check size={14} /> : <Copy size={14} />}
                   <span>{isCopied ? '已複製文案！' : '一鍵複製對帳文案'}</span>
@@ -1566,7 +1566,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
                 {activeSummary.itemSummaries.map((item, idx) => (
                   <div 
                     key={idx} 
-                    className={`flex justify-between items-center p-2 rounded-xl border ${
+                    className={`flex justify-between items-center p-2 rounded-none border ${
                       item.isAllocated 
                         ? 'bg-white dark:bg-gray-900 border-gray-150 dark:border-gray-750' 
                         : 'bg-gray-100/60 dark:bg-gray-800/40 border-dashed border-gray-300 dark:border-gray-700 opacity-60'
@@ -1607,7 +1607,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
         </div>
 
         <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700/80 shrink-0">
-          <button type="button" onClick={onClose} className="w-full py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-xl font-bold text-xs">
+          <button type="button" onClick={onClose} className="w-full py-2.5 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-none font-bold text-xs">
             關閉對帳管家
           </button>
         </div>
@@ -1653,9 +1653,9 @@ function BoxSplitSheetView({
           <button
             type="button"
             onClick={() => setSheetTab('items')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-none text-xs font-bold transition-all flex items-center gap-1.5 ${
               sheetTab === 'items'
-                ? 'bg-purple-600 text-white shadow-xs'
+                ? 'bg-purple-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
@@ -1665,9 +1665,9 @@ function BoxSplitSheetView({
           <button
             type="button"
             onClick={() => setSheetTab('buyers')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-1.5 rounded-none text-xs font-bold transition-all flex items-center gap-1.5 ${
               sheetTab === 'buyers'
-                ? 'bg-purple-600 text-white shadow-xs'
+                ? 'bg-purple-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
@@ -1678,7 +1678,7 @@ function BoxSplitSheetView({
 
       {sheetTab === 'items' ? (
         /* 表一：品項與喊單配分總表 */
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-black overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 font-black whitespace-nowrap">
@@ -1708,9 +1708,9 @@ function BoxSplitSheetView({
                       <td className="p-3 text-center font-bold text-gray-500">{idx + 1}</td>
                       <td className="p-3 text-center">
                         {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-lg border border-gray-200 inline-block" />
+                          <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-none border border-gray-200 inline-block" />
                         ) : (
-                          <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 inline-flex items-center justify-center text-gray-400">
+                          <div className="w-9 h-9 rounded-none bg-gray-100 dark:bg-gray-700 inline-flex items-center justify-center text-gray-400">
                             <ImageIcon size={14} />
                           </div>
                         )}
@@ -1726,7 +1726,7 @@ function BoxSplitSheetView({
                         NT$ {singleUnitPrice}
                       </td>
                       <td className="p-3 text-center">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        <span className={`px-2 py-0.5 rounded-none text-[10px] font-bold ${
                           isSoldOut ? 'bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300' : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
                         }`}>
                           {totalBoughtQty} / {stock} {isSoldOut ? '(完售)' : ''}
@@ -1742,7 +1742,7 @@ function BoxSplitSheetView({
                             return (
                               <span 
                                 key={p.id} 
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-bold ${
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-none border text-[11px] font-bold ${
                                   isPass
                                     ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border-purple-200 line-through opacity-70'
                                     : allocatedQty === 0
@@ -1774,7 +1774,7 @@ function BoxSplitSheetView({
                           <button
                             type="button"
                             onClick={() => onAddParticipant && onAddParticipant(item.id)}
-                            className="px-2 py-0.5 text-[10px] font-bold text-primary hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-lg border border-dashed border-purple-300 transition-all"
+                            className="px-2 py-0.5 text-[10px] font-bold text-primary hover:bg-purple-50 dark:hover:bg-purple-950/40 rounded-none border border-dashed border-purple-300 transition-all"
                           >
                             + 喊單
                           </button>
@@ -1785,7 +1785,7 @@ function BoxSplitSheetView({
                           <button
                             type="button"
                             onClick={() => onEditItem && onEditItem(item)}
-                            className="p-1 text-gray-400 hover:text-primary rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                            className="p-1 text-gray-400 hover:text-primary rounded-none hover:bg-gray-100 dark:hover:bg-gray-700"
                             title="編輯品項"
                           >
                             <Pencil size={13} />
@@ -1793,7 +1793,7 @@ function BoxSplitSheetView({
                           <button
                             type="button"
                             onClick={() => onDeleteItem && onDeleteItem(item.id)}
-                            className="p-1 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
+                            className="p-1 text-gray-400 hover:text-red-600 rounded-none hover:bg-red-50 dark:hover:bg-red-950/30"
                             title="刪除品項"
                           >
                             <Trash2 size={13} />
@@ -1815,7 +1815,7 @@ function BoxSplitSheetView({
         </div>
       ) : (
         /* 表二：參團買家對帳總表 Sheet */
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xs border border-gray-200 dark:border-gray-700 overflow-x-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border-2 border-black overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-emerald-700 text-white border-b border-emerald-800 font-black whitespace-nowrap">
@@ -1903,7 +1903,7 @@ function BoxSplitSheetView({
                         <button
                           type="button"
                           onClick={() => onCopyReconciliation && onCopyReconciliation(bName)}
-                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold shadow-2xs transition-all active:scale-95 flex items-center gap-1 mx-auto"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-[11px] font-bold shadow-2xs transition-all active:scale-95 flex items-center gap-1 mx-auto"
                         >
                           <Copy size={11} />
                           <span>複製文案</span>
