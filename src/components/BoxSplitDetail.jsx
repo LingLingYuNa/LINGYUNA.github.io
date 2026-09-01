@@ -287,30 +287,32 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       return { id: item.id, qty: Number(item.stock) || 1, price: roundedP };
     });
 
-    // 步驟 4：殘差修補 (Greedy Residual Adjustment) 確保總和無落差
+    // 步驟 4：殘差修補 (Greedy Residual Adjustment) 確保總和無落差 (防死迴圈機制)
     const targetTotal = Number(totalBoxAmount) || 0;
-    if (targetTotal > 0) {
+    if (targetTotal > 0 && priceObjects.length > 0) {
       let currentSum = priceObjects.reduce((sum, p) => sum + p.price * p.qty, 0);
       let residual = targetTotal - currentSum; // R = T - sum(P_i * Q_i)
 
-      if (residual > 0) {
-        // 總額不足：優先從熱門品項向上加 5 元
+      let maxSafetyCounter = 100; // 最多執行 100 次，絕不卡住
+      if (residual >= step) {
         let idx = 0;
-        while (residual >= step && idx < N) {
+        while (residual >= step && maxSafetyCounter-- > 0) {
           priceObjects[idx].price += step;
           residual -= priceObjects[idx].qty * step;
-          idx = (idx + 1) % Math.min(N, 3);
+          idx = (idx + 1) % N;
         }
-      } else if (residual < 0) {
-        // 總額溢出：優先從冷門品項向下扣減 5 元
+      } else if (residual <= -step) {
         let idx = N - 1;
-        while (residual <= -step && idx >= 0) {
+        let stagnateCounter = 0;
+        while (residual <= -step && maxSafetyCounter-- > 0 && stagnateCounter < N) {
           if (priceObjects[idx].price - step >= 5) {
             priceObjects[idx].price -= step;
             residual += priceObjects[idx].qty * step;
+            stagnateCounter = 0;
+          } else {
+            stagnateCounter++;
           }
-          idx--;
-          if (idx < 0) idx = N - 1;
+          idx = (idx - 1 + N) % N;
         }
       }
     }
@@ -320,7 +322,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   }, [items, totalBoxAmount, priceAdjustType, baseAvg]);
 
   // 計算特定品項種類單價 (自訂單價 > 倍率 > 熱度調價 > 均價)
-  const getItemUnitPrice = (item) => {
+  const getItemUnitPrice = React.useCallback((item) => {
     if (!item) return 0;
     if (item.manual_price !== undefined && item.manual_price !== null && item.manual_price !== '') {
       return Number(item.manual_price) || 0;
@@ -330,18 +332,25 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       return Math.round(baseAvg * mult);
     }
     return adjustedPriceMap.get(item.id) ?? Math.round(baseAvg);
-  };
+  }, [adjustedPriceMap, baseAvg, split?.use_multiplier]);
 
   // 拆團總金額：由所有品項金額加總求得
   const calculatedTotalAmount = React.useMemo(() => {
     if (!items || items.length === 0) return totalBoxAmount;
     return items.reduce((sum, item) => sum + (getItemUnitPrice(item) * (Number(item.stock) || 1)), 0);
-  }, [items, totalBoxAmount, adjustedPriceMap, split?.use_multiplier]);
+  }, [items, totalBoxAmount, getItemUnitPrice]);
 
   // 切換熱度調價模式 handler
   const handleTogglePriceAdjust = async (type) => {
     await db.box_splits.update(Number(splitId), { price_adjust_type: type });
   };
+
+  const currentModeInfo = BOX_SPLIT_MODES.find(m => m.id === split?.mode) || BOX_SPLIT_MODES[0];
+
+  // 計算參團配分 (使用 useMemo 快取防止每次打字重複大量算式渲染)
+  const { allocatedMap, passTriggeredSet } = React.useMemo(() => {
+    return computeSplitAllocations(split, items, participants, getItemUnitPrice);
+  }, [split, items, participants, getItemUnitPrice]);
 
   if (!split) {
     return (
@@ -353,9 +362,6 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       </div>
     );
   }
-
-  const currentModeInfo = BOX_SPLIT_MODES.find(m => m.id === split.mode) || BOX_SPLIT_MODES[0];
-  const { allocatedMap, passTriggeredSet } = computeSplitAllocations(split, items, participants, getItemUnitPrice);
 
   // 依據全域角色排序庫自動排列品項
   const handleAutoSortByLibrary = async () => {
