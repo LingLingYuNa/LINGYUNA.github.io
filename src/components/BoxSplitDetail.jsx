@@ -577,83 +577,128 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   };
 
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32">
+    <div className="p-4 space-y-5 max-w-4xl mx-auto md:py-6 pb-32">
       
-      {/* 頂部導覽 */}
-      <div className="flex items-center justify-between">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-light transition-colors py-1.5 px-3 rounded-none bg-white dark:bg-gray-800 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-        >
-          <ArrowLeft size={16} />
-          <span>返回拆團列表</span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsReconciliationOpen(true)}
-            className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
-          >
-            <DollarSign size={14} />
-            <span>買家對帳管家</span>
-          </button>
-          <button
-            onClick={() => setIsEditModalOpen(true)}
-            className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-none bg-white dark:bg-gray-800 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-colors"
-            title="編輯拆團設定"
-          >
-            <Pencil size={16} />
-          </button>
-        </div>
-      </div>
-
-      {/* 頂部資訊區塊 (俏皮野獸派黑邊硬陰影卡片) */}
+      {/* 一體成型頂部儀表板卡片 (俏皮野獸派大膽塊面與硬陰影) */}
       <div className="bg-white dark:bg-gray-800 rounded-none p-5 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border-4 border-black space-y-4">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-black text-black dark:text-white uppercase">{split.title}</h1>
-              <span className="px-2.5 py-0.5 rounded-none text-xs font-black bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                {split.status}
-              </span>
-            </div>
-
-            {/* 標籤 */}
-            {split.tags && split.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {split.tags.map((t, idx) => (
-                  <span key={idx} className="bg-[#4ECDC4] text-black text-[10px] font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
-                    #{t}
-                  </span>
-                ))}
+        
+        {/* Header 列：標題、返回與頂部主按鈕組 */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-black">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={onBack}
+              className="p-2 bg-[#f7f1df] dark:bg-gray-700 text-black dark:text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-[#FFE66D] active:scale-95 transition-all cursor-pointer shrink-0"
+              title="返回拆團列表"
+            >
+              <ArrowLeft size={18} strokeWidth={2.5} />
+            </button>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-black text-black dark:text-white uppercase tracking-wider">{split.title}</h1>
+                <span className="px-2.5 py-0.5 text-xs font-black bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  {split.status}
+                </span>
               </div>
-            )}
+
+              {/* 標籤 */}
+              {split.tags && split.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {split.tags.map((t, idx) => (
+                    <span key={idx} className="bg-[#4ECDC4] text-black text-[10px] font-black px-2 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="text-right shrink-0 flex flex-col items-end">
-            <label className="text-[10px] font-black text-black dark:text-gray-400 block uppercase tracking-wider mb-1">
+          {/* 右上角主動作組 */}
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <button
+              onClick={() => setIsReconciliationOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer"
+            >
+              <DollarSign size={15} strokeWidth={2.5} />
+              <span>對帳管家</span>
+            </button>
+            {viewMode === 'sheet' && (
+              <button
+                type="button"
+                onClick={handleExportSheetCSV}
+                className="flex items-center gap-1.5 px-3 py-2 bg-[#4ECDC4] hover:bg-teal-300 text-black border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer"
+                title="匯出此拆團總表為 CSV 檔案 (可於 Excel / Google Sheets 開啟)"
+              >
+                <Download size={15} strokeWidth={2.5} />
+                <span>匯出 CSV</span>
+              </button>
+            )}
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="p-2 text-black dark:text-white bg-white dark:bg-gray-700 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors cursor-pointer"
+              title="編輯拆團設定"
+            >
+              <Pencil size={16} strokeWidth={2.5} />
+            </button>
+          </div>
+        </div>
+
+        {/* 財務指標 Grid (三卡片欄位：總成本 / 均價 / 總二補) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* 1. 拆團總成本 (T) */}
+          <div className="bg-[#FFE66D] p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
+            <label className="text-[11px] font-black text-black uppercase tracking-wider block mb-1">
               拆團總成本金額 (自填 T)
             </label>
-            <div className="flex items-center gap-1">
-              <span className="font-black text-sm text-black dark:text-white">NT$</span>
+            <div className="flex items-center justify-between gap-1">
+              <span className="font-black text-sm text-black">NT$</span>
               <input
                 type="number"
                 min="0"
                 value={split.total_amount ?? ''}
                 onChange={(e) => handleUpdateTotalAmount(e.target.value)}
-                placeholder="(自填金額)"
-                className="w-36 bg-white dark:bg-gray-700 border-2 border-black rounded-none px-2.5 py-1 text-lg font-mono font-black text-black dark:text-white focus:outline-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-right"
+                placeholder="0"
+                className="w-28 bg-white border-2 border-black px-2 py-1 text-base font-mono font-black text-black text-right focus:outline-none shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
+              />
+            </div>
+          </div>
+
+          {/* 2. 基準平均單價 */}
+          <div className="bg-[#A8E6CF] p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
+            <span className="text-[11px] font-black text-black uppercase tracking-wider block mb-1">
+              基準平均單價
+            </span>
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-bold text-gray-700">({totalStock} 件種類)</span>
+              <span className="text-xl font-black font-mono text-black">NT$ {Math.round(baseAvg)}</span>
+            </div>
+          </div>
+
+          {/* 3. 總二補金額與單二補 */}
+          <div className="bg-[#95E1D3] p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between">
+            <label className="text-[11px] font-black text-black uppercase tracking-wider block mb-1">
+              總二補金額 (單二補 ${unitSecondShipping})
+            </label>
+            <div className="flex items-center justify-between gap-1">
+              <span className="font-black text-sm text-black">NT$</span>
+              <input
+                type="number"
+                min="0"
+                value={split.second_shipping_fee || ''}
+                onChange={(e) => handleUpdateSecondShipping(e.target.value)}
+                placeholder="0"
+                className="w-28 bg-white border-2 border-black px-2 py-1 text-base font-mono font-black text-black text-right focus:outline-none shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]"
               />
             </div>
           </div>
         </div>
 
         {/* 熱度價差模式控制與說明區塊 */}
-        <div className="pt-3 border-t-2 border-black space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span className="text-xs font-black text-black dark:text-white uppercase flex items-center gap-1">
+        <div className="pt-2 space-y-2">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-[#f7f1df] dark:bg-gray-750 p-2.5 border-2 border-black">
+            <span className="text-xs font-black text-black dark:text-white uppercase shrink-0 flex items-center gap-1">
               <span>🔥</span>
-              <span>熱度價差模式 (spread_mode)：</span>
+              <span>熱度價差模式：</span>
             </span>
 
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -707,127 +752,77 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             </div>
           </div>
 
-          <div className="text-[11px] font-mono font-bold text-gray-700 dark:text-gray-300 flex flex-col sm:flex-row justify-between gap-1 bg-gray-50 dark:bg-gray-750 p-2 border border-black">
-            <span>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 text-[11px] font-mono font-bold">
+            <div className="flex-1 bg-gray-50 dark:bg-gray-700 p-2 border-2 border-black text-gray-700 dark:text-gray-200">
               {spreadMode === 'none' && '💡 均價模式：所有品項均價平攤，無熱度差價。'}
-              {spreadMode === 'low' && '💡 極小價差 (low)：線性 scale = 0.5，最高與最低階價差精準控制在平均單價 20%~30% 以內。'}
-              {(spreadMode === 'balanced' || spreadMode === 'normal') && '💡 標準階梯 (balanced)：線性 scale = 1.0，各階呈均勻等差遞減，溫和分配價差。'}
-              {(spreadMode === 'high' || spreadMode === 'aggressive') && '💡 大價差 (high)：Power Curve 次方分佈，頂階大幅拉高承擔、底階大幅打折，熱門高承擔。'}
-            </span>
-            <span className="shrink-0 text-black dark:text-white">均價基準: NT${Math.round(baseAvg)}</span>
-          </div>
-        </div>
-
-        {/* 優先模式說明條 */}
-        <div className="pt-2 border-t-2 border-black text-xs">
-          <div className="flex items-center gap-2 bg-[#FFE66D] text-black p-3 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] w-full">
-            <Settings size={18} strokeWidth={2.5} className="shrink-0" />
-            <div>
-              <span className="font-black uppercase block">{currentModeInfo.label}</span>
-              <span className="text-[10px] font-mono font-bold block">{currentModeInfo.desc}</span>
+              {spreadMode === 'low' && '💡 極小價差 (low)：最高與最低價差精準控制在平均單價 20%~30% 以內。'}
+              {(spreadMode === 'balanced' || spreadMode === 'normal') && '💡 標準階梯 (balanced)：各階呈均勻等差遞減，溫和分配價差。'}
+              {(spreadMode === 'high' || spreadMode === 'aggressive') && '💡 大價差 (high)：頂階大幅拉高承擔、底階大幅打折，熱門高承擔。'}
+            </div>
+            <div className="bg-[#FFE66D] text-black p-2 border-2 border-black flex items-center gap-1.5 shrink-0">
+              <Settings size={14} strokeWidth={2.5} />
+              <span>優先規則：<strong>{currentModeInfo.label}</strong></span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 總二補金額與單二補金額計算框 */}
-      <div className="bg-[#95E1D3] text-black rounded-none p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black space-y-2">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-1">
-            <label className="text-sm font-black uppercase whitespace-nowrap">
-              總二補金額：
-            </label>
-            <input
-              type="number"
-              min="0"
-              value={split.second_shipping_fee || ''}
-              onChange={(e) => handleUpdateSecondShipping(e.target.value)}
-              placeholder="(自填數字)"
-              className="w-36 bg-white border-2 border-black rounded-none px-3 py-1.5 text-sm font-mono font-bold text-black focus:outline-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-            />
-          </div>
-
-          <div className="bg-white border-2 border-black px-3.5 py-1.5 rounded-none text-right shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-            <span className="text-[10px] font-black uppercase text-black block">
-              單二補金額 (總二補金額除以總種類數量)：
-            </span>
-            <span className="text-base font-black font-mono text-black">
-              NT$ {unitSecondShipping.toLocaleString()}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 品項種類管理頭列與按鈕 */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h2 className="text-lg font-black text-gray-900 dark:text-gray-100">品項種類清單 ({items.length})</h2>
-          <button
-            onClick={() => setIsReorderModalOpen(true)}
-            className="flex items-center gap-1 text-[11px] font-black text-black bg-[#FFE66D] hover:bg-amber-300 border-2 border-black px-2.5 py-1 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95 cursor-pointer"
-            title="開啟自定義排序面板，調整各品項熱度高低"
-          >
-            <ArrowUpDown size={13} strokeWidth={2.5} />
-            <span>⇅ 自定義熱度排序</span>
-          </button>
-          <button
-            onClick={handleAutoSortByLibrary}
-            className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/40 hover:bg-purple-200 border border-purple-300 dark:border-purple-800 px-2.5 py-1 rounded-none transition-all active:scale-95"
-            title="點擊依全域角色排序庫自動排列品項"
-          >
-            <Sparkles size={13} />
-            <span>依角色排序庫自動排序</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* 視圖切換按鈕組 */}
-          <div className="bg-gray-100 dark:bg-gray-800 p-1 rounded-none border-2 border-black flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => setViewMode('card')}
-              className={`px-2.5 py-1 rounded-none text-xs font-bold transition-all flex items-center gap-1 ${
-                viewMode === 'card'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs'
-                  : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
-              }`}
-            >
-              <LayoutGrid size={14} />
-              <span>卡片視圖</span>
-            </button>
+      {/* 主要檢視模式與工具控制列 */}
+      <div className="space-y-3 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               type="button"
               onClick={() => setViewMode('sheet')}
-              className={`px-2.5 py-1 rounded-none text-xs font-bold transition-all flex items-center gap-1 ${
+              className={`px-3.5 py-2 border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-1.5 cursor-pointer ${
                 viewMode === 'sheet'
-                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs'
-                  : 'text-gray-500 hover:text-gray-800 dark:hover:text-gray-200'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
               }`}
             >
-              <Table size={14} />
-              <span>Sheet 表格視圖</span>
+              <Table size={15} strokeWidth={2.5} />
+              <span>Sheet 表格檢視</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setViewMode('card')}
+              className={`px-3.5 py-2 border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center gap-1.5 cursor-pointer ${
+                viewMode === 'card'
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-white dark:bg-gray-800 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700'
+              }`}
+            >
+              <LayoutGrid size={15} strokeWidth={2.5} />
+              <span>㗊 卡片檢視</span>
             </button>
           </div>
 
-          {viewMode === 'sheet' && (
+          <div className="flex items-center gap-2 flex-wrap">
             <button
-              type="button"
-              onClick={handleExportSheetCSV}
-              className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-xs font-bold shadow-2xs transition-all active:scale-95"
-              title="匯出此拆團總表為 CSV 檔案 (可於 Excel / Google Sheets 開啟)"
+              onClick={() => setIsReorderModalOpen(true)}
+              className="flex items-center gap-1 text-xs font-black text-black bg-[#FFE66D] hover:bg-amber-300 border-2 border-black px-3 py-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95 cursor-pointer"
+              title="開啟自定義排序面板，調整各品項熱度高低"
             >
-              <Download size={14} />
-              <span>匯出 CSV</span>
+              <ArrowUpDown size={14} strokeWidth={2.5} />
+              <span>⇅ 熱度排序</span>
             </button>
-          )}
-
-          <button
-            onClick={() => setIsAddItemOpen(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-none text-xs font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
-          >
-            <Plus size={16} />
-            <span>新增種類</span>
-          </button>
+            <button
+              onClick={handleAutoSortByLibrary}
+              className="flex items-center gap-1 text-xs font-bold text-purple-800 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/50 hover:bg-purple-200 border-2 border-black px-3 py-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95 cursor-pointer"
+              title="點擊依全域角色排序庫自動排列品項"
+            >
+              <Sparkles size={14} />
+              <span>依角色庫排序</span>
+            </button>
+            <button
+              onClick={() => setIsAddItemOpen(true)}
+              className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#FF6B6B] hover:bg-red-500 text-white border-2 border-black text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all cursor-pointer shrink-0"
+            >
+              <Plus size={16} strokeWidth={3} />
+              <span>+ 新增種類</span>
+            </button>
+          </div>
         </div>
       </div>
 
