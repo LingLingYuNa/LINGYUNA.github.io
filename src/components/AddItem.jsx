@@ -406,7 +406,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
           {/* 訂單歸屬 */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">🛒 訂單歸屬 (選填)</label>
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">訂單歸屬 (選填)</label>
               <span className="text-[11px] text-gray-400 font-normal">可先單獨登記，之後再併入訂單</span>
             </div>
             <select
@@ -414,10 +414,10 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               onChange={(e) => setAssignedOrderId(e.target.value ? Number(e.target.value) : null)}
               className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
             >
-              <option value="">📦 暫不歸屬 (單獨登記物品)</option>
+              <option value="">暫不歸屬 (單獨登記物品)</option>
               {availableOrders.map(ord => (
                 <option key={ord.id} value={ord.id}>
-                  🛒 {ord.title || ord.source || '未命名訂單'} ({ord.created_at ? ord.created_at.split('T')[0] : ''})
+                  {ord.title || ord.source || '未命名訂單'} ({ord.created_at ? ord.created_at.split('T')[0] : ''})
                 </option>
               ))}
             </select>
@@ -427,7 +427,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
           <div className="bg-gray-150/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                🏷️ 週邊屬性設定
+                週邊屬性設定
               </span>
               <button
                 type="button"
@@ -449,7 +449,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                       ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
                       : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
                   }`}>
-                    {sourceType === 'official' ? '👑 官方周邊' : `🎨 同人周邊 (${fanSource || '未註明來源'})`}
+                    {sourceType === 'official' ? '官方周邊' : `同人周邊 (${fanSource || '未註明來源'})`}
                   </span>
                 </div>
 
@@ -460,7 +460,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     <div className="flex flex-wrap gap-1">
                       {ips.map((ipName, idx) => (
                         <span key={idx} className="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-bold border border-purple-100/50 dark:border-purple-900/50">
-                          🎬 {ipName}
+                          {ipName}
                         </span>
                       ))}
                     </div>
@@ -616,7 +616,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                   >
                     <Camera size={14} className="text-primary-dark dark:text-primary" />
-                    <span>📷 拍攝照片</span>
+                    <span>拍攝照片</span>
                   </button>
                   <button
                     type="button"
@@ -624,7 +624,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                   >
                     <ImageIcon size={14} className="text-primary-dark dark:text-primary" />
-                    <span>🖼️ 選擇相簿</span>
+                    <span>選擇相簿</span>
                   </button>
                 </div>
                 
@@ -664,7 +664,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                           handleAddUrlImage();
                         }
                       }}
-                      placeholder="🔗 貼上圖片網址 (Image URL)..."
+                      placeholder="貼上圖片網址 (Image URL)..."
                       className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
                     {urlInput && (
@@ -682,7 +682,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     onClick={handleAddUrlImage}
                     className="px-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-colors shrink-0"
                   >
-                    ➕ 加入
+                    加入
                   </button>
                 </div>
               </div>
@@ -719,7 +719,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             {/* 標題列 */}
             <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
               <h3 className="text-base font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
-                ⚙️ 屬性設定 (IP/角色/製品)
+                屬性設定 (IP/角色/製品)
               </h3>
               <button 
                 type="button" 
@@ -744,7 +744,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     onClick={handleOpenEditIpRoles}
                     className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-lg"
                   >
-                    ⚙️ 編輯推薦角色
+                    編輯推薦角色
                   </button>
                 </div>
 
@@ -756,7 +756,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         key={ipName} 
                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
                       >
-                        🎬 {ipName}
+                        {ipName}
                         <button
                           type="button"
                           onClick={() => setTempIps(tempIps.filter(i => i !== ipName))}
@@ -837,7 +837,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     }}
                     className="px-3.5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shrink-0 transition-colors"
                   >
-                    ➕ 新增
+                    新增
                   </button>
                 </form>
               </div>
@@ -853,7 +853,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     onClick={handleOpenEditIpRoles}
                     className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-lg"
                   >
-                    ⚙️ 編輯常用推薦
+                    編輯常用推薦
                   </button>
                 </div>
 
@@ -867,7 +867,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         onClick={handleOpenEditIpRoles}
                         className="text-[10px] font-bold text-pink-600 hover:text-pink-700 dark:text-pink-400 dark:hover:text-pink-300 transition-colors flex items-center gap-0.5"
                       >
-                        ⚙️ 編輯此 IP 推薦
+                        編輯此 IP 推薦
                       </button>
                     </div>
                     {ipRecommendedRoles.length > 0 ? (
@@ -943,7 +943,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     onClick={() => handleAddTempRole(tempRoleInput)}
                     className="px-4 bg-primary hover:bg-primary-dark text-white rounded-r-xl font-bold text-xs transition-colors shrink-0"
                   >
-                    ➕ 新增
+                    新增
                   </button>
                 </div>
 
@@ -1024,7 +1024,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     onClick={() => handleAddTempTag(tempTagInput)}
                     className="px-4 bg-primary hover:bg-primary-dark text-white rounded-r-xl font-bold text-xs transition-colors shrink-0"
                   >
-                    ➕ 新增
+                    新增
                   </button>
                 </div>
 
@@ -1070,7 +1070,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                   >
-                    👑 官方周邊
+                    官方周邊
                   </button>
                   <button
                     type="button"
@@ -1081,7 +1081,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                   >
-                    🎨 同人自製/二創
+                    同人自製/二創
                   </button>
                 </div>
 
@@ -1168,7 +1168,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
           >
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-850 pb-2">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
-                ⚙️ 編輯 IP 推薦角色
+                編輯 IP 推薦角色
               </h3>
               <button 
                 type="button" 

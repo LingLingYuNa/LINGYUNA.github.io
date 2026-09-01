@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-3xl border border-red-200 dark:border-red-900 text-center my-8 max-w-lg mx-auto shadow-lg space-y-3">
-          <h3 className="font-bold text-lg">⚠️ 畫面繪製時發生異常</h3>
+          <h3 className="font-bold text-lg">[警告] 畫面繪製時發生異常</h3>
           <p className="text-xs opacity-80 break-all font-mono">{this.state.error?.toString()}</p>
           <button 
             onClick={() => {
@@ -92,28 +92,28 @@ function App() {
       // 如果 Token 已過期但先前有連結帳號，優先嘗試自動靜默刷新授權
       if (!accessToken || Date.now() > expiresAt) {
         try {
-          console.log('🔄 啟動檢測：Token 已過期，嘗試自動靜默刷新 Google 授權...');
+          console.log('[同步] 啟動檢測：Token 已過期，嘗試自動靜默刷新 Google 授權...');
           accessToken = await requestAuth(false);
         } catch (err) {
-          console.warn('⚠️ 啟動檢測：自動靜默刷新授權失敗，本機本次將不進行同步還原:', err);
+          console.warn('[同步] 啟動檢測：自動靜默刷新授權失敗，本機本次將不進行同步還原:', err);
           setIsRestoreChecked(true);
           return;
         }
       }
 
       try {
-        console.log('🔄 啟動檢測：正在從 Google Drive 讀取雲端備份...');
+        console.log('[同步] 啟動檢測：正在從 Google Drive 讀取雲端備份...');
         const backupData = await downloadBackup();
         
         if (!backupData) {
-          console.log('🔄 啟動檢測：雲端尚無備份檔案。');
+          console.log('[同步] 啟動檢測：雲端尚無備份檔案。');
           setIsRestoreChecked(true);
           return;
         }
 
         const { data, export_date } = backupData;
         if (!data || (!data.orders && !data.box_splits)) {
-          console.warn('🔄 啟動檢測：雲端備份格式不符，跳過自動還原。');
+          console.warn('[同步] 啟動檢測：雲端備份格式不符，跳過自動還原。');
           setIsRestoreChecked(true);
           return;
         }
@@ -130,7 +130,7 @@ function App() {
 
         // 本機為空 -> 直接靜默還原
         if (localOrdersCount === 0 && localItemsCount === 0 && localSplitsCount === 0) {
-          console.log('🔄 啟動檢測：本機無資料，自動還原雲端備份中...');
+          console.log('[同步] 啟動檢測：本機無資料，自動還原雲端備份中...');
           await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
             if (data.orders.length > 0) await db.orders.bulkPut(data.orders);
             if (data.items.length > 0) await db.items.bulkPut(data.items);
@@ -142,7 +142,7 @@ function App() {
             if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
           });
           localStorage.setItem('last_local_update', export_date || new Date().toISOString());
-          alert('🔄 已自動從 Google Drive 同步並載入您的資產、拆團與標籤資料！');
+          alert('已自動從 Google Drive 同步並載入您的資產、拆團與標籤資料！');
           window.location.reload();
           return;
         }
@@ -152,11 +152,11 @@ function App() {
         if (export_date && (!lastLocalUpdate || new Date(export_date) > new Date(lastLocalUpdate))) {
           const cloudTimeStr = new Date(export_date).toLocaleString('zh-TW', { hour12: false });
           const confirmRestore = window.confirm(
-            `🔄 雲端同步提示\n\n偵測到您在 Google 雲端硬碟有更近期的備份資料（更新時間：${cloudTimeStr}）。\n\n是否要立即載入並覆蓋此裝置的舊資料？`
+            `雲端同步提示\n\n偵測到您在 Google 雲端硬碟有更近期的備份資料（更新時間：${cloudTimeStr}）。\n\n是否要立即載入並覆蓋此裝置的舊資料？`
           );
 
           if (confirmRestore) {
-            console.log('🔄 啟動檢測：使用者確認還原較新的雲端資料...');
+            console.log('[同步] 啟動檢測：使用者確認還原較新的雲端資料...');
             await db.transaction('rw', db.orders, db.items, db.sales, db.custom_tags, db.box_splits, db.box_split_items, db.box_split_participants, db.character_sort_orders, async () => {
               await db.orders.clear();
               await db.items.clear();
@@ -177,7 +177,7 @@ function App() {
               if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
             });
             localStorage.setItem('last_local_update', export_date);
-            alert('✅ 雲端資料、拆團紀錄與標籤同步還原成功！');
+            alert('雲端資料、拆團紀錄與標籤同步還原成功！');
             window.location.reload();
             return;
           } else {
@@ -185,7 +185,7 @@ function App() {
           }
         }
       } catch (error) {
-        console.error('🔄 啟動自動同步檢測失敗:', error);
+        console.error('[同步] 啟動自動同步檢測失敗:', error);
       } finally {
         setIsRestoreChecked(true);
       }
@@ -213,7 +213,7 @@ function App() {
 
     const nowStr = new Date().toISOString();
     localStorage.setItem('last_local_update', nowStr);
-    console.log('🔄 偵測到本機資料或標籤異動，已規劃在 5 秒後進行背景備份...');
+    console.log('[同步] 偵測到本機資料或標籤異動，已規劃在 5 秒後進行背景備份...');
 
     const timer = setTimeout(async () => {
       try {
@@ -222,11 +222,11 @@ function App() {
 
         // 如果 Token 已過期但仍為連結狀態，在此處進行靜默授權刷新
         if (!token || Date.now() > expires) {
-          console.log('🔄 背景同步：檢測到授權 Token 已過期，正在嘗試自動靜默刷新 Google 授權...');
+          console.log('[同步] 背景同步：檢測到授權 Token 已過期，正在嘗試自動靜默刷新 Google 授權...');
           await requestAuth(false);
         }
 
-        console.log('🔄 背景同步：開始自動上傳最新資料與標籤至雲端...');
+        console.log('[同步] 背景同步：開始自動上傳最新資料與標籤至雲端...');
         const backupData = {
           version: 4,
           export_date: nowStr,
@@ -237,9 +237,9 @@ function App() {
           }
         };
         await uploadBackup(backupData);
-        console.log('✅ 背景同步：已成功自動備份至 Google Drive！');
+        console.log('[同步] 背景同步：已成功自動備份至 Google Drive！');
       } catch (err) {
-        console.error('❌ 背景同步自動上傳失敗 (可能未登入或 Session 已失效):', err);
+        console.error('[同步] 背景同步自動上傳失敗 (可能未登入或 Session 已失效):', err);
       }
     }, 5000);
 

@@ -125,7 +125,7 @@ export default function TagManager({ onClose }) {
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
         <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-          <span>🏷️ 標籤大師管理面板</span>
+          <span>標籤大師管理面板</span>
         </h2>
         <button onClick={onClose} className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
           <X size={20} />

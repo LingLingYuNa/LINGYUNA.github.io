@@ -548,7 +548,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
               }`}
             >
-              <span>📦 待歸屬</span>
+              <span>待歸屬</span>
               {items && items.filter(i => !i.order_id).length > 0 && (
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                   listType === 'unassigned' ? 'bg-white/30 text-white' : 'bg-secondary-dark/20 text-secondary-dark dark:text-secondary-light'
@@ -591,7 +591,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   className="px-3 py-2.5 bg-secondary text-white font-bold text-xs rounded-xl shadow-sm shadow-secondary/20 hover:bg-secondary-dark transition-all flex items-center gap-1.5 shrink-0 select-none active:scale-95 animate-in fade-in"
                   title="生成買家對帳單"
                 >
-                  <span>🧾 對帳單</span>
+                  <span>對帳單</span>
                 </button>
               )}
 
@@ -602,7 +602,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
                 title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
               >
-                <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
+                <span>{dateSort === 'desc' ? '新➔舊' : '舊➔新'}</span>
               </button>
 
               <button
@@ -619,7 +619,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                       : 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-450 hover:bg-emerald-100 dark:hover:bg-emerald-950/30 shadow-sm shadow-emerald-500/5'
                 }`}
               >
-                <span>{isSelectMode ? '🚫 取消' : '☑️ 選取'}</span>
+                <span>{isSelectMode ? '取消' : '選取'}</span>
               </button>
             </div>
 
@@ -724,7 +724,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               </span>
                             </div>
                             <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold flex items-center gap-1">
-                              📅 {formatOrderDate(order.created_at)}
+                              {formatOrderDate(order.created_at)}
                             </p>
                           </div>
                         </div>
@@ -735,7 +735,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             className="text-xs" 
                             title={`支付方式: ${order.payment_method || '現金'}`}
                           >
-                            {PAYMENT_METHOD_ICONS[order.payment_method || '現金'] || '💵'}
+                            {order.payment_method || '現金'}
                           </span>
                           {/* 金額 */}
                           <span className="font-black text-gray-800 dark:text-gray-100 text-sm">
@@ -809,7 +809,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               <span className="truncate">來源：{order.source}</span>
                             )}
                             <span className="flex items-center gap-1 shrink-0">
-                              📅 {formatOrderDate(order.created_at)}
+                              {formatOrderDate(order.created_at)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -825,7 +825,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               className="text-[9px] font-bold text-gray-500 dark:text-gray-405 flex items-center gap-0.5 bg-gray-50 dark:bg-gray-750 px-1.5 py-0.5 rounded border border-gray-150/45 dark:border-gray-700/30 transition-colors"
                               title={`支付方式: ${order.payment_method || 'ATM/轉帳'}`}
                             >
-                              <span>{PAYMENT_METHOD_ICONS[order.payment_method || 'ATM/轉帳'] || '🏦'}</span>
+                              <span>{order.payment_method || 'ATM/轉帳'}</span>
                               <span className="scale-90 origin-left">{order.payment_method || 'ATM/轉帳'}</span>
                             </span>
                           </div>
@@ -1034,7 +1034,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               <div className="flex flex-wrap gap-1 text-[11px] text-gray-500 dark:text-gray-400">
                                 {getItemIps(item).map((ipName, idx) => (
                                   <span key={idx} className="bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded font-bold">
-                                    🎬 {ipName}
+                                    {ipName}
                                   </span>
                                 ))}
                                 {getItemRoles(item).map(r => (
@@ -1349,7 +1349,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
               className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
               title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
             >
-              <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
+              <span>{dateSort === 'desc' ? '新➔舊' : '舊➔新'}</span>
             </button>
 
             {/* 選取按鈕 */}
@@ -1365,7 +1365,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   : 'bg-primary-light/50 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light hover:bg-primary-light dark:hover:bg-primary-dark/30 shadow-sm shadow-primary/5'
               }`}
             >
-              <span>{isSelectMode ? '🚫 取消' : '☑️ 選取'}</span>
+              <span>{isSelectMode ? '取消' : '選取'}</span>
             </button>
           </div>
 
@@ -1463,12 +1463,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
                                   ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
                                   : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
                               }`}>
-                                {item.source_type === 'official' ? '👑 官方' : `🎨 同人 (${item.fan_source || '未註明'})`}
+                                {item.source_type === 'official' ? '官方' : `同人 (${item.fan_source || '未註明'})`}
                               </span>
                             )}
                             {itemRoles.map(r => (
                               <span key={r} className="text-[9px] bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded font-bold shrink-0">
-                                👤 {r}
+                                {r}
                               </span>
                             ))}
                             {(item.tags || []).map(t => (
@@ -1528,7 +1528,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
               className="px-3 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200/80 dark:border-gray-700/80 text-gray-700 dark:text-gray-200 font-bold text-xs rounded-xl shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700/50 flex items-center gap-1 shrink-0 select-none active:scale-95 transition-all duration-200"
               title={dateSort === 'desc' ? '由新到舊排序' : '由舊到新排序'}
             >
-              <span>{dateSort === 'desc' ? '⬇️ 新➔舊' : '⬆️ 舊➔新'}</span>
+              <span>{dateSort === 'desc' ? '新➔舊' : '舊➔新'}</span>
             </button>
           </div>
 
@@ -1595,7 +1595,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         const itemRoles = getItemRoles(item);
                         return itemRoles.length > 0 && (
                           <p className="text-white/80 text-[10px] truncate">
-                            🏷 {itemRoles.join(', ')}
+                            {itemRoles.join(', ')}
                           </p>
                         );
                       })()}
@@ -1604,7 +1604,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         <span>x{item.quantity}</span>
                         <span>
                           {currencySymbol}{totalForeignPrice.toLocaleString()}
-                          {associatedOrder && associatedOrder.currency !== 'TWD' && ` (NT$ ${totalTWDPrice.toLocaleString()})`}
+                          NT$ {totalTWDPrice.toLocaleString()}
                         </span>
                       </div>
                     </div>
@@ -1665,7 +1665,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   const currentFilteredListSize = viewMode === 'items' 
                     ? filteredItems.length 
                     : (listType === 'expenses' ? filteredOrders.length : filteredSales.length);
-                  return selectedIds.length === currentFilteredListSize && currentFilteredListSize > 0 ? '❌ 取消全選' : '🤝 全選當前';
+                  return selectedIds.length === currentFilteredListSize && currentFilteredListSize > 0 ? '取消全選' : '全選當前';
                 })()}
               </button>
 
@@ -1729,7 +1729,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   const currentIdx = currentList.findIndex(i => i.id === selectedItem.id);
                   return currentIdx !== -1 ? (
                     <span className="bg-[#4ECDC4] text-black font-black text-xs px-2.5 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      📦 物品 {currentIdx + 1} / {currentList.length}
+                      物品 {currentIdx + 1} / {currentList.length}
                     </span>
                   ) : null;
                 })()}
@@ -1830,12 +1830,12 @@ export default function OrderList({ onOrderClick, currentTab }) {
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {selectedItem.source_type && (
                       <span className="text-xs px-2.5 py-0.5 bg-[#4ECDC4] text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
-                        {selectedItem.source_type === 'official' ? '👑 官方' : `🎨 同人 (${selectedItem.fan_source || '未註明'})`}
+                        {selectedItem.source_type === 'official' ? '官方' : `同人 (${selectedItem.fan_source || '未註明'})`}
                       </span>
                     )}
                     {getItemIps(selectedItem).map((ipName, idx) => (
                       <span key={idx} className="text-xs bg-[#FFE66D] text-black font-black px-2.5 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
-                        🎬 {ipName}
+                        {ipName}
                       </span>
                     ))}
                     {(() => {
@@ -1870,7 +1870,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                               key={idx} 
                               className="bg-[#FF6B6B] text-white border-2 border-black px-2.5 py-0.5 text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                             >
-                              👤 {role}
+                              {role}
                             </span>
                           ))}
                         </div>

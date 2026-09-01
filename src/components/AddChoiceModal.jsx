@@ -33,7 +33,7 @@ export default function AddChoiceModal({ onClose, onSelectChoice }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
-                <span>🛒 新增週邊/購物訂單</span>
+                <span>新增週邊/購物訂單</span>
                 <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary-dark dark:text-primary font-bold">推薦</span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -53,7 +53,7 @@ export default function AddChoiceModal({ onClose, onSelectChoice }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-gray-800 dark:text-gray-100 text-sm">
-                📦 單獨新增物品 (先記下，之後再歸屬)
+                單獨新增物品 (先記下，之後再歸屬)
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 獨立登記單一戰利品或週邊，隨時可一鍵併入指定訂單中
@@ -72,7 +72,7 @@ export default function AddChoiceModal({ onClose, onSelectChoice }) {
             </div>
             <div className="flex-1 min-w-0">
               <div className="font-bold text-gray-800 dark:text-gray-100 text-sm">
-                ⚡ 極簡生活記帳
+                極簡生活記帳
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 快速輸入日常花費金額與類別標籤（如：餐飲、交通、日用）

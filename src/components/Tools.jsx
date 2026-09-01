@@ -50,10 +50,10 @@ export default function Tools() {
       setIsLinked(true);
       localStorage.setItem('google_drive_auto_sync', 'true'); // 連結後預設開啟自動同步
       setIsAutoSync(true);
-      alert('✅ 成功連結 Google 帳號！背景自動同步已為您預設開啟。');
+      alert('成功連結 Google 帳號！背景自動同步已為您預設開啟。');
     } catch (error) {
       console.error('連結失敗:', error);
-      alert('❌ 連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
+      alert('連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
     } finally {
       setIsSyncing(false);
       setSyncStatusText('');
@@ -120,10 +120,10 @@ export default function Tools() {
       }
       
       localStorage.setItem('last_local_update', backupData.export_date);
-      alert('✅ 雲端備份成功！已將您的資產、拆團紀錄與標籤更新至 Google 雲端硬碟。');
+      alert('雲端備份成功！已將您的資產、拆團紀錄與標籤更新至 Google 雲端硬碟。');
     } catch (error) {
       console.error('雲端備份失敗:', error);
-      alert('❌ 雲端備份失敗：\n' + (error.message || '發生未知錯誤'));
+      alert('雲端備份失敗：\n' + (error.message || '發生未知錯誤'));
     } finally {
       setIsSyncing(false);
       setSyncStatusText('');
@@ -132,7 +132,7 @@ export default function Tools() {
 
   // 雲端還原
   const handleCloudRestore = async () => {
-    const confirmMsg = `⚠️ 警告：這將會【覆蓋與合併】您目前的本機資料庫（包含拆團紀錄），且無法復原，確定要從雲端還原嗎？`;
+    const confirmMsg = `警告：這將會【覆蓋與合併】您目前的本機資料庫（包含拆團紀錄），且無法復原，確定要從雲端還原嗎？`;
     if (!window.confirm(confirmMsg)) return;
 
     setIsSyncing(true);
@@ -199,11 +199,11 @@ export default function Tools() {
       if (backupData.export_date) {
         localStorage.setItem('last_local_update', backupData.export_date);
       }
-      alert('✅ 雲端還原成功！系統將自動重新載入以套用最新資料與拆團紀錄。');
+      alert('雲端還原成功！系統將自動重新載入以套用最新資料與拆團紀錄。');
       window.location.reload();
     } catch (error) {
       console.error('雲端還原失敗:', error);
-      alert('❌ 雲端還原失敗：\n' + (error.message || '下載或寫入資料庫時發生錯誤'));
+      alert('雲端還原失敗：\n' + (error.message || '下載或寫入資料庫時發生錯誤'));
     } finally {
       setIsSyncing(false);
       setSyncStatusText('');
@@ -328,12 +328,12 @@ export default function Tools() {
             if (characterSortOrdersData.length > 0) await db.character_sort_orders.bulkPut(characterSortOrdersData);
           });
           
-          alert('✅ 匯入成功！系統將自動重新載入以套用最新資料與拆團紀錄。');
+          alert('匯入成功！系統將自動重新載入以套用最新資料與拆團紀錄。');
           window.location.reload();
         }
       } catch (error) {
         console.error('匯入失敗:', error);
-        alert('❌ 匯入失敗：\n' + (error.message || '檔案解析發生錯誤'));
+        alert('匯入失敗：\n' + (error.message || '檔案解析發生錯誤'));
       } finally {
         setIsImporting(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
@@ -477,7 +477,7 @@ export default function Tools() {
                   <div className="p-4 bg-[#FFE66D] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between">
                     <div className="flex flex-col text-left">
                       <span className="font-black uppercase text-xs sm:text-sm flex items-center gap-1">
-                        🔄 背景自動同步 (AUTO SYNC)
+                        背景自動同步 (AUTO SYNC)
                       </span>
                       <span className="text-[10px] sm:text-xs font-mono font-bold mt-0.5">
                         記帳與異動時背景備份，啟動時自動還原或提醒
@@ -547,7 +547,7 @@ export default function Tools() {
               className="w-full bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex items-center justify-between hover:bg-[#FFE66D] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
             >
               <div className="flex flex-col text-left">
-                <span className="font-black text-black dark:text-white text-sm uppercase">🏷️ 標籤與角色管理中心</span>
+                <span className="font-black text-black dark:text-white text-sm uppercase">標籤與角色管理中心</span>
                 <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">全域修改/刪除已使用之標籤與角色</span>
               </div>
               <div className="w-10 h-10 bg-[#FF6B6B] text-white border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black">
@@ -563,7 +563,7 @@ export default function Tools() {
             >
               <div className="flex flex-col text-left">
                 <span className="font-black text-black dark:text-white text-sm uppercase flex items-center gap-1.5">
-                  ⚙️ IP 常用角色推薦管理
+                  IP 常用角色推薦管理
                 </span>
                 <span className="text-xs text-gray-700 dark:text-gray-300 font-mono font-bold mt-0.5">編輯原神、崩鐵等 IP 常用推薦角色清單</span>
               </div>

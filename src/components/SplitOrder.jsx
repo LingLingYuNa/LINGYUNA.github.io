@@ -58,7 +58,7 @@ export default function SplitOrder() {
               }`}
             >
               <Package size={15} strokeWidth={2.5} />
-              <span>📦 揪拆團小助手</span>
+              <span>揪拆團小助手</span>
             </button>
             <button
               type="button"
@@ -70,7 +70,7 @@ export default function SplitOrder() {
               }`}
             >
               <Calculator size={15} strokeWidth={2.5} />
-              <span>🧮 試算機</span>
+              <span>試算機</span>
             </button>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function SplitOrder() {
         <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32 bg-[#f7f1df] dark:bg-[#121212]">
           {/* 標題區 */}
           <header className="px-1 mt-2 mb-4">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">🧮 專屬計算機</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">專屬計算機</h1>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">快速試算盲盒、團購分攤與集運運費重量分攤</p>
           </header>
 
@@ -195,7 +195,7 @@ export default function SplitOrder() {
           {/* 重量分攤試算器 */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/80 space-y-5 transition-colors mt-6 animate-in fade-in duration-305">
             <div className="flex items-center gap-2 pb-1.5 border-b border-gray-100 dark:border-gray-700/60">
-              <span className="text-lg">⚖️</span>
+              <span className="text-lg"></span>
               <h2 className="text-base font-bold text-gray-800 dark:text-gray-200">集運運費重量分攤試算</h2>
             </div>
 

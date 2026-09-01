@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { getDeadlineInfo } from '../utils';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive } from '../utils/googleDriveSync';
-import { Cloud, RefreshCw, LogOut } from 'lucide-react';
+import { Cloud, RefreshCw, LogOut, Zap, Package } from 'lucide-react';
 
 export default function Dashboard({ onQuickAdd, onOrderClick }) {
   // 1. 新增狀態來管理當前檢視的月份，預設為當前時間
@@ -47,13 +47,13 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
             if (customTagsList.length > 0) await db.custom_tags.bulkPut(customTagsList);
           });
           localStorage.setItem('last_local_update', export_date || new Date().toISOString());
-          alert('🔄 已自動從 Google Drive 下載並還原您的全部記帳與標籤資料！');
+          alert('已自動從 Google Drive 下載並還原您的全部記帳與標籤資料！');
           window.location.reload();
           return;
         } else {
           // B. 本地有資料 -> 彈出提示詢問使用者要由雲端覆蓋，還是本地覆蓋雲端
           const confirmRestore = window.confirm(
-            `☁️ 雲端同步提示\n\n偵測到您在 Google 雲端硬碟已有備份資料（更新時間：${new Date(export_date).toLocaleString('zh-TW')}）。\n\n【確定】：載入雲端資料並覆蓋此裝置的本地資料。\n【取消】：保留本地資料，並以本地資料覆蓋雲端備份。`
+            `雲端同步提示\n\n偵測到您在 Google 雲端硬碟已有備份資料（更新時間：${new Date(export_date).toLocaleString('zh-TW')}）。\n\n【確定】：載入雲端資料並覆蓋此裝置的本地資料。\n【取消】：保留本地資料，並以本地資料覆蓋雲端備份。`
           );
 
           if (confirmRestore) {
@@ -69,7 +69,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
               if (customTagsList.length > 0) await db.custom_tags.bulkPut(customTagsList);
             });
             localStorage.setItem('last_local_update', export_date || new Date().toISOString());
-            alert('🔄 已成功載入雲端備份並覆蓋本地資料！');
+            alert('已成功載入雲端備份並覆蓋本地資料！');
             window.location.reload();
             return;
           } else {
@@ -81,7 +81,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
             };
             await uploadBackup(newBackup);
             localStorage.setItem('last_local_update', newBackup.export_date);
-            alert('✅ 已使用本地資料覆蓋雲端備份檔案！');
+            alert('已使用本地資料覆蓋雲端備份檔案！');
           }
         }
       } else {
@@ -93,11 +93,11 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
         };
         await uploadBackup(newBackup);
         localStorage.setItem('last_local_update', newBackup.export_date);
-        alert('✅ 成功連結 Google 帳號！已為您建立雲端備份並完成首次同步。');
+        alert('成功連結 Google 帳號！已為您建立雲端備份並完成首次同步。');
       }
     } catch (error) {
       console.error('連結雲端失敗:', error);
-      alert('❌ 連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
+      alert('連結 Google 帳號失敗：\n' + (error.message || '授權被取消或發生錯誤'));
     } finally {
       setIsSyncing(false);
     }
@@ -226,7 +226,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
       {!isLinked && (
         <div className="bg-[#FFE66D] text-black border-4 border-black p-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rotate-[-0.5deg]">
           <div className="flex items-start gap-3">
-            <span className="text-2xl shrink-0 mt-0.5">⚡</span>
+            
             <div>
               <h3 className="text-sm font-black uppercase text-black">未啟用雲端自動備份</h3>
               <p className="text-xs font-bold text-gray-800 mt-0.5">目前資料僅儲存在本機瀏覽器，清理快取或換手機可能導致資料遺失！</p>
@@ -237,7 +237,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
             disabled={isSyncing}
             className="self-start sm:self-center px-4 py-2.5 bg-[#FF6B6B] hover:bg-[#FF6B6B]/90 active:scale-95 disabled:opacity-50 text-white text-xs font-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer"
           >
-            <span>{isSyncing ? '連接中...' : '☁️ 立即連結 GOOGLE 備份'}</span>
+            <span>{isSyncing ? '連接中...' : '立即連結 GOOGLE 備份'}</span>
           </button>
         </div>
       )}
@@ -262,7 +262,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
               onChange={handleMonthInput}
               className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
             />
-            <span className="text-xs text-black">📅</span>
+            
           </div>
           <button 
             onClick={handleNextMonth}
@@ -299,12 +299,12 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
           </div>
         </div>
 
-        {/* ⚡ 快速記帳按鈕 */}
+        {/* 快速記帳按鈕 */}
         <button 
           onClick={onQuickAdd}
           className="w-full bg-[#FF6B6B] text-white font-black py-4 px-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] active:scale-95 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center justify-center gap-2 select-none md:order-4 cursor-pointer uppercase tracking-wider text-base"
         >
-          <span className="text-xl">⚡</span>
+          
           <span>極簡生活記帳 (QUICK ADD)</span>
         </button>
       </div>
@@ -349,10 +349,10 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
             </section>
           )}
 
-          {/* ☁️ 雲端備份與同步狀態常駐區塊 */}
+          {/* 雲端備份與同步狀態常駐區塊 */}
           <section className="px-1 space-y-3">
             <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-              <span>☁️</span> 雲端同步狀態
+               雲端同步狀態
             </h2>
             <div className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors">
               <div className="flex items-center justify-between gap-3">
@@ -408,7 +408,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
           {sortedMonthlyOrders.length === 0 ? (
             <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col items-center justify-center text-center h-44 transition-colors">
               <div className="w-12 h-12 bg-[#FFE66D] border-2 border-black flex items-center justify-center mb-3">
-                <span className="text-xl">📭</span>
+                
               </div>
               <p className="text-sm font-black text-black dark:text-white uppercase">本月尚無任何紀錄</p>
               <p className="text-xs text-gray-700 dark:text-gray-300 font-mono mt-1 font-bold">當月新增的訂單與日常記帳會顯示在這裡</p>
@@ -433,7 +433,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
                       <span className={`w-9 h-9 border-2 border-black flex items-center justify-center text-sm shrink-0 font-black ${
                         isDaily ? 'bg-[#FFE66D] text-black' : 'bg-[#4ECDC4] text-black'
                       }`}>
-                        {isDaily ? '⚡' : '📦'}
+                        {isDaily ? <Zap size={18} /> : <Package size={18} />}
                       </span>
                       <div className="min-w-0">
                         <h3 className="font-black text-black dark:text-white text-sm truncate uppercase">

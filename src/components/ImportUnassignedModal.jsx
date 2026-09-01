@@ -58,12 +58,12 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
         }
       });
 
-      alert(`✅ 已成功將 ${selectedItemIds.length} 筆獨立物品併入此訂單！`);
+      alert(`已成功將 ${selectedItemIds.length} 筆獨立物品併入此訂單！`);
       if (onSuccess) onSuccess();
       onClose();
     } catch (error) {
       console.error('併入物品失敗:', error);
-      alert('❌ 併入物品失敗，請稍後重試');
+      alert('併入物品失敗，請稍後重試');
     } finally {
       setIsImporting(false);
     }

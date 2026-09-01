@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { Search, Plus, ArrowUpDown, Image as ImageIcon, Settings, Trash2, Calendar } from 'lucide-react';
+import { Search, Plus, ArrowUpDown, Image as ImageIcon, Settings, Trash2, Calendar, Package } from 'lucide-react';
 import { db } from '../db';
 import AddBoxSplitModal from './AddBoxSplitModal';
 import BoxSplitDetail from './BoxSplitDetail';
@@ -67,7 +67,7 @@ export default function BoxSplitManager() {
       <header className="px-1 mt-2 mb-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-3xl font-black uppercase text-black dark:text-white tracking-wider flex items-center gap-2">
-            <span>📦</span>
+            <Package size={28} strokeWidth={2.5} />
             <span>揪拆團小助手</span>
           </h1>
           <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 font-mono font-bold">
@@ -197,8 +197,8 @@ export default function BoxSplitManager() {
             );
           })
         ) : (
-          <div className="text-center py-16 bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black space-y-3">
-            <span className="text-4xl block">📦</span>
+          <div className="text-center py-16 bg-white dark:bg-gray-800 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] text-black space-y-3 flex flex-col items-center">
+            <Package size={48} strokeWidth={2.5} />
             <p className="text-sm font-black uppercase text-black dark:text-white">目前尚無拆團紀錄</p>
             <p className="text-xs font-mono font-bold text-gray-700 dark:text-gray-300">點擊右上角「+ 新增拆團」按鈕建立第一筆揪拆團紀錄！</p>
           </div>

@@ -90,7 +90,7 @@ ${lines.join('\n')}
               <FileText size={18} strokeWidth={2.5} />
             </div>
             <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-              🧾 買家對帳管家
+              買家對帳管家
             </h2>
           </div>
           <button onClick={onClose} className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-750 transition-colors">
@@ -175,7 +175,7 @@ ${lines.join('\n')}
                   ) : (
                     <>
                       <Clipboard size={16} strokeWidth={2.5} />
-                      <span>📋 複製對帳文案</span>
+                      <span>複製對帳文案</span>
                     </>
                   )}
                 </button>

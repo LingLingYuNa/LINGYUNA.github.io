@@ -398,7 +398,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
             />
             {tagCategory === 'anime' && (
               <p className="text-xs text-gray-400 dark:text-gray-500 font-medium mt-1">
-                💡 總金額將由物品清單自動計算
+                總金額將由物品清單自動計算
               </p>
             )}
           </div>
@@ -563,7 +563,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                       className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                     >
                       <Camera size={14} className="text-primary-dark dark:text-primary" />
-                      <span>📷 拍攝照片</span>
+                      <span>拍攝照片</span>
                     </button>
                     <button
                       type="button"
@@ -571,7 +571,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                       className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                     >
                       <ImageIcon size={14} className="text-primary-dark dark:text-primary" />
-                      <span>🖼️ 選擇相簿</span>
+                      <span>選擇相簿</span>
                     </button>
                   </div>
                   
@@ -605,7 +605,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                           handleAddProofUrl();
                         }
                       }}
-                      placeholder="🔗 貼上憑證圖片網址..."
+                      placeholder="貼上憑證圖片網址..."
                       className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
                     {proofUrlInput && (
@@ -623,7 +623,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                     onClick={handleAddProofUrl}
                     className="px-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-colors shrink-0"
                   >
-                    ➕ 加入
+                    加入
                   </button>
                 </div>
               </div>

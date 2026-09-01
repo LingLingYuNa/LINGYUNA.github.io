@@ -327,11 +327,11 @@ export default function OrderDetail({ orderId, onBack }) {
           >
             {viewMode === 'edit' ? (
               <>
-                <span>🧾 小票模式</span>
+                <span>小票模式</span>
               </>
             ) : (
               <>
-                <span>📋 編輯模式</span>
+                <span>編輯模式</span>
               </>
             )}
           </button>
@@ -694,12 +694,12 @@ export default function OrderDetail({ orderId, onBack }) {
                                   ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
                                   : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
                               }`}>
-                                {item.source_type === 'official' ? '👑 官方' : `🎨 同人 (${item.fan_source || '未註明'})`}
+                                {item.source_type === 'official' ? '官方' : `同人 (${item.fan_source || '未註明'})`}
                               </span>
                             )}
                             {getItemIps(item).map((ipName, idx) => (
                               <span key={idx} className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
-                                🎬 {ipName}
+                                {ipName}
                               </span>
                             ))}
                             {(() => {
@@ -732,7 +732,7 @@ export default function OrderDetail({ orderId, onBack }) {
                                     key={idx} 
                                     className="bg-primary/10 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center"
                                   >
-                                    🏷 {role}
+                                    {role}
                                   </span>
                                 ))}
                               </div>
@@ -998,7 +998,7 @@ function ReceiptView({ order, items }) {
           </>
         ) : (
           <>
-            <span>💾</span>
+            
             下載為圖片 (JPG)
           </>
         )}

@@ -62,12 +62,12 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
         });
       });
 
-      alert(`✅ 已成功將 ${itemsToAssign.length} 筆物品併入訂單「${targetOrder.title || targetOrder.source || '未命名訂單'}」！`);
+      alert(`已成功將 ${itemsToAssign.length} 筆物品併入訂單「${targetOrder.title || targetOrder.source || '未命名訂單'}」！`);
       if (onSuccess) onSuccess(targetOrder.id);
       onClose();
     } catch (error) {
       console.error('歸屬訂單失敗:', error);
-      alert('❌ 併入訂單失敗，請稍後重試');
+      alert('併入訂單失敗，請稍後重試');
     } finally {
       setIsAssigning(false);
     }
@@ -132,7 +132,7 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
             className="w-full py-2.5 px-4 bg-primary-light/40 dark:bg-primary-dark/20 hover:bg-primary-light dark:hover:bg-primary-dark/30 text-primary-dark dark:text-primary rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-primary/20 transition-all active:scale-[0.99]"
           >
             <Plus size={15} />
-            <span>➕ 建立全新訂單並直接併入</span>
+            <span>建立全新訂單並直接併入</span>
           </button>
         </div>
 

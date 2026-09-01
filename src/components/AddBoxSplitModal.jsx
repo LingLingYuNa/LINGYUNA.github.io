@@ -5,10 +5,10 @@ import { compressImage } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
 export const BOX_SPLIT_MODES = [
-  { id: 'time_first', label: '⚡ 先喊先贏', desc: '只看參團人員發訊息的時間' },
-  { id: 'amount_first', label: '💰 金額多帶優先', desc: '參團人員購買總金額較多者優先' },
-  { id: 'qty_first', label: '📦 數量帶多優先', desc: '參團人員購買總數量較多者優先' },
-  { id: 'allin_time_first', label: '👑 該選項 ALL IN 外加先喊先贏', desc: '限包下該品項全數數量才算有效訊息' }
+  { id: 'time_first', label: '先喊先贏', desc: '只看參團人員發訊息的時間' },
+  { id: 'amount_first', label: '金額多帶優先', desc: '參團人員購買總金額較多者優先' },
+  { id: 'qty_first', label: '數量帶多優先', desc: '參團人員購買總數量較多者優先' },
+  { id: 'allin_time_first', label: '該選項 ALL IN 外加先喊先贏', desc: '限包下該品項全數數量才算有效訊息' }
 ];
 
 export const BOX_SPLIT_STATUSES = [
@@ -109,7 +109,6 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
           <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <span>📦</span>
             <span>{existingSplit ? '編輯拆團紀錄' : '建立全新拆團'}</span>
           </h2>
           <button 
@@ -277,7 +276,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                     className="py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all"
                   >
                     <Camera size={14} className="text-primary" />
-                    <span>📷 拍照</span>
+                    <span>拍照</span>
                   </button>
                   <button
                     type="button"
@@ -285,7 +284,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                     className="py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all"
                   >
                     <ImageIcon size={14} className="text-primary" />
-                    <span>🖼️ 相簿</span>
+                    <span>相簿</span>
                   </button>
                 </div>
 

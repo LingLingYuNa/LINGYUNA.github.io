@@ -170,7 +170,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
                   className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                 >
                   <Camera size={14} className="text-secondary-dark dark:text-secondary-light" />
-                  <span>📷 拍照</span>
+                  <span>拍照</span>
                 </button>
                 <button
                   type="button"
@@ -178,7 +178,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
                   className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                 >
                   <ImageIcon size={14} className="text-secondary-dark dark:text-secondary-light" />
-                  <span>🖼️ 相簿</span>
+                  <span>相簿</span>
                 </button>
               </div>
               

@@ -88,12 +88,12 @@ export default function IpRolesManager({ onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
           <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100 flex items-center gap-2">
-            <span>⚙️ IP 常用角色推薦管理</span>
+            <span>IP 常用角色推薦管理</span>
           </h2>
           <button 
             onClick={onClose} 
             disabled={isEditing}
-            className="p-2 text-gray-400 dark:text-gray-550 hover:text-gray-655 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-750 transition-colors disabled:opacity-30"
+            className="p-2 text-gray-400 dark:text-gray-550 hover:text-gray-655 dark:hover:text-gray-300 rounded-full hover:bg-gray-100 dark:hover:bg-gray-755 transition-colors disabled:opacity-30"
           >
             <X size={20} />
           </button>
@@ -103,7 +103,7 @@ export default function IpRolesManager({ onClose }) {
         {isEditing ? (
           <div className="flex-1 p-5 space-y-4 flex flex-col overflow-y-auto pb-32 md:pb-5">
             <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-gray-800 pb-2">
-              {editTargetIp ? `編輯 IP：${editTargetIp}` : '➕ 新增 IP 推薦角色'}
+              {editTargetIp ? `編輯 IP：${editTargetIp}` : '新增 IP 推薦角色'}
             </h3>
             
             <div className="space-y-1.5">
@@ -157,7 +157,7 @@ export default function IpRolesManager({ onClose }) {
                   onClick={() => handleOpenEdit()}
                   className="px-3 py-1.5 text-[10px] bg-primary text-white rounded-xl shadow-sm hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
                 >
-                  ➕ 新增作品
+                  <Plus size={12} /> 新增作品
                 </button>
               </div>
 
@@ -174,7 +174,7 @@ export default function IpRolesManager({ onClose }) {
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-bold text-purple-700 dark:text-purple-300 text-sm">
-                          🎬 {ipKey}
+                          {ipKey}
                         </span>
                         
                         <div className="flex items-center gap-1">
@@ -183,14 +183,14 @@ export default function IpRolesManager({ onClose }) {
                             className="p-1.5 text-gray-400 hover:text-primary-dark dark:hover:text-primary hover:bg-white dark:hover:bg-gray-800 rounded-lg transition-all"
                             title="編輯設定"
                           >
-                            ✏️
+                            <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteIp(ipKey)}
                             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-red-950/20 rounded-lg transition-all"
                             title="刪除設定"
                           >
-                            🗑️
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </div>

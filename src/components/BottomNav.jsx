@@ -31,7 +31,7 @@ export default function BottomNav({ currentTab, onTabChange, onAddClick }) {
           <span className="text-[10px] font-black uppercase mt-0.5">清單</span>
         </button>
 
-        {/* 新增按鈕 (➕) - 正中間野獸派突出設計 */}
+        {/* 新增按鈕 () - 正中間野獸派突出設計 */}
         <div className="flex items-center justify-center w-full h-full relative">
           <button 
             type="button"

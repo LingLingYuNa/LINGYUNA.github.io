@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { X, ArrowUp, ArrowDown, Trash2, Plus, Sparkles } from 'lucide-react';
+import { X, ArrowUp, ArrowDown, Trash2, Plus, Sparkles, Settings, ListFilter } from 'lucide-react';
 import { db } from '../db';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
@@ -21,7 +21,7 @@ export default function CharacterSortModal({ onClose }) {
 
     const existing = characterOrders.find(c => c.name.toLowerCase() === name.toLowerCase());
     if (existing) {
-      alert(`⚠️ 「${name}」已在角色排序庫中！`);
+      alert(`「${name}」已在角色排序庫中！`);
       return;
     }
 
@@ -92,7 +92,7 @@ export default function CharacterSortModal({ onClose }) {
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
           <div className="flex items-center gap-2">
             <span className="p-1.5 bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 rounded-xl">
-              ⚙️
+              <Settings size={18} />
             </span>
             <div>
               <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">全域角色排序庫設定</h3>
@@ -188,8 +188,8 @@ export default function CharacterSortModal({ onClose }) {
               </div>
             ))
           ) : (
-            <div className="text-center py-12 text-gray-400 dark:text-gray-500 space-y-2">
-              <span className="text-3xl block">📋</span>
+            <div className="text-center py-12 text-gray-400 dark:text-gray-500 space-y-2 flex flex-col items-center">
+              <ListFilter size={32} className="text-gray-400" />
               <p className="text-xs font-medium">排序庫目前尚無角色。</p>
               <p className="text-[10px] text-gray-400">請在上方輸入角色名稱點擊新增，建立專屬的角色優先級順序！</p>
             </div>

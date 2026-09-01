@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Pencil, Sparkles, 
   Copy, Check, UserPlus, DollarSign, Calculator, Image as ImageIcon, Camera, X,
-  Table, LayoutGrid, Download
+  Table, LayoutGrid, Download, Settings, Package
 } from 'lucide-react';
 import { db } from '../db';
 import AddBoxSplitModal, { BOX_SPLIT_MODES } from './AddBoxSplitModal';
@@ -243,7 +243,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       }
     });
 
-    alert('✨ 已成功依照角色排序庫重新排列品項順序！');
+    alert('已成功依照角色排序庫重新排列品項順序！');
   };
 
   // 上移品項
@@ -319,7 +319,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     navigator.clipboard.writeText(text);
     setCopiedBuyer(buyerName);
     setTimeout(() => setCopiedBuyer(null), 2000);
-    alert(`✨ 已複製 ${buyerName} 的對帳文案至剪貼簿！`);
+    alert(`已複製 ${buyerName} 的對帳文案至剪貼簿！`);
   };
 
   // 匯出整個拆團總表為 CSV (可直接在 Excel / Google Sheets 開啟)
@@ -472,7 +472,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         {/* 模式與計算說明 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-gray-100 dark:border-gray-700/60 text-xs">
           <div className="flex items-center gap-2 bg-purple-50/60 dark:bg-purple-950/20 p-2.5 rounded-xl border border-purple-100 dark:border-purple-900/40">
-            <span className="text-base">⚙️</span>
+            <Settings size={18} className="text-purple-700 dark:text-purple-300" />
             <div>
               <span className="font-bold text-purple-900 dark:text-purple-300 block">{currentModeInfo.label}</span>
               <span className="text-[10px] text-purple-700 dark:text-purple-400 block">{currentModeInfo.desc}</span>
@@ -764,11 +764,11 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                                 )}
                                 {passTriggeredSet.has(p.id) ? (
                                   <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1 rounded" title="因未中選指定品項觸發 Pass 條件">
-                                    🚫 無 A 則 Pass
+                                    [PASS] 無 A 則 Pass
                                   </span>
                                 ) : p.pass_rule && p.pass_rule !== 'none' ? (
                                   <span className="text-[9px] font-bold bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 px-1 rounded" title="此喊單帶有 Pass 條件">
-                                    ⚡ 帶 Pass 條件
+                                    帶 Pass 條件
                                   </span>
                                 ) : null}
                                 {allocatedQty === 0 && !passTriggeredSet.has(p.id) ? (
@@ -787,7 +787,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                               </div>
                               {p.timestamp && (
                                 <div className="text-[9px] text-gray-400">
-                                  🕒 {p.timestamp}
+                                  {p.timestamp}
                                 </div>
                               )}
                             </div>
@@ -826,8 +826,8 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             );
           })
         ) : (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-150 dark:border-gray-750 text-gray-400 space-y-2">
-            <span className="text-3xl block">📦</span>
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl border border-gray-150 dark:border-gray-750 text-gray-400 space-y-2 flex flex-col items-center">
+            <Package size={36} className="text-gray-400" />
             <p className="text-xs font-medium">目前尚無品項種類。</p>
             <p className="text-[10px]">點擊右上角「+ 新增種類」按鈕新增角色或品項！</p>
           </div>
@@ -1237,7 +1237,7 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
           <div className="pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2">
             <label className="flex items-center justify-between cursor-pointer p-2.5 bg-purple-50/70 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/60 rounded-xl">
               <span className="text-xs font-black text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
-                ⚡ 啟用「無 A 則 Pass」條件 (A Pass B)
+                啟用「無 A 則 Pass」條件 (A Pass B)
               </span>
               <input
                 type="checkbox"
@@ -1476,7 +1476,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    👤 {b}
+                    {b}
                   </button>
                 ))}
               </div>
@@ -1582,7 +1582,7 @@ function BoxSplitSheetView({
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
-            <span>📊 表一：品項與喊單配分總表 ({items.length})</span>
+            <span>表一：品項與喊單配分總表 ({items.length})</span>
           </button>
 
           <button
@@ -1594,7 +1594,7 @@ function BoxSplitSheetView({
                 : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
             }`}
           >
-            <span>👤 表二：參團買家對帳總表 ({allBuyerNames.length})</span>
+            <span>表二：參團買家對帳總表 ({allBuyerNames.length})</span>
           </button>
         </div>
       </div>
@@ -1786,7 +1786,7 @@ function BoxSplitSheetView({
                   return (
                     <tr key={bName} className="hover:bg-gray-50/80 dark:hover:bg-gray-750/50 transition-colors">
                       <td className="p-3 font-extrabold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
-                        <span>👤</span>
+                        <span></span>
                         <span>{bName}</span>
                       </td>
                       <td className="p-3">
