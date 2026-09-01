@@ -71,9 +71,7 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
       if (!p || !p.buyer_name) return;
       const item = safeItems.find(i => i && i.id === p.item_id);
       if (item && typeof getItemUnitPrice === 'function') {
-        const uPrice = getItemUnitPrice(item);
-        const stock = Number(item.stock) || 1;
-        const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+        const singleUnitPrice = getItemUnitPrice(item);
         const spend = Math.round(singleUnitPrice * (Number(p.qty) || 1));
 
         buyerTotalSpend.set(p.buyer_name, (buyerTotalSpend.get(p.buyer_name) || 0) + spend);
@@ -548,9 +546,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       buyerParts.forEach(p => {
         const item = items.find(i => i.id === p.item_id);
         if (item) {
-          const uPrice = getItemUnitPrice(item);
-          const stock = Number(item.stock) || 1;
-          const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+          const singleUnitPrice = getItemUnitPrice(item);
           const allocatedQty = allocatedMap.get(p.id) ?? 0;
           const subTotal = Math.round(singleUnitPrice * allocatedQty);
 
@@ -2183,9 +2179,7 @@ function BoxSplitSheetView({
                     if (!p) return;
                     const item = safeItems.find(i => i && i.id === p.item_id);
                     if (item) {
-                      const uPrice = safeGetUnitPrice(item);
-                      const stock = Number(item.stock) || 1;
-                      const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
+                      const singleUnitPrice = safeGetUnitPrice(item);
                       const allocatedQty = safeAllocatedMap.get(p.id) ?? 0;
                       const subTotal = Math.round(singleUnitPrice * allocatedQty);
 
