@@ -242,20 +242,20 @@ export default function Dashboard({ onOrderClick }) {
         </div>
       )}
 
-      {/* 頂部數據與切換區 - 電腦版 4 欄佈局 (月份切換 + 3 大核心數據)，手機版維持靈活網格 */}
-      <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-4 md:gap-6">
-        {/* 月份切換器 (Month Selector) */}
-        <div className="flex items-center justify-between gap-2 bg-white dark:bg-gray-800 px-3 sm:px-4 py-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200 md:order-1">
+      {/* 頂部數據與切換區 - 月份長條置頂全寬，下方 3 欄金額統計框 */}
+      <div className="space-y-4">
+        {/* 1. 月份切換長條 (Full-Width Month Selector Bar) */}
+        <div className="flex items-center justify-between gap-3 bg-white dark:bg-gray-800 px-4 py-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200 w-full">
           <button 
             onClick={handlePrevMonth}
-            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[-1px] active:translate-x-[1px] transition-all shrink-0"
+            className="w-10 h-10 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-lg hover:translate-x-[-1px] active:translate-x-[1px] transition-all shrink-0 cursor-pointer"
+            title="上個月"
           >
             &lt;
           </button>
-          <div className="relative flex flex-col items-center justify-center cursor-pointer py-1 px-2.5 bg-[#4ECDC4]/20 border-2 border-black text-center min-w-0 flex-1">
-            <span className="font-mono font-black text-black dark:text-white text-sm tracking-wide text-center leading-tight block w-full">
-              <span className="inline-block sm:inline">{selectedMonth.getFullYear()} 年 </span>
-              <span className="inline-block sm:inline">{selectedMonth.getMonth() + 1} 月</span>
+          <div className="relative flex items-center justify-center cursor-pointer py-2 px-6 bg-[#4ECDC4]/20 border-2 border-black text-center min-w-0 flex-1">
+            <span className="font-mono font-black text-black dark:text-white text-base md:text-lg tracking-wider text-center leading-none block w-full">
+              {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
             </span>
             <input 
               type="month" 
@@ -266,184 +266,175 @@ export default function Dashboard({ onOrderClick }) {
           </div>
           <button 
             onClick={handleNextMonth}
-            className="w-8 h-8 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-base hover:translate-x-[1px] active:translate-x-[-1px] transition-all shrink-0"
+            className="w-10 h-10 flex items-center justify-center bg-[#FFE66D] border-2 border-black text-black font-black text-lg hover:translate-x-[1px] active:translate-x-[-1px] transition-all shrink-0 cursor-pointer"
+            title="下個月"
           >
             &gt;
           </button>
         </div>
 
-        {/* 核心數據區塊 */}
-        <div className="grid grid-cols-2 gap-4 md:contents">
+        {/* 2. 金額統計框框 (3 大金額統計卡片) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* 本月支出 */}
-          <div className="bg-[#FF6B6B] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-1deg] flex flex-col justify-between md:order-2">
+          <div className="bg-[#FF6B6B] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-0.5deg] flex flex-col justify-between">
             <span className="text-xs font-black uppercase tracking-wider mb-1">本月支出 (EXPENSE)</span>
             <span className="text-2xl font-black mt-1 font-mono">{formatMoney(monthlyTotalExpense)}</span>
           </div>
           
           {/* 本月收入 (已回血) */}
-          <div className="bg-[#4ECDC4] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[1deg] flex flex-col justify-between md:order-3">
+          <div className="bg-[#4ECDC4] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[0.5deg] flex flex-col justify-between">
             <span className="text-xs font-black uppercase tracking-wider mb-1">本月收入 (INCOME)</span>
             <span className="text-2xl font-black mt-1 font-mono">{formatMoney(monthlyTotalIncome)}</span>
           </div>
 
           {/* 自留資產淨值 (歷史累計) */}
-          <div className="bg-[#95E1D3] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between transition-all md:order-4">
+          <div className="bg-[#95E1D3] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between transition-all">
             <span className="text-xs font-black uppercase tracking-wider mb-1">自留資產 (NET ASSET)</span>
             <span className="text-2xl font-black mt-1 font-mono">{formatMoney(netAssetValue)}</span>
           </div>
         </div>
       </div>
 
-      {/* 下方清單與提醒區 - 大螢幕左右並排 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* 左側資訊欄 */}
-        <div className="space-y-6">
-          {/* ⏳ 待繳費提醒通知區塊 */}
-          {unpaidOrders.length > 0 && (
-            <section className="px-1 space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <span>⏳</span> 待繳費提醒
-                </h2>
-                <span className="text-xs font-black px-2.5 py-0.5 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                  {unpaidOrders.length} 筆待辦
-                </span>
+      {/* ⏳ 待繳費提醒通知區塊 (如有) */}
+      {unpaidOrders.length > 0 && (
+        <section className="px-1 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+              <span>⏳</span> 待繳費提醒
+            </h2>
+            <span className="text-xs font-black px-2.5 py-0.5 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              {unpaidOrders.length} 筆待辦
+            </span>
+          </div>
+          <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+            {unpaidOrders.map(order => (
+              <div
+                key={order.id}
+                onClick={() => onOrderClick && onOrderClick(order.id)}
+                className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer flex items-center justify-between"
+              >
+                <div className="min-w-0 pr-2">
+                  <h3 className="font-black text-black dark:text-white text-sm truncate uppercase">
+                    {order.title || order.source}
+                  </h3>
+                  <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 font-mono font-bold truncate">
+                    來源：{order.source} | 繳費期限: {order.payment_deadline}
+                  </p>
+                </div>
+                <div className="px-3 py-1.5 bg-[#FFE66D] text-black border-2 border-black font-black text-xs shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                  {order.deadlineInfo.text}
+                </div>
               </div>
-              <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-                {unpaidOrders.map(order => (
-                  <div
-                    key={order.id}
-                    onClick={() => onOrderClick && onOrderClick(order.id)}
-                    className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer flex items-center justify-between"
-                  >
-                    <div className="min-w-0 pr-2">
-                      <h3 className="font-black text-black dark:text-white text-sm truncate uppercase">
-                        {order.title || order.source}
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* 雲端備份與同步狀態常駐區塊 */}
+      <section className="px-1 space-y-3">
+        <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+           雲端同步狀態
+        </h2>
+        <div className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className={`p-3 border-2 border-black shrink-0 ${isLinked ? 'bg-[#4ECDC4] text-black' : 'bg-gray-200 text-black'}`}>
+                <Cloud size={20} strokeWidth={2.5} />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-black text-black dark:text-white uppercase truncate">
+                  {isLinked ? 'GOOGLE 雲端已連結' : '未連結 GOOGLE 帳號'}
+                </h4>
+                <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 font-mono font-bold">
+                  {isLinked ? '已啟用防丟失背景 5 秒自動同步' : '資料僅保存在本機，清除快取恐遺失'}
+                </p>
+              </div>
+            </div>
+            
+            {isLinked ? (
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={handleConnect}
+                  disabled={isSyncing}
+                  className="px-3 py-1.5 bg-[#FFE66D] hover:bg-[#FFE66D]/90 text-black text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 select-none cursor-pointer"
+                >
+                  <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
+                  <span>同步</span>
+                </button>
+                <button
+                  onClick={handleDisconnect}
+                  className="p-1.5 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer flex items-center justify-center"
+                  title="中斷連結"
+                >
+                  <LogOut size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleConnect}
+                disabled={isSyncing}
+                className="px-4 py-2 bg-[#FF6B6B] text-white text-xs font-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all cursor-pointer shrink-0 uppercase"
+              >
+                {isSyncing ? '連結中...' : '立即登入'}
+              </button>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* 全寬【本月新增紀錄】拉長顯示適應螢幕尺寸 */}
+      <section className="px-1 space-y-3">
+        <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider">本月新增紀錄</h2>
+        {sortedMonthlyOrders.length === 0 ? (
+          <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-8 flex flex-col items-center justify-center text-center h-48 transition-colors w-full">
+            <div className="w-12 h-12 bg-[#FFE66D] border-2 border-black flex items-center justify-center mb-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <Inbox size={24} className="text-black" strokeWidth={2.5} />
+            </div>
+            <p className="text-sm font-black text-black dark:text-white uppercase">本月尚無任何紀錄</p>
+            <p className="text-xs text-gray-700 dark:text-gray-300 font-mono mt-1 font-bold">當月新增的週邊訂單與明細會顯示在這裡</p>
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-96 overflow-y-auto pr-1 w-full">
+            {sortedMonthlyOrders.map(order => {
+              const displayTitle = order.title || order.source;
+              const amountTWD = order.total_amount_twd !== undefined 
+                ? order.total_amount_twd 
+                : Math.round(order.total_amount * (order.exchange_rate || 1));
+              const dateStr = order.created_at ? order.created_at.slice(5, 10).replace('-', '/') : '';
+              
+              return (
+                <div
+                  key={order.id}
+                  onClick={() => onOrderClick && onOrderClick(order.id)}
+                  className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer w-full"
+                >
+                  <div className="min-w-0 pr-4 flex items-center gap-3">
+                    <span className="w-10 h-10 border-2 border-black flex items-center justify-center text-sm shrink-0 font-black bg-[#4ECDC4] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      <Package size={20} />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-black text-black dark:text-white text-base truncate uppercase">
+                        {displayTitle}
                       </h3>
-                      <p className="text-xs text-gray-700 dark:text-gray-300 mt-1 font-mono font-bold truncate">
-                        來源：{order.source} | 繳費期限: {order.payment_deadline}
+                      <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 font-mono font-bold truncate">
+                        來源：{order.source} {order.tags && order.tags.length > 0 && `| 標籤: ${order.tags.join(', ')}`}
                       </p>
                     </div>
-                    <div className="px-3 py-1.5 bg-[#FFE66D] text-black border-2 border-black font-black text-xs shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                      {order.deadlineInfo.text}
-                    </div>
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* 雲端備份與同步狀態常駐區塊 */}
-          <section className="px-1 space-y-3">
-            <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-               雲端同步狀態
-            </h2>
-            <div className="bg-white dark:bg-gray-800 p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 border-2 border-black shrink-0 ${isLinked ? 'bg-[#4ECDC4] text-black' : 'bg-gray-200 text-black'}`}>
-                    <Cloud size={20} strokeWidth={2.5} />
-                  </div>
-                  <div className="min-w-0">
-                    <h4 className="text-sm font-black text-black dark:text-white uppercase truncate">
-                      {isLinked ? 'GOOGLE 雲端已連結' : '未連結 GOOGLE 帳號'}
-                    </h4>
-                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 font-mono font-bold">
-                      {isLinked ? '已啟用防丟失背景 5 秒自動同步' : '資料僅保存在本機，清除快取恐遺失'}
-                    </p>
+                  <div className="text-right shrink-0 flex flex-col items-end">
+                    <span className="text-base font-black text-black dark:text-white font-mono">
+                      NT$ {amountTWD.toLocaleString()}
+                    </span>
+                    <span className="text-xs text-black dark:text-gray-300 font-mono font-bold">
+                      {dateStr}
+                    </span>
                   </div>
                 </div>
-                
-                {isLinked ? (
-                  <div className="flex items-center gap-2 shrink-0 min-[768px]:max-[1079px]:flex-col min-[768px]:max-[1079px]:items-stretch min-[768px]:max-[1079px]:gap-1.5">
-                    <button
-                      onClick={handleConnect}
-                      disabled={isSyncing}
-                      className="px-3 py-1.5 bg-[#FFE66D] hover:bg-[#FFE66D]/90 text-black text-xs font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all flex items-center justify-center gap-1 select-none cursor-pointer"
-                    >
-                      <RefreshCw size={12} className={isSyncing ? 'animate-spin' : ''} />
-                      <span>同步</span>
-                    </button>
-                    <button
-                      onClick={handleDisconnect}
-                      className="p-1.5 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer flex items-center justify-center"
-                      title="中斷連結"
-                    >
-                      <LogOut size={14} />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleConnect}
-                    disabled={isSyncing}
-                    className="px-4 py-2 bg-[#FF6B6B] text-white text-xs font-black border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all cursor-pointer shrink-0 uppercase"
-                  >
-                    {isSyncing ? '連結中...' : '立即登入'}
-                  </button>
-                )}
-              </div>
-            </div>
-          </section>
-        </div>
-
-        {/* 右側資訊欄：本月新增紀錄 */}
-        <section className="px-1">
-          <h2 className="text-base font-black text-black dark:text-white uppercase tracking-wider mb-3">本月新增紀錄</h2>
-          {sortedMonthlyOrders.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col items-center justify-center text-center h-44 transition-colors">
-              <div className="w-12 h-12 bg-[#FFE66D] border-2 border-black flex items-center justify-center mb-3">
-                <Inbox size={24} className="text-black" strokeWidth={2.5} />
-              </div>
-              <p className="text-sm font-black text-black dark:text-white uppercase">本月尚無任何紀錄</p>
-              <p className="text-xs text-gray-700 dark:text-gray-300 font-mono mt-1 font-bold">當月新增的訂單與日常記帳會顯示在這裡</p>
-            </div>
-          ) : (
-            <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
-              {sortedMonthlyOrders.map(order => {
-                const isDaily = order.order_type === 'daily';
-                const displayTitle = order.title || (isDaily ? '日常支出' : order.source);
-                const amountTWD = order.total_amount_twd !== undefined 
-                  ? order.total_amount_twd 
-                  : Math.round(order.total_amount * (order.exchange_rate || 1));
-                const dateStr = order.created_at ? order.created_at.slice(5, 10).replace('-', '/') : '';
-                
-                return (
-                  <div
-                    key={order.id}
-                    onClick={() => onOrderClick && onOrderClick(order.id)}
-                    className="bg-white dark:bg-gray-800 p-3.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between hover:translate-x-[2px] hover:translate-y-[2px] transition-all cursor-pointer"
-                  >
-                    <div className="min-w-0 pr-2 flex items-center gap-3">
-                      <span className={`w-9 h-9 border-2 border-black flex items-center justify-center text-sm shrink-0 font-black ${
-                        isDaily ? 'bg-[#FFE66D] text-black' : 'bg-[#4ECDC4] text-black'
-                      }`}>
-                        {isDaily ? <Zap size={18} /> : <Package size={18} />}
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="font-black text-black dark:text-white text-sm truncate uppercase">
-                          {displayTitle}
-                        </h3>
-                        <p className="text-xs text-gray-700 dark:text-gray-300 mt-0.5 font-mono font-bold truncate">
-                          {isDaily ? '日常記帳' : `來源：${order.source}`} {order.tags && order.tags.length > 0 && `| ${order.tags.join(', ')}`}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0 flex flex-col items-end">
-                      <span className="text-sm font-black text-black dark:text-white font-mono">
-                        NT$ {amountTWD.toLocaleString()}
-                      </span>
-                      <span className="text-[10px] text-black dark:text-gray-300 font-mono font-bold">
-                        {dateStr}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-      </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
