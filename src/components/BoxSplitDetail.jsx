@@ -1626,8 +1626,8 @@ function BoxSplitSheetView({
 
   const safeItems = Array.isArray(items) ? items : [];
   const safeParticipants = Array.isArray(participants) ? participants : [];
-  const safeAllocatedMap = allocatedMap || new Map();
-  const safePassTriggeredSet = passTriggeredSet || new Set();
+  const safeAllocatedMap = (allocatedMap && typeof allocatedMap.get === 'function') ? allocatedMap : new Map();
+  const safePassTriggeredSet = (passTriggeredSet && typeof passTriggeredSet.has === 'function') ? passTriggeredSet : new Set();
   const safeGetUnitPrice = typeof getItemUnitPrice === 'function' ? getItemUnitPrice : () => 0;
   const safeUnitSecondShipping = Number(unitSecondShipping) || 0;
 

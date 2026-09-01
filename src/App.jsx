@@ -333,20 +333,24 @@ function App() {
         className="flex-1 h-full overflow-y-auto md:ml-64 md:p-8 md:min-h-screen bg-[#f7f1df] dark:bg-[#121212]"
       >
         {selectedOrderId ? (
-          <OrderDetail 
-            orderId={selectedOrderId} 
-            onBack={handleBackOrderDetail} 
-          />
+          <ErrorBoundary>
+            <OrderDetail 
+              orderId={selectedOrderId} 
+              onBack={handleBackOrderDetail} 
+            />
+          </ErrorBoundary>
         ) : (
           <>
             {currentTab === 'home' && (
-              <Dashboard 
-                onQuickAdd={() => {
-                  setQuickAddOrderId(null);
-                  setIsQuickAddOpen(true);
-                }} 
-                onOrderClick={handleOrderClick}
-              />
+              <ErrorBoundary>
+                <Dashboard 
+                  onQuickAdd={() => {
+                    setQuickAddOrderId(null);
+                    setIsQuickAddOpen(true);
+                  }} 
+                  onOrderClick={handleOrderClick}
+                />
+              </ErrorBoundary>
             )}
             {currentTab === 'list' && (
               <ErrorBoundary>
@@ -356,8 +360,16 @@ function App() {
                 />
               </ErrorBoundary>
             )}
-            {currentTab === 'scissors' && <SplitOrder />}
-            {currentTab === 'wrench' && <Tools />}
+            {currentTab === 'scissors' && (
+              <ErrorBoundary>
+                <SplitOrder />
+              </ErrorBoundary>
+            )}
+            {currentTab === 'wrench' && (
+              <ErrorBoundary>
+                <Tools />
+              </ErrorBoundary>
+            )}
           </>
         )}
       </main>
