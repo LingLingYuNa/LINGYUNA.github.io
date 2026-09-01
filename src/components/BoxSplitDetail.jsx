@@ -322,6 +322,13 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     }
   };
 
+  // 刪除參團人員喊單紀錄
+  const handleDeleteParticipant = async (participantId) => {
+    if (window.confirm('確定要刪除此參團人員的喊單紀錄嗎？')) {
+      await db.box_split_participants.delete(participantId);
+    }
+  };
+
   // 複製單一買家對帳單
   const handleCopyBuyerBill = (buyerName) => {
     const buyerParts = participants.filter(p => p.buyer_name === buyerName);
