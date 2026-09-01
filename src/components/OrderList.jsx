@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
 import { getDeadlineInfo, getItemIps } from '../utils';
-import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes, Plus } from 'lucide-react';
+import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import AddOrder from './AddOrder';
 import CalendarView from './CalendarView';
 import SellItem from './SellItem';
@@ -55,6 +55,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
   const [selectedUnassignedIds, setSelectedUnassignedIds] = useState([]);
   const [isAddStandaloneOpen, setIsAddStandaloneOpen] = useState(false);
   const [editingStandaloneItem, setEditingStandaloneItem] = useState(null);
+
+  // 手機觸控滑動位置紀錄
+  const touchStartX = useRef(null);
+  const touchEndX = useRef(null);
 
   const isUrl = (str) => typeof str === 'string' && (str.startsWith('http://') || str.startsWith('https://'));
 
@@ -205,6 +209,128 @@ export default function OrderList({ onOrderClick, currentTab }) {
 
     return result;
   }, [items, orders, activeTag, searchQuery, dateSort]);
+
+  // --- 圖牆 / 圖片預覽：切換至下一組/張圖片或物品 ---
+  const handleNextImageOrItem = () => {
+    if (!selectedItem) return;
+    const currentList = filteredItems && filteredItems.length > 0 ? filteredItems : items;
+    if (!currentList || currentList.length === 0) return;
+
+    const currentItemIdx = currentList.findIndex(i => i.id === selectedItem.id);
+    const itemImages = selectedItem.images && Array.isArray(selectedItem.images) && selectedItem.images.length > 0
+      ? selectedItem.images
+      : (selectedItem.image ? [selectedItem.image] : []);
+
+    // 1. 若當前物品多圖且非最後一張，先切換圖片
+    if (activeImgIndex < itemImages.length - 1) {
+      const nextImgIdx = activeImgIndex + 1;
+      setActiveImgIndex(nextImgIdx);
+      if (zoomImage) {
+        setZoomImage(itemImages[nextImgIdx]);
+      }
+    } else {
+      // 2. 切換至下一個物品 (組)
+      const nextItemIdx = currentItemIdx === -1 ? 0 : (currentItemIdx + 1) % currentList.length;
+      const nextItem = currentList[nextItemIdx];
+      const nextItemImages = nextItem.images && Array.isArray(nextItem.images) && nextItem.images.length > 0
+        ? nextItem.images
+        : (nextItem.image ? [nextItem.image] : []);
+      
+      setSelectedItem(nextItem);
+      setActiveImgIndex(0);
+      if (zoomImage) {
+        setZoomImage(nextItemImages[0] || null);
+      }
+    }
+  };
+
+  // --- 圖牆 / 圖片預覽：切換至上一組/張圖片或物品 ---
+  const handlePrevImageOrItem = () => {
+    if (!selectedItem) return;
+    const currentList = filteredItems && filteredItems.length > 0 ? filteredItems : items;
+    if (!currentList || currentList.length === 0) return;
+
+    const currentItemIdx = currentList.findIndex(i => i.id === selectedItem.id);
+    const itemImages = selectedItem.images && Array.isArray(selectedItem.images) && selectedItem.images.length > 0
+      ? selectedItem.images
+      : (selectedItem.image ? [selectedItem.image] : []);
+
+    // 1. 若當前物品多圖且非第一張，先切換圖片
+    if (activeImgIndex > 0) {
+      const prevImgIdx = activeImgIndex - 1;
+      setActiveImgIndex(prevImgIdx);
+      if (zoomImage) {
+        setZoomImage(itemImages[prevImgIdx]);
+      }
+    } else {
+      // 2. 切換至上一個物品 (組)
+      const prevItemIdx = currentItemIdx <= 0 ? currentList.length - 1 : currentItemIdx - 1;
+      const prevItem = currentList[prevItemIdx];
+      const prevItemImages = prevItem.images && Array.isArray(prevItem.images) && prevItem.images.length > 0
+        ? prevItem.images
+        : (prevItem.image ? [prevItem.image] : []);
+      
+      const lastImgIdx = Math.max(0, prevItemImages.length - 1);
+      setSelectedItem(prevItem);
+      setActiveImgIndex(lastImgIdx);
+      if (zoomImage) {
+        setZoomImage(prevItemImages[lastImgIdx] || null);
+      }
+    }
+  };
+
+  // 手機 Touch 觸控滑動處理 (Swipe Left -> Next, Swipe Right -> Prev)
+  const handleTouchStart = (e) => {
+    if (e.targetTouches && e.targetTouches[0]) {
+      touchStartX.current = e.targetTouches[0].clientX;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.targetTouches && e.targetTouches[0]) {
+      touchEndX.current = e.targetTouches[0].clientX;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchEndX.current === null) return;
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 40; // 40px 滑動閥值
+
+    if (distance > minSwipeDistance) {
+      // 向左滑動 -> 下一組/張
+      handleNextImageOrItem();
+    } else if (distance < -minSwipeDistance) {
+      // 向右滑動 -> 上一組/張
+      handlePrevImageOrItem();
+    }
+
+    touchStartX.current = null;
+    touchEndX.current = null;
+  };
+
+  // 全局鍵盤左右方向鍵導覽
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!selectedItem && !zoomImage) return;
+
+      if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        handleNextImageOrItem();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handlePrevImageOrItem();
+      } else if (e.key === 'Escape') {
+        setSelectedItem(null);
+        setZoomImage(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedItem, activeImgIndex, filteredItems, items, zoomImage]);
 
   // 載入中狀態
   if (orders === undefined || items === undefined || sales === undefined) {
@@ -1560,16 +1686,65 @@ export default function OrderList({ onOrderClick, currentTab }) {
         </div>
       )}
 
-      {/* 物品詳細資訊 Modal */}
+      {/* 物品詳細資訊 Modal (支援左右滑動與箭頭按鈕切換上一組/下一組圖片) */}
       {selectedItem && (
-        <div className="fixed inset-0 z-[100] bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-900 w-full rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-8 duration-300 relative max-h-[85vh] md:max-h-[90vh] md:max-w-xl flex flex-col border-t md:border dark:border-gray-800">
-            <button 
-              onClick={() => setSelectedItem(null)}
-              className="absolute top-4 right-4 p-2 bg-gray-100/80 dark:bg-gray-800/80 backdrop-blur-md text-gray-500 dark:text-gray-400 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors z-10 animate-in fade-in"
-            >
-              <X size={20} />
-            </button>
+        <div 
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-xs flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+        >
+          {/* 畫面左側切換按鈕 (上一組 / 上一張) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrevImageOrItem();
+            }}
+            className="fixed left-2 md:left-6 top-1/2 -translate-y-1/2 bg-[#FFE66D] text-black border-4 border-black font-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] active:scale-95 transition-all cursor-pointer z-[130]"
+            title="上一組 / 上一張 (鍵盤 ← 左鍵)"
+          >
+            <ChevronLeft size={24} strokeWidth={3} />
+          </button>
+
+          {/* 畫面右側切換按鈕 (下一組 / 下一張) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNextImageOrItem();
+            }}
+            className="fixed right-2 md:right-6 top-1/2 -translate-y-1/2 bg-[#FFE66D] text-black border-4 border-black font-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] active:scale-95 transition-all cursor-pointer z-[130]"
+            title="下一組 / 下一張 (鍵盤 → 右鍵)"
+          >
+            <ChevronRight size={24} strokeWidth={3} />
+          </button>
+
+          <div className="bg-white dark:bg-gray-900 w-full border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden relative max-h-[85vh] md:max-h-[90vh] md:max-w-xl flex flex-col">
+            {/* 頂部標題與關閉列 */}
+            <div className="px-5 py-4 bg-[#FFE66D] text-black border-b-4 border-black flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2">
+                {(() => {
+                  const currentList = filteredItems && filteredItems.length > 0 ? filteredItems : items;
+                  const currentIdx = currentList.findIndex(i => i.id === selectedItem.id);
+                  return currentIdx !== -1 ? (
+                    <span className="bg-[#4ECDC4] text-black font-black text-xs px-2.5 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                      📦 物品 {currentIdx + 1} / {currentList.length}
+                    </span>
+                  ) : null;
+                })()}
+                <span className="font-black uppercase text-sm truncate max-w-[200px] md:max-w-[280px]">
+                  {selectedItem.name}
+                </span>
+              </div>
+              <button 
+                onClick={() => setSelectedItem(null)}
+                className="p-1.5 bg-[#FF6B6B] text-white border-2 border-black font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-[#FF6B6B]/90 transition-colors cursor-pointer"
+                title="關閉"
+              >
+                <X size={18} strokeWidth={3} />
+              </button>
+            </div>
             
             <div className="overflow-y-auto flex-1 p-6 pb-safe space-y-6">
               {/* 大圖展示與輪播 */}
@@ -1580,7 +1755,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 
                 return (
                   <div className="space-y-3">
-                    <div className="aspect-square rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/80 flex items-center justify-center relative group">
+                    <div className="aspect-square bg-[#FAF8F5] dark:bg-gray-800 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center relative group">
                       {itemImages.length > 0 ? (
                         <div className="w-full h-full relative">
                           {isUrl(itemImages[activeImgIndex]) ? (
@@ -1604,52 +1779,22 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             />
                           )}
                           
-                          <div className="hidden w-full h-full flex-col items-center justify-center bg-red-50/50 dark:bg-red-950/20 text-red-500 dark:text-red-400">
+                          <div className="hidden w-full h-full flex-col items-center justify-center bg-[#F38181] text-black font-black border-2 border-black">
                             <ImageIcon size={64} className="mb-3" />
-                            <span className="font-medium text-red-400 dark:text-red-300">圖片連結失效</span>
+                            <span className="font-black text-sm uppercase">圖片連結失效</span>
                           </div>
-
-                          {/* 左右切換按鈕 */}
-                          {itemImages.length > 1 && (
-                            <>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveImgIndex(prev => prev === 0 ? itemImages.length - 1 : prev - 1);
-                                }}
-                                className="absolute left-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-sm transition-colors z-10 flex items-center justify-center"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                </svg>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setActiveImgIndex(prev => prev === itemImages.length - 1 ? 0 : prev + 1);
-                                }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-sm transition-colors z-10 flex items-center justify-center"
-                              >
-                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                              </button>
-                            </>
-                          )}
 
                           {/* 頁碼小標籤 */}
                           {itemImages.length > 1 && (
-                            <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2.5 py-1 rounded-full font-bold backdrop-blur-sm z-10">
+                            <div className="absolute bottom-3 right-3 bg-black text-white font-mono text-xs px-2.5 py-1 border-2 border-black shadow-[2px_2px_0px_0px_rgba(255,230,109,1)] font-black z-10">
                               {activeImgIndex + 1} / {itemImages.length}
                             </div>
                           )}
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center text-gray-300 dark:text-gray-500">
+                        <div className="flex flex-col items-center text-black dark:text-gray-300 font-black">
                           <ImageIcon size={64} className="mb-3" />
-                          <span className="font-medium text-gray-400 dark:text-gray-550">
+                          <span className="text-xs uppercase font-mono">
                             {(selectedItem.tags && selectedItem.tags[0]) || selectedItem.tag || '無圖片'}
                           </span>
                         </div>
@@ -1664,10 +1809,10 @@ export default function OrderList({ onOrderClick, currentTab }) {
                             key={idx}
                             type="button"
                             onClick={() => setActiveImgIndex(idx)}
-                            className={`w-12 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 bg-gray-50 dark:bg-gray-800 ${
+                            className={`w-12 h-12 border-2 border-black transition-all shrink-0 bg-white ${
                               idx === activeImgIndex 
-                                ? 'border-primary scale-105 shadow-sm' 
-                                : 'border-gray-200 dark:border-gray-700 opacity-60 hover:opacity-100'
+                                ? 'bg-[#FFE66D] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] scale-105' 
+                                : 'opacity-60 hover:opacity-100'
                             }`}
                           >
                             <img src={img} alt={`縮圖-${idx}`} className="w-full h-full object-cover" />
@@ -1682,18 +1827,14 @@ export default function OrderList({ onOrderClick, currentTab }) {
               {/* 資訊區塊 */}
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
                     {selectedItem.source_type && (
-                      <span className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0 border ${
-                        selectedItem.source_type === 'official'
-                          ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
-                          : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
-                      }`}>
+                      <span className="text-xs px-2.5 py-0.5 bg-[#4ECDC4] text-black font-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
                         {selectedItem.source_type === 'official' ? '👑 官方' : `🎨 同人 (${selectedItem.fan_source || '未註明'})`}
                       </span>
                     )}
                     {getItemIps(selectedItem).map((ipName, idx) => (
-                      <span key={idx} className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                      <span key={idx} className="text-xs bg-[#FFE66D] text-black font-black px-2.5 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
                         🎬 {ipName}
                       </span>
                     ))}
@@ -1703,33 +1844,33 @@ export default function OrderList({ onOrderClick, currentTab }) {
                         : (selectedItem.tag ? [selectedItem.tag] : []);
                       if (itemTags.length === 0) return null;
                       return (
-                        <div className="flex flex-wrap gap-1 shrink-0">
+                        <div className="flex flex-wrap gap-1.5 shrink-0">
                           {itemTags.map((t, idx) => (
                             <span 
                               key={idx} 
-                              className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-md font-bold"
+                              className="text-xs bg-[#95E1D3] text-black font-black px-2.5 py-0.5 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                             >
-                              {t}
+                              #{t}
                             </span>
                           ))}
                         </div>
                       );
                     })()}
-                    <h2 className="text-xl font-black text-gray-900 dark:text-gray-100 leading-tight">{selectedItem.name}</h2>
                   </div>
+                  <h2 className="text-2xl font-black text-black dark:text-white uppercase leading-tight">{selectedItem.name}</h2>
                   {(() => {
                     const itemRoles = getItemRoles(selectedItem);
                     if (itemRoles.length === 0) return null;
                     return (
-                      <div className="flex flex-wrap gap-1.5 mt-2 items-center">
-                        <span className="text-xs font-bold text-gray-400 dark:text-gray-500 shrink-0">角色：</span>
-                        <div className="flex flex-wrap gap-1">
+                      <div className="flex flex-wrap gap-2 mt-2 items-center">
+                        <span className="text-xs font-black text-gray-700 dark:text-gray-300 shrink-0">角色：</span>
+                        <div className="flex flex-wrap gap-1.5">
                           {itemRoles.map((role, idx) => (
                             <span 
                               key={idx} 
-                              className="bg-primary/10 dark:bg-primary-dark/20 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded-full text-xs font-bold"
+                              className="bg-[#FF6B6B] text-white border-2 border-black px-2.5 py-0.5 text-xs font-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                             >
-                              {role}
+                              👤 {role}
                             </span>
                           ))}
                         </div>
@@ -1739,13 +1880,13 @@ export default function OrderList({ onOrderClick, currentTab }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl border border-gray-100 dark:border-gray-700/60 transition-colors">
-                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-0.5">外幣單價</p>
-                    <p className="text-base font-bold text-gray-800 dark:text-gray-200">{selectedItem.price}</p>
+                  <div className="bg-[#FFE66D] text-black p-3.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <p className="text-xs font-black uppercase mb-0.5">外幣單價 (PRICE)</p>
+                    <p className="text-lg font-black font-mono">{selectedItem.price}</p>
                   </div>
-                  <div className="bg-gray-50 dark:bg-gray-800/60 p-3 rounded-xl border border-gray-100 dark:border-gray-700/60 transition-colors">
-                    <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mb-0.5">總數量</p>
-                    <p className="text-base font-bold text-gray-800 dark:text-gray-200">{selectedItem.quantity} 件</p>
+                  <div className="bg-[#4ECDC4] text-black p-3.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <p className="text-xs font-black uppercase mb-0.5">總數量 (QTY)</p>
+                    <p className="text-lg font-black font-mono">{selectedItem.quantity} 件</p>
                   </div>
                 </div>
               </div>
@@ -1800,26 +1941,74 @@ export default function OrderList({ onOrderClick, currentTab }) {
         <ReconciliationModal onClose={() => setIsReconOpen(false)} />
       )}
 
-      {/* 圖片全螢幕放大 Lightbox */}
+      {/* 圖片全螢幕放大 Lightbox (支援左右滑動與鍵盤/按鈕切換) */}
       {zoomImage && (
         <div 
           onClick={() => setZoomImage(null)}
-          className="fixed inset-0 z-[120] bg-black/90 md:bg-neutral-900/95 flex items-center justify-center cursor-zoom-out animate-in fade-in duration-200"
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          className="fixed inset-0 z-[140] bg-black/95 flex items-center justify-center cursor-zoom-out animate-in fade-in duration-200"
         >
+          {/* 左側箭頭按鈕 */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handlePrevImageOrItem();
+            }}
+            className="fixed left-2 md:left-6 top-1/2 -translate-y-1/2 bg-[#FFE66D] text-black border-4 border-black font-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[-2px] active:scale-95 transition-all cursor-pointer z-[150]"
+            title="上一張 / 上一組 (←)"
+          >
+            <ChevronLeft size={24} strokeWidth={3} />
+          </button>
+
+          {/* 右側箭頭按鈕 */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleNextImageOrItem();
+            }}
+            className="fixed right-2 md:right-6 top-1/2 -translate-y-1/2 bg-[#FFE66D] text-black border-4 border-black font-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] active:scale-95 transition-all cursor-pointer z-[150]"
+            title="下一張 / 下一組 (→)"
+          >
+            <ChevronRight size={24} strokeWidth={3} />
+          </button>
+
+          {/* 關閉按鈕 */}
           <button
             onClick={() => setZoomImage(null)}
-            className="absolute top-4 right-4 p-2.5 bg-black/50 text-white/80 hover:text-white rounded-full hover:bg-black/70 transition-colors z-10"
+            className="absolute top-4 right-4 p-2 bg-[#FF6B6B] text-white border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-[#FF6B6B]/90 transition-colors z-[150] cursor-pointer"
             title="關閉放大"
           >
-            <X size={24} />
+            <X size={20} strokeWidth={3} />
           </button>
+
+          {/* 頂部物品名稱與頁碼 */}
+          {selectedItem && (
+            <div className="absolute top-4 left-4 bg-[#FFE66D] text-black font-black text-xs px-3 py-1.5 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] z-[150] flex items-center gap-2">
+              <span>{selectedItem.name}</span>
+              {(() => {
+                const currentList = filteredItems && filteredItems.length > 0 ? filteredItems : items;
+                const currentIdx = currentList.findIndex(i => i.id === selectedItem.id);
+                return currentIdx !== -1 ? (
+                  <span className="bg-[#4ECDC4] px-2 py-0.5 border border-black">
+                    {currentIdx + 1} / {currentList.length}
+                  </span>
+                ) : null;
+              })()}
+            </div>
+          )}
+
           <img 
             src={zoomImage} 
             alt="全螢幕放大圖片" 
-            className="max-w-full max-h-[90vh] w-auto h-auto m-auto object-contain select-none shadow-2xl transition-transform animate-in zoom-in-95 duration-200" 
+            className="max-w-[90vw] max-h-[85vh] w-auto h-auto m-auto object-contain select-none border-4 border-black shadow-[8px_8px_0px_0px_rgba(255,230,109,1)] transition-all animate-in zoom-in-95 duration-200" 
           />
         </div>
       )}
     </div>
   );
 }
+
