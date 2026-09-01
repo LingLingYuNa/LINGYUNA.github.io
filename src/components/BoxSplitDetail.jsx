@@ -794,7 +794,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
               }`}
             >
               <LayoutGrid size={15} strokeWidth={2.5} />
-              <span>㗊 卡片檢視</span>
+              <span>卡片檢視</span>
             </button>
           </div>
 
@@ -805,7 +805,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
               title="開啟自定義排序面板，調整各品項熱度高低"
             >
               <ArrowUpDown size={14} strokeWidth={2.5} />
-              <span>⇅ 熱度排序</span>
+              <span>熱度排序</span>
             </button>
             <button
               onClick={handleAutoSortByLibrary}
