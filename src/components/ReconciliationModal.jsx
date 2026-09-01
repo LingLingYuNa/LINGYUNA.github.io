@@ -81,7 +81,7 @@ ${lines.join('\n')}
       className="fixed inset-0 z-[70] bg-gray-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors border border-gray-100 dark:border-gray-700/50">
+      <div className="bg-white dark:bg-gray-800 rounded-none w-full max-w-md shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden animate-in zoom-in-95 duration-200 transition-colors border border-gray-100 dark:border-gray-700/50">
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 transition-colors">
@@ -102,7 +102,7 @@ ${lines.join('\n')}
         <div className="p-5 space-y-4">
           
           {uniqueBuyers.length === 0 ? (
-            <div className="p-8 text-center bg-gray-50 dark:bg-gray-900 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 transition-colors">
+            <div className="p-8 text-center bg-gray-50 dark:bg-gray-900 rounded-none border border-dashed border-gray-200 dark:border-gray-800 transition-colors">
               <p className="text-sm text-gray-400 dark:text-gray-500">
                 目前尚無登記買家的售出紀錄。<br/>請先在物品明細中登記「售出 (回血)」！
               </p>
@@ -118,7 +118,7 @@ ${lines.join('\n')}
                     <select
                       value={selectedBuyer}
                       onChange={(e) => setSelectedBuyer(e.target.value)}
-                      className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all appearance-none text-gray-800 dark:text-gray-100"
+                      className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-none px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all appearance-none text-gray-800 dark:text-gray-100"
                     >
                       {uniqueBuyers.map(buyer => (
                         <option key={buyer} value={buyer}>{buyer}</option>
@@ -140,7 +140,7 @@ ${lines.join('\n')}
                     min="0"
                     value={shippingFee}
                     onChange={(e) => setShippingFee(Number(e.target.value))}
-                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100"
+                    className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-none px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100"
                   />
                 </div>
               </div>
@@ -152,7 +152,7 @@ ${lines.join('\n')}
                   id="recon-textarea"
                   readOnly
                   value={generatedText}
-                  className="w-full h-48 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl p-4 text-xs font-mono focus:outline-none text-gray-800 dark:text-gray-200 resize-none transition-colors"
+                  className="w-full h-48 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-none p-4 text-xs font-mono focus:outline-none text-gray-800 dark:text-gray-200 resize-none transition-colors"
                 />
               </div>
 
@@ -161,10 +161,10 @@ ${lines.join('\n')}
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className={`flex-1 py-3.5 px-4 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all active:scale-98 ${
+                  className={`flex-1 py-3.5 px-4 rounded-none font-bold flex items-center justify-center gap-1.5 transition-all active:scale-98 ${
                     copySuccess
-                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
-                      : 'bg-secondary text-white shadow-sm shadow-secondary/20 hover:bg-secondary-dark'
+                      ? 'bg-emerald-600 text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-emerald-600/20'
+                      : 'bg-secondary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-secondary/20 hover:bg-secondary-dark'
                   }`}
                 >
                   {copySuccess ? (

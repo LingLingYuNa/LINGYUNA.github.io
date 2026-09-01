@@ -203,7 +203,7 @@ export default function CalendarView({ onOrderClick }) {
                   cell.isCurrentMonth ? 'text-gray-800 dark:text-gray-200' : 'text-gray-300 dark:text-gray-600'
                 } ${
                   isSelected 
-                    ? 'bg-primary text-white shadow-md shadow-primary/20' 
+                    ? 'bg-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-primary/20' 
                     : isToday 
                     ? 'bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary ring-1 ring-primary/40'
                     : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
@@ -257,7 +257,7 @@ export default function CalendarView({ onOrderClick }) {
                 <div
                   key={order.id}
                   onClick={() => onOrderClick && onOrderClick(order.id)}
-                  className="bg-white dark:bg-gray-800 p-3.5 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black flex justify-between items-center hover:shadow-md dark:hover:bg-gray-750 active:scale-[0.99] transition-all cursor-pointer"
+                  className="bg-white dark:bg-gray-800 p-3.5 rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-4 border-black flex justify-between items-center hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:bg-gray-750 active:scale-[0.99] transition-all cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-none bg-red-50 dark:bg-red-950/20 text-red-500 dark:text-red-400 flex items-center justify-center shrink-0">

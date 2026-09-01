@@ -1000,7 +1000,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                         return (
                           <div
                             key={p.id}
-                            className={`rounded-none p-2.5 flex items-center gap-2 shadow-2xs relative group min-w-[130px] border transition-all ${
+                            className={`rounded-none p-2.5 flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] relative group min-w-[130px] border transition-all ${
                               allocatedQty === 0 
                                 ? 'bg-gray-100/70 dark:bg-gray-800/50 border-dashed border-gray-300 dark:border-gray-700 opacity-60' 
                                 : 'bg-gray-50 dark:bg-gray-750 border-gray-200 dark:border-gray-700'
@@ -1801,17 +1801,17 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
   };
 
   return (
-    <div className="fixed inset-0 z-[80] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
-      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg rounded-t-3xl md:rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+    <div className="fixed inset-0 z-[80] bg-black/60 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
+      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border-4 border-black animate-in slide-in-from-bottom-8 duration-300">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-emerald-600 text-white shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 bg-[#4ECDC4] text-black border-b-4 border-black shrink-0">
           <div className="flex items-center gap-2">
-            <DollarSign size={20} />
-            <h3 className="font-bold text-base">買家對帳與文案生成管家</h3>
+            <DollarSign size={20} strokeWidth={2.5} />
+            <h3 className="font-black text-base uppercase tracking-wider">買家對帳與文案生成管家</h3>
           </div>
-          <button type="button" onClick={onClose} className="p-1 text-white/80 hover:text-white rounded-none">
-            <X size={20} />
+          <button type="button" onClick={onClose} className="p-1 bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 active:scale-95 transition-all cursor-pointer">
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
 
@@ -2233,7 +2233,7 @@ function BoxSplitSheetView({
                         <button
                           type="button"
                           onClick={() => onCopyReconciliation && onCopyReconciliation(bName)}
-                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-[11px] font-bold shadow-2xs transition-all active:scale-95 flex items-center gap-1 mx-auto"
+                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-none text-[11px] font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95 flex items-center gap-1 mx-auto"
                         >
                           <Copy size={11} />
                           <span>複製文案</span>

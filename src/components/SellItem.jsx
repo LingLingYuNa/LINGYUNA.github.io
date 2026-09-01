@@ -77,7 +77,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
       className="fixed inset-0 z-[70] bg-gray-950/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 transition-colors border border-gray-100 dark:border-gray-700/50">
+      <div className="bg-white dark:bg-gray-800 rounded-none w-full max-w-sm shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden animate-in zoom-in-95 duration-200 transition-colors border border-gray-100 dark:border-gray-700/50">
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 transition-colors">
@@ -96,12 +96,12 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
 
         <form onSubmit={handleSave} className="p-5 space-y-5">
           {/* 物品資訊卡片 */}
-          <div className="bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 p-3.5 rounded-2xl text-sm font-medium flex justify-between items-center transition-colors">
+          <div className="bg-secondary-light/30 dark:bg-secondary-dark/10 border border-secondary-light dark:border-secondary-dark/30 p-3.5 rounded-none text-sm font-medium flex justify-between items-center transition-colors">
             <div>
               <span className="text-secondary-dark dark:text-secondary font-bold">{item.name}</span>
               {item.character && <span className="text-secondary-dark/80 dark:text-secondary/80 ml-1">({item.character})</span>}
             </div>
-            <div className="text-secondary-dark dark:text-secondary-light text-xs font-bold bg-secondary-light/80 dark:bg-secondary-dark/30 px-2 py-1 rounded-lg transition-colors">
+            <div className="text-secondary-dark dark:text-secondary-light text-xs font-bold bg-secondary-light/80 dark:bg-secondary-dark/30 px-2 py-1 rounded-none transition-colors">
               可用額度: {maxQty}
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
               max={maxQty}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -130,7 +130,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0"
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -142,7 +142,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
               value={buyerId}
               onChange={(e) => setBuyerId(e.target.value)}
               placeholder="例如：@buyer_123"
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -152,11 +152,11 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
             <div className="flex items-center gap-3">
               {image && (
                 <div className="relative group shrink-0">
-                  <img src={image} alt="預覽" className="w-12 h-12 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm" />
+                  <img src={image} alt="預覽" className="w-12 h-12 object-cover rounded-none border border-gray-200 dark:border-gray-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]" />
                   <button
                     type="button"
                     onClick={() => setImage('')}
-                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors shadow-sm"
+                    className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                     title="移除照片"
                   >
                     <X size={10} />
@@ -167,7 +167,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
                 <button
                   type="button"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                  className="flex items-center justify-center gap-1 py-2 px-3 rounded-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                 >
                   <Camera size={14} className="text-secondary-dark dark:text-secondary-light" />
                   <span>拍照</span>
@@ -175,7 +175,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
                 <button
                   type="button"
                   onClick={() => albumInputRef.current?.click()}
-                  className="flex items-center justify-center gap-1 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                  className="flex items-center justify-center gap-1 py-2 px-3 rounded-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                 >
                   <ImageIcon size={14} className="text-secondary-dark dark:text-secondary-light" />
                   <span>相簿</span>
@@ -207,7 +207,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
                 type="button"
                 onClick={handleDeleteSale}
                 disabled={isSaving}
-                className="flex-1 py-3.5 px-4 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-xl font-bold hover:bg-red-100 dark:hover:bg-red-900/30 active:bg-red-200 transition-colors disabled:opacity-50"
+                className="flex-1 py-3.5 px-4 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 rounded-none font-bold hover:bg-red-100 dark:hover:bg-red-900/30 active:bg-red-200 transition-colors disabled:opacity-50"
               >
                 刪除紀錄
               </button>
@@ -215,7 +215,7 @@ export default function SellItem({ item, remainingQty, existingSale, onClose }) 
             <button 
               type="submit"
               disabled={isSaving || !price || quantity > maxQty || quantity < 1}
-              className="flex-1 py-3.5 px-4 bg-secondary-dark text-white rounded-xl font-bold shadow-sm shadow-secondary-dark/30 hover:bg-secondary-dark/95 active:bg-secondary-dark transition-colors disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
+              className="flex-1 py-3.5 px-4 bg-secondary-dark text-white rounded-none font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-secondary-dark/30 hover:bg-secondary-dark/95 active:bg-secondary-dark transition-colors disabled:opacity-50 disabled:shadow-none flex items-center justify-center gap-2"
             >
               {isSaving ? '處理中...' : (existingSale ? '儲存變更' : '確認售出')}
             </button>

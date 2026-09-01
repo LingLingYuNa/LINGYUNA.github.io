@@ -19,8 +19,8 @@ export const neoBrutalistColors = {
 
 // 絕對禁止項清單 (用於開發時的代碼靜態檢查)
 export const FORBIDDEN_CLASSES = [
-  'rounded-lg', 'rounded-xl', 'rounded-2xl', 'rounded-full', 'rounded-md', 'rounded-sm',
-  'shadow-sm', 'shadow', 'shadow-md', 'shadow-lg', 'shadow-xl', 'shadow-2xl',
+  'rounded-none', 'rounded-none', 'rounded-none', 'rounded-full', 'rounded-none', 'rounded-none',
+  'shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]', 'shadow', 'shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]', 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]', 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]', 'shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]',
   'bg-gradient-to-r', 'bg-gradient-to-b', 'bg-gradient-to-tr',
   'text-gray-300', 'text-gray-400', 'text-gray-500', 'bg-gray-50', 'bg-gray-100',
   'font-light', 'font-thin', 'backdrop-blur'

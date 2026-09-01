@@ -378,7 +378,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
     <div 
       className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-900 md:bg-gray-950/60 md:backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors"
     >
-      <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+      <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-none md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
           <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
             {existingItem ? '編輯物品' : '新增物品'}
@@ -399,7 +399,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="例如：壓克力立牌、特典小卡..."
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -412,7 +412,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
             <select
               value={assignedOrderId || ''}
               onChange={(e) => setAssignedOrderId(e.target.value ? Number(e.target.value) : null)}
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
             >
               <option value="">暫不歸屬 (單獨登記物品)</option>
               {availableOrders.map(ord => (
@@ -424,7 +424,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
           </div>
 
           {/* 週邊屬性卡片 */}
-          <div className="bg-gray-150/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-2xl p-4 space-y-3">
+          <div className="bg-gray-150/50 dark:bg-gray-800/40 border border-gray-200/60 dark:border-gray-700/60 rounded-none p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
                 週邊屬性設定
@@ -432,7 +432,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               <button
                 type="button"
                 onClick={handleOpenPropModal}
-                className="text-xs font-bold text-primary hover:text-primary-dark transition-colors px-2.5 py-1.5 bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-sm"
+                className="text-xs font-bold text-primary hover:text-primary-dark transition-colors px-2.5 py-1.5 bg-white dark:bg-gray-850 border border-gray-200 dark:border-gray-700 rounded-none hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
               >
                 {(ips.length > 0 || roles.length > 0 || selectedTags.length > 0) ? '編輯屬性' : '設定屬性'}
               </button>
@@ -444,7 +444,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 {/* 來源屬性 */}
                 <div className="flex items-center gap-2 text-xs">
                   <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0">來源：</span>
-                  <span className={`px-2.5 py-0.5 rounded-lg font-bold border text-[10px] ${
+                  <span className={`px-2.5 py-0.5 rounded-none font-bold border text-[10px] ${
                     sourceType === 'official'
                       ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
                       : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
@@ -459,7 +459,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0 mt-1">作品：</span>
                     <div className="flex flex-wrap gap-1">
                       {ips.map((ipName, idx) => (
-                        <span key={idx} className="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-lg font-bold border border-purple-100/50 dark:border-purple-900/50">
+                        <span key={idx} className="bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-none font-bold border border-purple-100/50 dark:border-purple-900/50">
                           {ipName}
                         </span>
                       ))}
@@ -473,7 +473,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0 mt-1">角色：</span>
                     <div className="flex flex-wrap gap-1">
                       {roles.map((role, idx) => (
-                        <span key={idx} className="bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded-lg font-bold border border-pink-100/50 dark:border-pink-900/50">
+                        <span key={idx} className="bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 px-2 py-0.5 rounded-none font-bold border border-pink-100/50 dark:border-pink-900/50">
                           {role}
                         </span>
                       ))}
@@ -487,7 +487,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     <span className="text-gray-400 dark:text-gray-555 font-medium w-10 shrink-0 mt-1">製品：</span>
                     <div className="flex flex-wrap gap-1">
                       {selectedTags.map((tag) => (
-                        <span key={tag} className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-lg font-bold border border-blue-100/50 dark:border-blue-900/50">
+                        <span key={tag} className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-none font-bold border border-blue-100/50 dark:border-blue-900/50">
                           {tag}
                         </span>
                       ))}
@@ -513,7 +513,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
               />
             </div>
 
@@ -526,7 +526,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
               />
             </div>
           </div>
@@ -540,7 +540,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
               placeholder="0"
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -556,7 +556,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 images.map((img, idx) => (
                   <div 
                     key={idx} 
-                    className="w-20 h-20 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm transition-all group"
+                    className="w-20 h-20 rounded-none border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all group"
                   >
                     {isUrl(img) ? (
                       <div className="w-full h-full relative">
@@ -597,7 +597,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   </div>
                 ))
               ) : (
-                <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-750 bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center shrink-0">
+                <div className="w-20 h-20 rounded-none border border-dashed border-gray-300 dark:border-gray-750 bg-gray-50 dark:bg-gray-800/50 flex flex-col items-center justify-center shrink-0">
                   <ImageIcon className="text-gray-400 dark:text-gray-655" size={24} />
                   <span className="text-[10px] text-gray-400 dark:text-gray-550 mt-1">無照片</span>
                 </div>
@@ -613,7 +613,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                   >
                     <Camera size={14} className="text-primary-dark dark:text-primary" />
                     <span>拍攝照片</span>
@@ -621,7 +621,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   <button
                     type="button"
                     onClick={() => albumInputRef.current?.click()}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                   >
                     <ImageIcon size={14} className="text-primary-dark dark:text-primary" />
                     <span>選擇相簿</span>
@@ -665,7 +665,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         }
                       }}
                       placeholder="貼上圖片網址 (Image URL)..."
-                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none pl-3 pr-8 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
                     {urlInput && (
                       <button
@@ -680,7 +680,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   <button
                     type="button"
                     onClick={handleAddUrlImage}
-                    className="px-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-colors shrink-0"
+                    className="px-4 bg-primary hover:bg-primary-dark text-white rounded-none font-bold text-xs transition-colors shrink-0"
                   >
                     加入
                   </button>
@@ -695,14 +695,14 @@ export default function AddItem({ orderId, existingItem, onClose }) {
           <button 
             type="button" 
             onClick={onClose}
-            className="flex-1 py-3.5 px-4 bg-gray-100 dark:bg-gray-705 text-gray-700 dark:text-gray-200 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
+            className="flex-1 py-3.5 px-4 bg-gray-100 dark:bg-gray-705 text-gray-700 dark:text-gray-200 rounded-none font-semibold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
           >
             取消
           </button>
           <button 
             onClick={handleSave}
             disabled={isSaving || !name || !price}
-            className="flex-1 py-3.5 px-4 bg-primary text-white rounded-xl font-semibold shadow-sm shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors disabled:opacity-50 disabled:shadow-none"
+            className="flex-1 py-3.5 px-4 bg-primary text-white rounded-none font-semibold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors disabled:opacity-50 disabled:shadow-none"
           >
             {isSaving ? '儲存中...' : (existingItem ? '儲存變更' : '儲存')}
           </button>
@@ -714,7 +714,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         <div 
           className="fixed inset-0 z-[70] bg-gray-950/40 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6"
         >
-          <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-200">
+          <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg md:rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-200">
             
             {/* 標題列 */}
             <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
@@ -742,7 +742,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   <button
                     type="button"
                     onClick={handleOpenEditIpRoles}
-                    className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-lg"
+                    className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-none"
                   >
                     編輯推薦角色
                   </button>
@@ -750,11 +750,11 @@ export default function AddItem({ orderId, existingItem, onClose }) {
 
                 {/* 已選 IP 標籤清單 */}
                 {tempIps.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 p-2 bg-purple-50/50 dark:bg-purple-950/20 rounded-xl border border-purple-100 dark:border-purple-900/40">
+                  <div className="flex flex-wrap gap-1.5 p-2 bg-purple-50/50 dark:bg-purple-950/20 rounded-none border border-purple-100 dark:border-purple-900/40">
                     {tempIps.map((ipName) => (
                       <span 
                         key={ipName} 
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-none text-xs font-bold bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 border border-purple-200 dark:border-purple-800"
                       >
                         {ipName}
                         <button
@@ -785,9 +785,9 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                               setTempIps([...tempIps, option]);
                             }
                           }}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                          className={`px-3 py-1.5 rounded-none text-xs font-bold transition-all border ${
                             isSelected
-                              ? 'bg-purple-600 text-white border-purple-600 shadow-sm'
+                              ? 'bg-purple-600 text-white border-purple-600 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                               : 'bg-gray-50 dark:bg-gray-800 text-gray-550 dark:text-gray-400 border-transparent hover:bg-gray-100 dark:hover:bg-gray-750'
                           }`}
                         >
@@ -815,7 +815,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                       value={tempIpInput}
                       onChange={(e) => setTempIpInput(e.target.value)}
                       placeholder="輸入自訂作品名稱按下 Enter 或點擊新增..."
-                      className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-none px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
                     {tempIpInput && (
                       <button
@@ -835,7 +835,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         setTempIpInput('');
                       }
                     }}
-                    className="px-3.5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shrink-0 transition-colors"
+                    className="px-3.5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-none font-bold text-xs shrink-0 transition-colors"
                   >
                     新增
                   </button>
@@ -851,7 +851,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   <button
                     type="button"
                     onClick={handleOpenEditIpRoles}
-                    className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-lg"
+                    className="text-[10px] font-bold text-primary hover:text-primary-dark transition-colors px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-150 dark:border-gray-700 rounded-none"
                   >
                     編輯常用推薦
                   </button>
@@ -859,7 +859,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
 
                 {/* 常用推薦角色 Pills */}
                 {tempIps.length > 0 && (
-                  <div className="space-y-1 bg-pink-50/20 dark:bg-pink-950/5 p-2.5 rounded-xl border border-pink-100/40 dark:border-pink-950/20">
+                  <div className="space-y-1 bg-pink-50/20 dark:bg-pink-950/5 p-2.5 rounded-none border border-pink-100/40 dark:border-pink-950/20">
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] text-pink-500 dark:text-pink-400 font-bold">{tempIps.join(' / ')} 常用角色推薦：</span>
                       <button
@@ -877,7 +877,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                             key={role}
                             type="button"
                             onClick={() => handleAddTempRole(role)}
-                            className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/40 border border-pink-100/50 dark:border-pink-900/50 transition-all"
+                            className="px-2.5 py-1 rounded-none text-xs font-semibold bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 hover:bg-pink-100 dark:hover:bg-pink-900/40 border border-pink-100/50 dark:border-pink-900/50 transition-all"
                           >
                             + {role}
                           </button>
@@ -901,7 +901,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                           key={role}
                           type="button"
                           onClick={() => handleAddTempRole(role)}
-                          className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750 border border-transparent transition-all"
+                          className="px-2.5 py-1 rounded-none text-xs font-semibold bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-750 border border-transparent transition-all"
                         >
                           + {role}
                         </button>
@@ -983,7 +983,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         key={tag}
                         type="button"
                         onClick={() => setTempTags([...tempTags, tag])}
-                        className="px-2.5 py-1.5 rounded-xl text-xs font-bold bg-gray-55 dark:bg-gray-800/40 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 border border-transparent transition-all"
+                        className="px-2.5 py-1.5 rounded-none text-xs font-bold bg-gray-55 dark:bg-gray-800/40 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-850 border border-transparent transition-all"
                       >
                         + {tag}
                       </button>
@@ -1057,16 +1057,16 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 </h4>
                 
                 {/* 官方/同人分段選擇 */}
-                <div className="flex bg-gray-100 dark:bg-gray-800/80 p-1 rounded-xl transition-colors">
+                <div className="flex bg-gray-100 dark:bg-gray-800/80 p-1 rounded-none transition-colors">
                   <button
                     type="button"
                     onClick={() => {
                       setTempSourceType('official');
                       setTempFanSource(''); // 切回官方時清空同人來源
                     }}
-                    className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                    className={`flex-1 py-2 text-center text-xs font-bold rounded-none transition-all ${
                       tempSourceType === 'official'
-                        ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200/20'
+                        ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-gray-200/20'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                   >
@@ -1075,9 +1075,9 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   <button
                     type="button"
                     onClick={() => setTempSourceType('fan')}
-                    className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-all ${
+                    className={`flex-1 py-2 text-center text-xs font-bold rounded-none transition-all ${
                       tempSourceType === 'fan'
-                        ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-sm border border-gray-200/20'
+                        ? 'bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-gray-200/20'
                         : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                   >
@@ -1087,7 +1087,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
 
                 {/* 如果是同人，展開來源選擇與輸入 */}
                 {tempSourceType === 'fan' && (
-                  <div className="space-y-3 bg-purple-50/20 dark:bg-purple-950/5 p-3 rounded-xl border border-purple-100/40 dark:border-purple-950/20 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="space-y-3 bg-purple-50/20 dark:bg-purple-950/5 p-3 rounded-none border border-purple-100/40 dark:border-purple-950/20 animate-in fade-in slide-in-from-top-2 duration-200">
                     <span className="text-[10px] text-purple-650 dark:text-purple-400 font-bold block mb-1">同人來源/作者/社團：</span>
                     
                     {/* 推薦來源 Pills */}
@@ -1098,9 +1098,9 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                             key={source}
                             type="button"
                             onClick={() => setTempFanSource(source)}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all border ${
+                            className={`px-2.5 py-1 rounded-none text-[10px] font-bold transition-all border ${
                               tempFanSource === source
-                                ? 'bg-purple-100 dark:bg-purple-950/30 text-purple-850 dark:text-purple-300 border-purple-200 dark:border-purple-900 shadow-sm'
+                                ? 'bg-purple-100 dark:bg-purple-950/30 text-purple-850 dark:text-purple-300 border-purple-200 dark:border-purple-900 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                                 : 'bg-white dark:bg-gray-800 text-gray-550 dark:text-gray-400 border-transparent hover:bg-gray-50 dark:hover:bg-gray-750'
                             }`}
                           >
@@ -1117,7 +1117,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                         value={tempFanSource}
                         onChange={(e) => setTempFanSource(e.target.value)}
                         placeholder="請輸入或選擇繪師、社團或同人來源名稱..."
-                        className="w-full bg-white dark:bg-gray-800 border border-gray-250 dark:border-gray-750 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                        className="w-full bg-white dark:bg-gray-800 border border-gray-250 dark:border-gray-750 rounded-none px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                       />
                       {tempFanSource && (
                         <button
@@ -1140,14 +1140,14 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               <button
                 type="button"
                 onClick={handleClosePropModal}
-                className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-255 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 transition-colors text-xs"
+                className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-255 rounded-none font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 active:bg-gray-300 transition-colors text-xs"
               >
                 取消
               </button>
               <button
                 type="button"
                 onClick={handleConfirmProps}
-                className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-semibold shadow-sm shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors text-xs"
+                className="flex-1 py-3 px-4 bg-primary text-white rounded-none font-semibold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors text-xs"
               >
                 確認設定
               </button>
@@ -1164,7 +1164,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
         >
           <div 
             onClick={(e) => e.stopPropagation()}
-            className="bg-white dark:bg-gray-900 w-full h-auto max-h-[70vh] md:w-full md:max-w-md md:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-300 p-5 space-y-4 border border-gray-100 dark:border-gray-800"
+            className="bg-white dark:bg-gray-900 w-full h-auto max-h-[70vh] md:w-full md:max-w-md md:rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 duration-300 p-5 space-y-4 border border-gray-100 dark:border-gray-800"
           >
             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-850 pb-2">
               <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 flex items-center gap-1.5">
@@ -1188,7 +1188,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                   value={editTargetIp}
                   onChange={(e) => setEditTargetIp(e.target.value)}
                   placeholder="例如：原神"
-                  className="flex-1 bg-gray-55 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                  className="flex-1 bg-gray-55 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 />
                 
                 {/* 快速切換現有 IP */}
@@ -1199,7 +1199,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                     setEditTargetIp(selected);
                     setEditRolesInput((ipRolesMap[selected] || []).join(', '));
                   }}
-                  className="bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-750 rounded-xl px-2 py-2 text-xs focus:outline-none text-gray-800 dark:text-gray-150"
+                  className="bg-gray-50 dark:bg-gray-850 border border-gray-250 dark:border-gray-750 rounded-none px-2 py-2 text-xs focus:outline-none text-gray-800 dark:text-gray-150"
                 >
                   <option value="" disabled>快速載入現有 IP...</option>
                   {Object.keys(ipRolesMap).map(ipKey => (
@@ -1219,7 +1219,7 @@ export default function AddItem({ orderId, existingItem, onClose }) {
                 onChange={(e) => setEditRolesInput(e.target.value)}
                 placeholder="例如：鍾離, 胡桃, 魈, ×××"
                 rows={4}
-                className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-550 resize-none"
+                className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-550 resize-none"
               />
             </div>
 
@@ -1227,14 +1227,14 @@ export default function AddItem({ orderId, existingItem, onClose }) {
               <button
                 type="button"
                 onClick={handleCloseEditIpRoles}
-                className="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs"
+                className="flex-1 py-2.5 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-none font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs"
               >
                 取消
               </button>
               <button
                 type="button"
                 onClick={handleSaveIpRoles}
-                className="flex-1 py-2.5 px-4 bg-primary text-white rounded-xl font-semibold hover:bg-primary-dark transition-colors text-xs"
+                className="flex-1 py-2.5 px-4 bg-primary text-white rounded-none font-semibold hover:bg-primary-dark transition-colors text-xs"
               >
                 儲存設定
               </button>

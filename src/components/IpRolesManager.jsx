@@ -83,7 +83,7 @@ export default function IpRolesManager({ onClose }) {
       className="fixed inset-0 z-[60] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget && !isEditing) onClose(); }}
     >
-      <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-xl md:h-auto md:max-h-[85vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors">
+      <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-xl md:h-auto md:max-h-[85vh] md:rounded-none md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors">
         
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
@@ -113,7 +113,7 @@ export default function IpRolesManager({ onClose }) {
                 value={ipInput}
                 onChange={(e) => setIpInput(e.target.value)}
                 placeholder="例如：原神"
-                className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                className="w-full bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-750 rounded-none px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
               />
             </div>
 
@@ -125,7 +125,7 @@ export default function IpRolesManager({ onClose }) {
                 value={rolesInput}
                 onChange={(e) => setRolesInput(e.target.value)}
                 placeholder="例如：鍾離, 胡桃, 魈, ×××"
-                className="w-full flex-1 bg-gray-55 dark:bg-gray-855 border border-gray-200 dark:border-gray-750 rounded-xl px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 resize-none min-h-[120px]"
+                className="w-full flex-1 bg-gray-55 dark:bg-gray-855 border border-gray-200 dark:border-gray-750 rounded-none px-4 py-3 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 resize-none min-h-[120px]"
               />
             </div>
 
@@ -133,14 +133,14 @@ export default function IpRolesManager({ onClose }) {
               <button
                 type="button"
                 onClick={() => setIsEditing(false)}
-                className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs"
+                className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-none font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-xs"
               >
                 取消
               </button>
               <button
                 type="button"
                 onClick={handleSave}
-                className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-bold hover:bg-primary-dark transition-colors text-xs"
+                className="flex-1 py-3 px-4 bg-primary text-white rounded-none font-bold hover:bg-primary-dark transition-colors text-xs"
               >
                 儲存
               </button>
@@ -155,7 +155,7 @@ export default function IpRolesManager({ onClose }) {
                 <button
                   type="button"
                   onClick={() => handleOpenEdit()}
-                  className="px-3 py-1.5 text-[10px] bg-primary text-white rounded-xl shadow-sm hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
+                  className="px-3 py-1.5 text-[10px] bg-primary text-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
                 >
                   <Plus size={12} /> 新增作品
                 </button>
@@ -170,7 +170,7 @@ export default function IpRolesManager({ onClose }) {
                   {Object.entries(ipRolesMap).map(([ipKey, roleList]) => (
                     <div 
                       key={ipKey}
-                      className="p-3.5 bg-gray-55 dark:bg-gray-850 rounded-2xl border border-gray-100 dark:border-gray-800/50 flex flex-col gap-2 transition-all hover:shadow-sm"
+                      className="p-3.5 bg-gray-55 dark:bg-gray-850 rounded-none border border-gray-100 dark:border-gray-800/50 flex flex-col gap-2 transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                     >
                       <div className="flex justify-between items-center">
                         <span className="font-bold text-purple-700 dark:text-purple-300 text-sm">
@@ -180,14 +180,14 @@ export default function IpRolesManager({ onClose }) {
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleOpenEdit(ipKey)}
-                            className="p-1.5 text-gray-400 hover:text-primary-dark dark:hover:text-primary hover:bg-white dark:hover:bg-gray-800 rounded-lg transition-all"
+                            className="p-1.5 text-gray-400 hover:text-primary-dark dark:hover:text-primary hover:bg-white dark:hover:bg-gray-800 rounded-none transition-all"
                             title="編輯設定"
                           >
                             <Pencil size={14} />
                           </button>
                           <button
                             onClick={() => handleDeleteIp(ipKey)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-red-950/20 rounded-lg transition-all"
+                            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-white dark:hover:bg-red-950/20 rounded-none transition-all"
                             title="刪除設定"
                           >
                             <Trash2 size={14} />
@@ -200,7 +200,7 @@ export default function IpRolesManager({ onClose }) {
                           {roleList.map((role) => (
                             <span 
                               key={role}
-                              className="text-[10px] bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 border border-pink-100/50 dark:border-pink-900/50 px-2 py-0.5 rounded-lg font-semibold"
+                              className="text-[10px] bg-pink-50 dark:bg-pink-950/20 text-pink-700 dark:text-pink-300 border border-pink-100/50 dark:border-pink-900/50 px-2 py-0.5 rounded-none font-semibold"
                             >
                               {role}
                             </span>
@@ -220,7 +220,7 @@ export default function IpRolesManager({ onClose }) {
               <button 
                 type="button" 
                 onClick={onClose}
-                className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
+                className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-bold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
               >
                 關閉
               </button>

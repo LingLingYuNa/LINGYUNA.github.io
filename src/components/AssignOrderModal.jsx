@@ -77,12 +77,12 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
     <div 
       className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all"
     >
-      <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
+      <div className="bg-white dark:bg-gray-900 rounded-none max-w-lg w-full max-h-[85vh] flex flex-col shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
         
         {/* 頁首 */}
         <div className="p-4 md:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-850/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-none bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary flex items-center justify-center font-bold">
               <Package size={18} />
             </div>
             <div>
@@ -114,7 +114,7 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="搜尋訂單名稱、來源或狀態..."
-              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-100 outline-none transition-all"
+              className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none text-xs focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-100 outline-none transition-all"
             />
             {searchQuery && (
               <button 
@@ -129,7 +129,7 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
           <button
             type="button"
             onClick={() => setIsCreateOrderOpen(true)}
-            className="w-full py-2.5 px-4 bg-primary-light/40 dark:bg-primary-dark/20 hover:bg-primary-light dark:hover:bg-primary-dark/30 text-primary-dark dark:text-primary rounded-xl text-xs font-bold flex items-center justify-center gap-2 border border-primary/20 transition-all active:scale-[0.99]"
+            className="w-full py-2.5 px-4 bg-primary-light/40 dark:bg-primary-dark/20 hover:bg-primary-light dark:hover:bg-primary-dark/30 text-primary-dark dark:text-primary rounded-none text-xs font-bold flex items-center justify-center gap-2 border border-primary/20 transition-all active:scale-[0.99]"
           >
             <Plus size={15} />
             <span>建立全新訂單並直接併入</span>
@@ -155,14 +155,14 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
                 <div
                   key={order.id}
                   onClick={() => !isAssigning && handleAssignToOrder(order)}
-                  className="group p-3.5 rounded-2xl border border-gray-150 dark:border-gray-750 bg-white dark:bg-gray-800 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-primary-light/10 dark:hover:bg-primary-dark/10 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs"
+                  className="group p-3.5 rounded-none border border-gray-150 dark:border-gray-750 bg-white dark:bg-gray-800 hover:border-primary/50 dark:hover:border-primary/50 hover:bg-primary-light/10 dark:hover:bg-primary-dark/10 transition-all cursor-pointer flex items-center justify-between gap-3 shadow-xs"
                 >
                   <div className="space-y-1 flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-gray-800 dark:text-gray-100 text-sm truncate">
                         {order.title || order.source || '未命名訂單'}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shrink-0">
+                      <span className="text-[10px] px-2 py-0.5 rounded-none font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shrink-0">
                         {order.status || '已喊單'}
                       </span>
                     </div>
@@ -186,7 +186,7 @@ export default function AssignOrderModal({ item, items, onClose, onSuccess }) {
                   <button
                     type="button"
                     disabled={isAssigning}
-                    className="px-3.5 py-2 bg-primary text-white rounded-xl text-xs font-bold flex items-center gap-1 group-hover:bg-primary-dark active:scale-95 transition-all shrink-0 shadow-xs disabled:opacity-50"
+                    className="px-3.5 py-2 bg-primary text-white rounded-none text-xs font-bold flex items-center gap-1 group-hover:bg-primary-dark active:scale-95 transition-all shrink-0 shadow-xs disabled:opacity-50"
                   >
                     <span>併入</span>
                     <ArrowRight size={14} />

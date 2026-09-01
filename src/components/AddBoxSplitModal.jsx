@@ -106,7 +106,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
 
   return (
     <div className="fixed inset-0 z-[60] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
-      <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-xl md:h-auto md:max-h-[90vh] md:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+      <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-xl md:h-auto md:max-h-[90vh] md:rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
@@ -137,7 +137,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="例如：原神 4.8 官方盲盒拆團、崩鐵立牌揪團..."
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
             />
           </div>
 
@@ -152,12 +152,12 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
               value={tagsInput}
               onChange={(e) => setTagsInput(e.target.value)}
               placeholder="例如：原神 徽章 盲盒 預售"
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
             />
             {parseTags(tagsInput).length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-1">
                 {parseTags(tagsInput).map((t, idx) => (
-                  <span key={idx} className="bg-primary/10 text-primary-dark dark:text-primary-light px-2.5 py-0.5 rounded-lg text-xs font-bold border border-primary/20">
+                  <span key={idx} className="bg-primary/10 text-primary-dark dark:text-primary-light px-2.5 py-0.5 rounded-none text-xs font-bold border border-primary/20">
                     #{t}
                   </span>
                 ))}
@@ -174,9 +174,9 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                   key={m.id}
                   type="button"
                   onClick={() => setMode(m.id)}
-                  className={`p-3 rounded-xl border text-left transition-all flex items-start justify-between ${
+                  className={`p-3 rounded-none border text-left transition-all flex items-start justify-between ${
                     mode === m.id
-                      ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-200 shadow-sm'
+                      ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800 text-purple-900 dark:text-purple-200 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                       : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750'
                   }`}
                 >
@@ -203,9 +203,9 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                   key={s}
                   type="button"
                   onClick={() => setStatus(s)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  className={`px-3.5 py-2 rounded-none text-xs font-bold transition-all border ${
                     status === s
-                      ? 'bg-primary text-white border-primary shadow-sm'
+                      ? 'bg-primary text-white border-primary shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                       : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'
                   }`}
                 >
@@ -291,7 +291,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
             <label className="text-sm font-bold text-gray-700 dark:text-gray-300">拆團封面照片 (選填)</label>
             <div className="flex items-center gap-4">
               {coverImage ? (
-                <div className="w-20 h-20 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden relative group shrink-0 shadow-sm">
+                <div className="w-20 h-20 rounded-none border border-gray-200 dark:border-gray-700 overflow-hidden relative group shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                   <img src={coverImage} alt="封面預覽" className="w-full h-full object-cover" />
                   <button
                     type="button"
@@ -302,7 +302,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                   </button>
                 </div>
               ) : (
-                <div className="w-20 h-20 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center text-gray-400 shrink-0">
+                <div className="w-20 h-20 rounded-none border border-dashed border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center text-gray-400 shrink-0">
                   <ImageIcon size={24} />
                   <span className="text-[10px] mt-1">無照片</span>
                 </div>
@@ -313,7 +313,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                   <button
                     type="button"
                     onClick={() => cameraInputRef.current?.click()}
-                    className="py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all"
+                    className="py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all"
                   >
                     <Camera size={14} className="text-primary" />
                     <span>拍照</span>
@@ -321,7 +321,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                   <button
                     type="button"
                     onClick={() => albumInputRef.current?.click()}
-                    className="py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all"
+                    className="py-2 px-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none text-xs font-bold text-gray-700 dark:text-gray-200 flex items-center justify-center gap-1.5 hover:bg-gray-50 active:scale-95 transition-all"
                   >
                     <ImageIcon size={14} className="text-primary" />
                     <span>相簿</span>
@@ -350,7 +350,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                     value={urlInput}
                     onChange={(e) => setUrlInput(e.target.value)}
                     placeholder="貼上外部圖片網址..."
-                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                    className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-3 py-1.5 text-xs text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
                   />
                   <button
                     type="button"
@@ -360,7 +360,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                         setUrlInput('');
                       }
                     }}
-                    className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-gray-200 rounded-xl font-bold text-xs shrink-0 transition-colors"
+                    className="px-3 py-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 text-gray-800 dark:text-gray-200 rounded-none font-bold text-xs shrink-0 transition-colors"
                   >
                     套用
                   </button>
@@ -371,11 +371,11 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
         </form>
 
         {/* Footer */}
-        <div className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700/80 p-4 pb-safe flex gap-3 shrink-0 shadow-lg">
+        <div className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700/80 p-4 pb-safe flex gap-3 shrink-0 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold text-xs hover:bg-gray-200 transition-colors active:scale-95"
+            className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-bold text-xs hover:bg-gray-200 transition-colors active:scale-95"
           >
             取消
           </button>
@@ -383,7 +383,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
             type="button"
             onClick={handleSave}
             disabled={isSaving || !title.trim()}
-            className="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-bold text-xs shadow-sm hover:bg-primary-dark transition-all disabled:opacity-50 active:scale-95"
+            className="flex-1 py-3 px-4 bg-primary text-white rounded-none font-bold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-primary-dark transition-all disabled:opacity-50 active:scale-95"
           >
             {isSaving ? '儲存中...' : (existingSplit ? '儲存變更' : '建立拆團')}
           </button>

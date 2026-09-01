@@ -86,12 +86,12 @@ export default function CharacterSortModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-[80] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors">
-      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+      <div className="bg-white dark:bg-gray-900 w-full h-[85vh] md:h-auto md:max-h-[85vh] md:w-full md:max-w-lg rounded-t-3xl md:rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0">
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 rounded-xl">
+            <span className="p-1.5 bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-300 rounded-none">
               <Settings size={18} />
             </span>
             <div>
@@ -116,12 +116,12 @@ export default function CharacterSortModal({ onClose }) {
               value={nameInput}
               onChange={(e) => setNameInput(e.target.value)}
               placeholder="輸入角色名稱 (如: 鍾離, 胡桃)..."
-              className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
+              className="flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
             />
             <button
               type="submit"
               disabled={!nameInput.trim()}
-              className="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-sm transition-all disabled:opacity-50 flex items-center gap-1 shrink-0 active:scale-95"
+              className="px-4 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-none font-bold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all disabled:opacity-50 flex items-center gap-1 shrink-0 active:scale-95"
             >
               <Plus size={16} />
               <span>新增</span>
@@ -132,7 +132,7 @@ export default function CharacterSortModal({ onClose }) {
             <button
               type="button"
               onClick={handleLoadPresets}
-              className="mt-2.5 w-full py-2 px-3 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border border-purple-150 dark:border-purple-900/40 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-purple-100 transition-all active:scale-[0.99]"
+              className="mt-2.5 w-full py-2 px-3 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border border-purple-150 dark:border-purple-900/40 rounded-none text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-purple-100 transition-all active:scale-[0.99]"
             >
               <Sparkles size={14} />
               <span>一鍵填入預設二次元熱門角色排序</span>
@@ -146,10 +146,10 @@ export default function CharacterSortModal({ onClose }) {
             characterOrders.map((item, idx) => (
               <div 
                 key={item.id} 
-                className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-150 dark:border-gray-750 shadow-xs hover:border-primary/40 transition-colors"
+                className="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded-none border border-gray-150 dark:border-gray-750 shadow-xs hover:border-primary/40 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-black flex items-center justify-center shrink-0">
+                  <span className="w-6 h-6 rounded-none bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs font-black flex items-center justify-center shrink-0">
                     {idx + 1}
                   </span>
                   <span className="font-bold text-sm text-gray-800 dark:text-gray-100">
@@ -162,7 +162,7 @@ export default function CharacterSortModal({ onClose }) {
                     type="button"
                     disabled={idx === 0}
                     onClick={() => handleMoveUp(idx)}
-                    className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary-light disabled:opacity-30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary-light disabled:opacity-30 rounded-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title="向上移"
                   >
                     <ArrowUp size={16} />
@@ -171,7 +171,7 @@ export default function CharacterSortModal({ onClose }) {
                     type="button"
                     disabled={idx === characterOrders.length - 1}
                     onClick={() => handleMoveDown(idx)}
-                    className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary-light disabled:opacity-30 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-primary dark:hover:text-primary-light disabled:opacity-30 rounded-none hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title="向下移"
                   >
                     <ArrowDown size={16} />
@@ -179,7 +179,7 @@ export default function CharacterSortModal({ onClose }) {
                   <button
                     type="button"
                     onClick={() => handleDelete(item.id)}
-                    className="p-1.5 text-red-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors ml-1"
+                    className="p-1.5 text-red-400 hover:text-red-600 rounded-none hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors ml-1"
                     title="刪除"
                   >
                     <Trash2 size={16} />
@@ -201,7 +201,7 @@ export default function CharacterSortModal({ onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-sm transition-all active:scale-95"
+            className="w-full py-3 bg-primary hover:bg-primary-dark text-white rounded-none font-bold text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
           >
             完成設定
           </button>

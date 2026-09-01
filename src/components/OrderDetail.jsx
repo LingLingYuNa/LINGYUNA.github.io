@@ -304,10 +304,10 @@ export default function OrderDetail({ orderId, onBack }) {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 relative animate-in slide-in-from-right-8 duration-300 transition-colors w-full max-w-4xl mx-auto md:my-6 md:rounded-2xl md:shadow-lg md:border md:border-gray-150 dark:md:border-gray-800 md:bg-white dark:md:bg-gray-900 overflow-hidden">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900 relative animate-in slide-in-from-right-8 duration-300 transition-colors w-full max-w-4xl mx-auto md:my-6 md:rounded-none md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:border md:border-gray-150 dark:md:border-gray-800 md:bg-white dark:md:bg-gray-900 overflow-hidden">
       
       {/* 頂部導覽列 */}
-      <header className="flex items-center justify-between px-2 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shadow-sm sticky top-0 z-10 shrink-0 transition-colors">
+      <header className="flex items-center justify-between px-2 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] sticky top-0 z-10 shrink-0 transition-colors">
         <div className="flex items-center">
           <button onClick={onBack} className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors mr-2">
             <ArrowLeft size={24} />
@@ -318,7 +318,7 @@ export default function OrderDetail({ orderId, onBack }) {
           {/* 小票與編輯模式切換 */}
           <button 
             onClick={() => viewMode === 'edit' ? setViewMode('receipt') : handleCloseReceiptMode()}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm border ${
+            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border ${
               viewMode === 'receipt'
                 ? 'bg-amber-100 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-900'
                 : 'bg-primary-light/50 dark:bg-gray-700/50 text-primary-dark dark:text-primary-light border-transparent hover:bg-primary-light dark:hover:bg-gray-700'
@@ -362,7 +362,7 @@ export default function OrderDetail({ orderId, onBack }) {
         <div className="flex-1 overflow-y-auto p-4 space-y-5 pb-32">
         
         {/* 父訂單摘要區塊 */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-700/80 relative overflow-hidden transition-colors">
+        <div className="bg-white dark:bg-gray-800 rounded-none p-5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-gray-100 dark:border-gray-700/80 relative overflow-hidden transition-colors">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-light/30 dark:bg-primary-dark/20 rounded-bl-full -mr-10 -mt-10 opacity-50 pointer-events-none"></div>
           
           <div className="flex justify-between items-start mb-4 relative z-10">
@@ -381,7 +381,7 @@ export default function OrderDetail({ orderId, onBack }) {
                   {order.tags.map(t => (
                     <span 
                       key={t} 
-                      className="text-[9px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded font-bold shrink-0 shadow-sm"
+                      className="text-[9px] bg-primary-light/50 dark:bg-primary-dark/30 text-primary-dark dark:text-primary-light px-2 py-0.5 rounded font-bold shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
                     >
                       {t}
                     </span>
@@ -393,7 +393,7 @@ export default function OrderDetail({ orderId, onBack }) {
               const statusInfo = getStatusStyle(order.status);
               return (
                 <span 
-                  className={`text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1 shadow-sm shrink-0 ${statusInfo.color}`}
+                  className={`text-[11px] px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0 ${statusInfo.color}`}
                 >
                   <span>{statusInfo.dot}</span>
                   <span>{statusInfo.label}</span>
@@ -467,7 +467,7 @@ export default function OrderDetail({ orderId, onBack }) {
                 <div className="flex items-center gap-2 group relative">
                   <div 
                     onClick={() => setZoomImage(order.payment_proof)}
-                    className="w-14 h-9 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 overflow-hidden cursor-zoom-in relative group"
+                    className="w-14 h-9 rounded-none border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 overflow-hidden cursor-zoom-in relative group"
                   >
                     <img 
                       src={order.payment_proof} 
@@ -499,14 +499,14 @@ export default function OrderDetail({ orderId, onBack }) {
                 <div className="flex gap-2">
                   <button
                     onClick={() => cameraInputRef.current?.click()}
-                    className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                    className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-none transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                   >
                     <Camera size={13} className="text-primary-dark dark:text-primary" />
                     <span>拍照</span>
                   </button>
                   <button
                     onClick={() => albumInputRef.current?.click()}
-                    className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                    className="px-2.5 py-1.5 bg-gray-100 dark:bg-gray-750 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-none transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                   >
                     <Upload size={13} className="text-primary-dark dark:text-primary" />
                     <span>相簿</span>
@@ -533,7 +533,7 @@ export default function OrderDetail({ orderId, onBack }) {
         </div>
 
         {/* 國際運費與分攤設定區塊 */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-primary-light dark:border-primary-dark/50 flex flex-col gap-3 transition-colors">
+        <div className="bg-white dark:bg-gray-800 rounded-none p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-primary-light dark:border-primary-dark/50 flex flex-col gap-3 transition-colors">
           <div className="flex items-center gap-2 mb-1">
             <Truck size={18} className="text-primary-dark dark:text-primary" />
             <h3 className="font-bold text-gray-800 dark:text-gray-200 text-sm">國際運費與分攤設定</h3>
@@ -548,7 +548,7 @@ export default function OrderDetail({ orderId, onBack }) {
                 value={shippingFee || ''}
                 placeholder="0"
                 onChange={(e) => handleUpdateOrder({ shipping_fee: Number(e.target.value) })}
-                className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-200 outline-none transition-all"
+                className="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-none px-3 py-2 text-sm focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-200 outline-none transition-all"
               />
             </div>
             <div className="flex flex-col">
@@ -557,7 +557,7 @@ export default function OrderDetail({ orderId, onBack }) {
                 <select
                   value={allocationMethod}
                   onChange={(e) => handleUpdateOrder({ allocation_method: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl px-3 py-2 text-sm appearance-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-200 outline-none transition-all"
+                  className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-none px-3 py-2 text-sm appearance-none focus:bg-white dark:focus:bg-gray-800 focus:ring-2 focus:ring-primary/20 focus:border-primary text-gray-800 dark:text-gray-200 outline-none transition-all"
                 >
                   <option value="count">按件數平攤</option>
                   <option value="price">按外幣金額比例</option>
@@ -583,7 +583,7 @@ export default function OrderDetail({ orderId, onBack }) {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsAddItemOpen(true)}
-                className="px-3 py-1.5 text-xs bg-primary text-white rounded-xl shadow-sm hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
+                className="px-3 py-1.5 text-xs bg-primary text-white rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-1 font-bold"
               >
                 <Plus size={14} strokeWidth={2.5} />
                 <span>新增物品</span>
@@ -591,7 +591,7 @@ export default function OrderDetail({ orderId, onBack }) {
               {unassignedCount > 0 && (
                 <button
                   onClick={() => setIsImportUnassignedOpen(true)}
-                  className="px-3 py-1.5 text-xs bg-secondary-light/60 dark:bg-secondary-dark/30 hover:bg-secondary-light dark:hover:bg-secondary-dark/50 text-secondary-dark dark:text-secondary-light rounded-xl shadow-xs transition-all flex items-center gap-1 font-bold border border-secondary-dark/20"
+                  className="px-3 py-1.5 text-xs bg-secondary-light/60 dark:bg-secondary-dark/30 hover:bg-secondary-light dark:hover:bg-secondary-dark/50 text-secondary-dark dark:text-secondary-light rounded-none shadow-xs transition-all flex items-center gap-1 font-bold border border-secondary-dark/20"
                   title="從獨立未歸屬物品中挑選並併入本訂單"
                 >
                   <Package size={14} />
@@ -602,7 +602,7 @@ export default function OrderDetail({ orderId, onBack }) {
           </div>
           
           {!items || items.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 border-dashed p-8 text-center flex flex-col items-center transition-colors">
+            <div className="bg-white dark:bg-gray-800 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-gray-100 dark:border-gray-700/80 border-dashed p-8 text-center flex flex-col items-center transition-colors">
               <div className="w-14 h-14 bg-gray-50 dark:bg-gray-700/40 rounded-full flex justify-center items-center mb-3">
                 <Package size={28} className="text-gray-300 dark:text-gray-500" />
               </div>
@@ -628,7 +628,7 @@ export default function OrderDetail({ orderId, onBack }) {
                     onDragOver={(e) => handleDragOver(e, index)}
                     onDragEnd={handleDragEnd}
                     onDrop={(e) => handleDrop(e, index)}
-                    className={`bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border flex gap-3 transition-all hover:shadow-md ${
+                    className={`bg-white dark:bg-gray-800 rounded-none p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border flex gap-3 transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] ${
                       draggedIndex === index 
                         ? 'opacity-40 border-dashed border-primary bg-primary/5 dark:bg-primary-dark/5' 
                         : hoveredIndex === index 
@@ -689,7 +689,7 @@ export default function OrderDetail({ orderId, onBack }) {
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
                             {item.source_type && (
-                              <span className={`text-[10px] px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0 border ${
+                              <span className={`text-[10px] px-2 py-0.5 rounded-none font-extrabold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0 border ${
                                 item.source_type === 'official'
                                   ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-300 border-amber-100/50 dark:border-amber-900/50'
                                   : 'bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 border-purple-100/50 dark:border-purple-900/50'
@@ -698,7 +698,7 @@ export default function OrderDetail({ orderId, onBack }) {
                               </span>
                             )}
                             {getItemIps(item).map((ipName, idx) => (
-                              <span key={idx} className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-md font-extrabold shadow-sm shrink-0">
+                              <span key={idx} className="text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-350 px-2 py-0.5 rounded-none font-extrabold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shrink-0">
                                 {ipName}
                               </span>
                             ))}
@@ -712,7 +712,7 @@ export default function OrderDetail({ orderId, onBack }) {
                                   {itemTags.map((t, idx) => (
                                     <span 
                                       key={idx} 
-                                      className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-md font-bold"
+                                      className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-350 px-2 py-0.5 rounded-none font-bold"
                                     >
                                       {t}
                                     </span>
@@ -761,7 +761,7 @@ export default function OrderDetail({ orderId, onBack }) {
                       </div>
 
                       {/* 中段：成本精算分析 */}
-                      <div className="bg-gray-50/80 dark:bg-gray-900/60 rounded-xl p-3 my-2 flex justify-between items-center text-sm border border-gray-100/50 dark:border-gray-700/30 transition-colors">
+                      <div className="bg-gray-50/80 dark:bg-gray-900/60 rounded-none p-3 my-2 flex justify-between items-center text-sm border border-gray-100/50 dark:border-gray-700/30 transition-colors">
                         <div className="flex flex-col gap-0.5">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold w-12">本體台幣</span>
@@ -799,21 +799,21 @@ export default function OrderDetail({ orderId, onBack }) {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setEditingItem(item)}
-                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-none transition-colors"
                             title="編輯物品"
                           >
                             <Pencil size={16} />
                           </button>
                           <button
                             onClick={() => handleCopyItem(item)}
-                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-700/50 rounded-none transition-colors"
                             title="複製物品"
                           >
                             <Copy size={16} />
                           </button>
                           <button
                             onClick={() => handleDeleteItem(item.id)}
-                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+                            className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-none transition-colors"
                             title="刪除物品"
                           >
                             <Trash2 size={16} />
@@ -821,7 +821,7 @@ export default function OrderDetail({ orderId, onBack }) {
                           <button
                             disabled={isSoldOut}
                             onClick={() => setSelectedItemToSell({ item, stats })}
-                            className={`text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors ${
+                            className={`text-xs font-bold px-3 py-1.5 rounded-none flex items-center gap-1 transition-colors ${
                               isSoldOut 
                                 ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
                                 : 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 active:bg-emerald-200'
@@ -890,7 +890,7 @@ export default function OrderDetail({ orderId, onBack }) {
           onClick={handleCloseZoomImage}
           className="fixed inset-0 z-[110] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
         >
-          <img src={zoomImage} alt="放大圖片" className="max-w-full max-h-full object-contain rounded-lg shadow-2xl" />
+          <img src={zoomImage} alt="放大圖片" className="max-w-full max-h-full object-contain rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]" />
         </div>
       )}
     </div>
@@ -989,7 +989,7 @@ function ReceiptView({ order, items }) {
       <button
         onClick={handleDownloadJPG}
         disabled={isDownloading}
-        className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white font-bold rounded-xl shadow-md shadow-amber-500/20 dark:shadow-amber-900/20 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-2 select-none"
+        className="w-full py-3 px-4 bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700 text-white font-bold rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-amber-500/20 dark:shadow-amber-900/20 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center gap-2 select-none"
       >
         {isDownloading ? (
           <>
@@ -1007,7 +1007,7 @@ function ReceiptView({ order, items }) {
       {/* 小票本體 */}
       <div 
         ref={receiptRef}
-        className="w-full max-w-sm bg-[#fdfbf7] text-gray-800 shadow-lg relative font-mono text-xs select-text overflow-hidden rounded-md border border-amber-100/50"
+        className="w-full max-w-sm bg-[#fdfbf7] text-gray-800 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative font-mono text-xs select-text overflow-hidden rounded-none border border-amber-100/50"
       >
       
       {/* 頂部鋸齒邊緣 */}

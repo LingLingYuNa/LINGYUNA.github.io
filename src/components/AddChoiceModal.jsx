@@ -1,42 +1,40 @@
 import React from 'react';
-import { X, ShoppingBag, PackagePlus, Zap } from 'lucide-react';
+import { X, ShoppingBag, PackagePlus } from 'lucide-react';
 
 export default function AddChoiceModal({ onClose, onSelectChoice }) {
   return (
-    <div 
-      className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-all"
-    >
-      <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden flex flex-col transition-colors animate-in slide-in-from-bottom-6 duration-200">
+    <div className="fixed inset-0 z-[60] bg-black/60 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-all">
+      <div className="bg-white dark:bg-gray-900 w-full md:max-w-md rounded-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] border-4 border-black overflow-hidden flex flex-col transition-colors animate-in slide-in-from-bottom-6 duration-200">
         
         {/* Header */}
-        <div className="p-4 md:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-850/50">
-          <h3 className="font-bold text-gray-800 dark:text-gray-100 text-base">請選擇新增類型</h3>
+        <div className="p-4 border-b-4 border-black flex items-center justify-between bg-[#FFE66D] text-black">
+          <h3 className="font-black text-black text-base uppercase tracking-wider">請選擇新增類型</h3>
           <button 
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-1.5 bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:bg-gray-100 active:scale-95 transition-all cursor-pointer"
           >
-            <X size={20} />
+            <X size={18} strokeWidth={2.5} />
           </button>
         </div>
 
         {/* 選擇列表 */}
-        <div className="p-4 md:p-6 space-y-3">
+        <div className="p-5 space-y-3.5 bg-[#f7f1df] dark:bg-gray-800">
           
           {/* 1. 新增訂單 */}
           <button
             type="button"
             onClick={() => onSelectChoice('order')}
-            className="w-full p-4 rounded-2xl border border-primary-light/60 dark:border-primary-dark/40 bg-primary-light/20 dark:bg-primary-dark/10 hover:bg-primary-light/40 dark:hover:bg-primary-dark/20 text-left transition-all flex items-center gap-4 group active:scale-[0.99]"
+            className="w-full p-4 bg-[#FF6B6B] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:scale-95 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none text-left transition-all flex items-center gap-4 cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-md shadow-primary/30 group-hover:scale-105 transition-transform">
-              <ShoppingBag size={24} />
+            <div className="w-12 h-12 rounded-none bg-black text-white flex items-center justify-center shrink-0 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <ShoppingBag size={24} strokeWidth={2.5} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-gray-800 dark:text-gray-100 text-sm flex items-center gap-1.5">
+              <div className="font-black text-black text-sm uppercase tracking-wider flex items-center gap-2">
                 <span>新增週邊/購物訂單</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary-dark dark:text-primary font-bold">推薦</span>
+                <span className="text-[10px] px-1.5 py-0.5 bg-[#FFE66D] text-black font-black border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)]">推薦</span>
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs font-mono font-bold text-black/80 mt-1">
                 紀錄整筆代購或喊單，含幣別、匯率、國際運費與滿減折扣
               </p>
             </div>
@@ -46,16 +44,16 @@ export default function AddChoiceModal({ onClose, onSelectChoice }) {
           <button
             type="button"
             onClick={() => onSelectChoice('item')}
-            className="w-full p-4 rounded-2xl border border-secondary-light/80 dark:border-secondary-dark/40 bg-secondary-light/20 dark:bg-secondary-dark/10 hover:bg-secondary-light/40 dark:hover:bg-secondary-dark/20 text-left transition-all flex items-center gap-4 group active:scale-[0.99]"
+            className="w-full p-4 bg-[#4ECDC4] text-black border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] active:scale-95 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none text-left transition-all flex items-center gap-4 cursor-pointer"
           >
-            <div className="w-12 h-12 rounded-2xl bg-secondary-dark text-white flex items-center justify-center shrink-0 shadow-md shadow-secondary-dark/30 group-hover:scale-105 transition-transform">
-              <PackagePlus size={24} />
+            <div className="w-12 h-12 rounded-none bg-black text-white flex items-center justify-center shrink-0 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              <PackagePlus size={24} strokeWidth={2.5} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-bold text-gray-800 dark:text-gray-100 text-sm">
+              <div className="font-black text-black text-sm uppercase tracking-wider">
                 單獨新增物品 (先記下，之後再歸屬)
               </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <p className="text-xs font-mono font-bold text-black/80 mt-1">
                 獨立登記單一戰利品或週邊，隨時可一鍵併入指定訂單中
               </p>
             </div>

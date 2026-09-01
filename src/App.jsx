@@ -32,7 +32,7 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-3xl border border-red-200 dark:border-red-900 text-center my-8 max-w-lg mx-auto shadow-lg space-y-3">
+        <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-none border border-red-200 dark:border-red-900 text-center my-8 max-w-lg mx-auto shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] space-y-3">
           <h3 className="font-bold text-lg">[警告] 畫面繪製時發生異常</h3>
           <p className="text-xs opacity-80 break-all font-mono">{this.state.error?.toString()}</p>
           <button 
@@ -40,7 +40,7 @@ class ErrorBoundary extends React.Component {
               this.setState({ hasError: false, error: null });
               window.location.reload();
             }} 
-            className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95"
+            className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95"
           >
             重新載入應用程式
           </button>
@@ -300,7 +300,7 @@ function App() {
 
   return (
     // 最外層容器：手機版與電腦版皆統一採用相同的 #f7f1df (深色模式 #121212) 質感背景
-    <div className="min-h-screen bg-[#f7f1df] dark:bg-[#121212] max-w-md mx-auto md:max-w-none md:mx-0 relative pb-20 md:pb-0 shadow-2xl md:shadow-none overflow-hidden md:overflow-visible font-sans text-black dark:text-white transition-colors duration-200 md:flex">
+    <div className="min-h-screen bg-[#f7f1df] dark:bg-[#121212] max-w-md mx-auto md:max-w-none md:mx-0 relative pb-20 md:pb-0 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-none overflow-hidden md:overflow-visible font-sans text-black dark:text-white transition-colors duration-200 md:flex">
       
       {/* 電腦版左側邊欄 */}
       <Sidebar 

@@ -172,7 +172,7 @@ export default function TagRoleManager({ onClose }) {
       className="fixed inset-0 z-[60] bg-gray-950/60 backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 animate-in fade-in duration-200"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors">
+      <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-none md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors">
         
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
@@ -186,12 +186,12 @@ export default function TagRoleManager({ onClose }) {
 
         {/* Tab 切換 */}
         <div className="px-5 pt-4 shrink-0 bg-white dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-800/50 pb-3 transition-colors">
-          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl transition-colors">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-none transition-colors">
             <button
               onClick={() => setActiveTab('tags')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 text-xs font-bold rounded-none transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'tags'
-                  ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-sm'
+                  ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
@@ -200,9 +200,9 @@ export default function TagRoleManager({ onClose }) {
             </button>
             <button
               onClick={() => setActiveTab('roles')}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 text-xs font-bold rounded-none transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === 'roles'
-                  ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-sm'
+                  ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
               }`}
             >
@@ -233,14 +233,14 @@ export default function TagRoleManager({ onClose }) {
                   <div className="flex items-center gap-1.5 shrink-0 ml-4">
                     <button
                       onClick={() => handleRename(name, activeTab)}
-                      className="p-1.5 text-gray-400 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-primary-dark dark:hover:text-primary hover:bg-primary-light/30 dark:hover:bg-gray-800 rounded-none transition-colors"
                       title="編輯名稱"
                     >
                       <Pencil size={15} />
                     </button>
                     <button
                       onClick={() => handleDelete(name, activeTab)}
-                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-none transition-colors"
                       title="刪除"
                     >
                       <Trash2 size={15} />
@@ -257,7 +257,7 @@ export default function TagRoleManager({ onClose }) {
           <button 
             type="button" 
             onClick={onClose}
-            className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
+            className="w-full py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-bold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
           >
             關閉
           </button>

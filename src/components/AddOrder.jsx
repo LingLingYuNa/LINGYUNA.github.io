@@ -193,7 +193,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
     <div 
       className="fixed inset-0 z-[60] bg-gray-50 dark:bg-gray-900 md:bg-gray-950/60 md:backdrop-blur-sm flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-colors"
     >
-      <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
+      <div className="bg-gray-50 dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-none md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
           <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">
@@ -232,7 +232,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                 }, 250);
               }}
               placeholder="例如：徽章盒裝、角色立牌、隨機拍立得..."
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             {focusedField === 'title' && uniqueTitles.length > 0 && (
               <div className="mt-1 space-y-1">
@@ -285,7 +285,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                 }, 250);
               }}
               placeholder="例如：煤爐、駿河屋、淘寶、安利美特..."
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
             {focusedField === 'source' && uniqueSources.length > 0 && (
               <div className="mt-1 space-y-1">
@@ -326,9 +326,9 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                     key={tag.id || tag.name}
                     type="button"
                     onClick={() => toggleTag(tag.name)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-xl border transition-all ${
+                    className={`px-3 py-1.5 text-xs font-bold rounded-none border transition-all ${
                       isSelected
-                        ? 'bg-primary border-primary text-white shadow-sm shadow-primary/20'
+                        ? 'bg-primary border-primary text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-primary/20'
                         : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750'
                     }`}
                   >
@@ -353,7 +353,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
               onChange={tagCategory === 'anime' ? undefined : (e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
               disabled={tagCategory === 'anime'}
               placeholder={tagCategory === 'anime' ? "由物品自動計算" : "請輸入金額"}
-              className={`w-full border rounded-xl px-4 py-3 text-sm transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
+              className={`w-full border rounded-none px-4 py-3 text-sm transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 ${
                 tagCategory === 'anime'
                   ? 'bg-gray-100 dark:bg-gray-850 border-gray-200 dark:border-gray-705 cursor-not-allowed text-gray-400 dark:text-gray-500'
                   : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary'
@@ -375,7 +375,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                 <select
                   value={currency}
                   onChange={handleCurrencyChange}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none text-gray-800 dark:text-gray-100"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none text-gray-800 dark:text-gray-100"
                 >
                   {CURRENCIES.map(c => (
                     <option key={c.code} value={c.code}>{c.label} ({c.code})</option>
@@ -398,7 +398,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                 step="0.0001"
                 value={exchangeRate}
                 onChange={(e) => setExchangeRate(e.target.value)}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100"
               />
             </div>
           </div>
@@ -410,7 +410,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none text-gray-800 dark:text-gray-100"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none text-gray-800 dark:text-gray-100"
               >
                 {ORDER_STATUSES.map((s) => (
                   <option key={s.value} value={s.value}>
@@ -433,7 +433,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none text-gray-800 dark:text-gray-100"
+                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all appearance-none text-gray-800 dark:text-gray-100"
               >
                 {PAYMENT_METHODS.map((method) => (
                   <option key={method} value={method}>
@@ -456,7 +456,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
               type="date"
               value={paymentDeadline}
               onChange={(e) => setPaymentDeadline(e.target.value)}
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -468,7 +468,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
               value={trackingNumber}
               onChange={(e) => setTrackingNumber(e.target.value)}
               placeholder="請輸入物流單號 (選填)"
-              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
             />
           </div>
 
@@ -477,7 +477,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">匯款憑證 (選填)</label>
             <div className="flex gap-4 items-start">
               {/* 預覽區塊 */}
-              <div className="w-24 h-16 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-sm transition-all group">
+              <div className="w-24 h-16 rounded-none border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 flex items-center justify-center relative overflow-hidden shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all group">
                 {paymentProof ? (
                   <div className="w-full h-full relative">
                     {isUrl(paymentProof) ? (
@@ -523,7 +523,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                     <button
                       type="button"
                       onClick={() => cameraInputRef.current?.click()}
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                     >
                       <Camera size={14} className="text-primary-dark dark:text-primary" />
                       <span>拍攝照片</span>
@@ -531,7 +531,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                     <button
                       type="button"
                       onClick={() => albumInputRef.current?.click()}
-                      className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-none border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-750 text-gray-700 dark:text-gray-200 text-xs font-bold active:scale-95 transition-all"
                     >
                       <ImageIcon size={14} className="text-primary-dark dark:text-primary" />
                       <span>選擇相簿</span>
@@ -569,7 +569,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                         }
                       }}
                       placeholder="貼上憑證圖片網址..."
-                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl pl-3 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                      className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none pl-3 pr-8 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     />
                     {proofUrlInput && (
                       <button
@@ -584,7 +584,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                   <button
                     type="button"
                     onClick={handleAddProofUrl}
-                    className="px-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-colors shrink-0"
+                    className="px-3 bg-primary hover:bg-primary-dark text-white rounded-none font-bold text-xs transition-colors shrink-0"
                   >
                     加入
                   </button>
@@ -594,7 +594,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
           </div>
 
           {/* 進階費用與折扣 (選填) */}
-          <div className="border border-gray-250/60 dark:border-gray-750/80 rounded-2xl p-4 bg-gray-50/50 dark:bg-gray-800/30 space-y-4 transition-colors">
+          <div className="border border-gray-250/60 dark:border-gray-750/80 rounded-none p-4 bg-gray-50/50 dark:bg-gray-800/30 space-y-4 transition-colors">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
               進階費用與折扣 (選填)
             </h3>
@@ -610,7 +610,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                   value={handlingFeePercent || ''}
                   placeholder="0"
                   onChange={(e) => setHandlingFeePercent(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
                 />
               </div>
               
@@ -623,7 +623,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                   value={remittanceFee || ''}
                   placeholder="0"
                   onChange={(e) => setRemittanceFee(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -638,7 +638,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                   value={shippingFee || ''}
                   placeholder="0"
                   onChange={(e) => setShippingFee(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
                 />
               </div>
 
@@ -651,7 +651,7 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
                   value={discountAmount || ''}
                   placeholder="0"
                   onChange={(e) => setDiscountAmount(e.target.value)}
-                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
+                  className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-none px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400"
                 />
               </div>
             </div>
@@ -663,14 +663,14 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
           <button 
             type="button" 
             onClick={onClose}
-            className="flex-1 py-3.5 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
+            className="flex-1 py-3.5 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-semibold hover:bg-gray-200 dark:hover:bg-gray-650 active:bg-gray-300 transition-colors"
           >
             取消
           </button>
           <button 
             onClick={handleSave}
             disabled={isSaving || !title || !source || (tagCategory !== 'anime' && !amount)}
-            className="flex-1 py-3.5 px-4 bg-primary text-white rounded-xl font-semibold shadow-sm shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors disabled:opacity-50 disabled:shadow-none"
+            className="flex-1 py-3.5 px-4 bg-primary text-white rounded-none font-semibold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-primary/30 hover:bg-primary-dark active:bg-primary-dark transition-colors disabled:opacity-50 disabled:shadow-none"
           >
             {isSaving ? '儲存中...' : (existingOrder ? '儲存變更' : '儲存')}
           </button>

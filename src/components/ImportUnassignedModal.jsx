@@ -73,12 +73,12 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
     <div 
       className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 transition-all"
     >
-      <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
+      <div className="bg-white dark:bg-gray-900 rounded-none max-w-lg w-full max-h-[85vh] flex flex-col shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] border border-gray-100 dark:border-gray-800 overflow-hidden transition-colors">
         
         {/* 頁首 */}
         <div className="p-4 md:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-850/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-secondary-light/50 dark:bg-secondary-dark/30 text-secondary-dark dark:text-secondary-light flex items-center justify-center font-bold">
+            <div className="w-9 h-9 rounded-none bg-secondary-light/50 dark:bg-secondary-dark/30 text-secondary-dark dark:text-secondary-light flex items-center justify-center font-bold">
               <Package size={18} />
             </div>
             <div>
@@ -132,7 +132,7 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
                 <div
                   key={item.id}
                   onClick={() => toggleSelect(item.id)}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`p-3 rounded-none border transition-all cursor-pointer flex items-center justify-between gap-3 ${
                     isSelected 
                       ? 'border-primary bg-primary-light/10 dark:bg-primary-dark/20 dark:border-primary' 
                       : 'border-gray-150 dark:border-gray-750 bg-white dark:bg-gray-800 hover:border-gray-300'
@@ -147,10 +147,10 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
                       <img 
                         src={coverImg} 
                         alt={item.name} 
-                        className="w-11 h-11 object-cover rounded-xl border border-gray-200 dark:border-gray-700 shrink-0" 
+                        className="w-11 h-11 object-cover rounded-none border border-gray-200 dark:border-gray-700 shrink-0" 
                       />
                     ) : (
-                      <div className="w-11 h-11 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
+                      <div className="w-11 h-11 rounded-none bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-400 shrink-0">
                         <Package size={18} />
                       </div>
                     )}
@@ -179,7 +179,7 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-bold transition-all"
+            className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-none text-xs font-bold transition-all"
           >
             取消
           </button>
@@ -187,7 +187,7 @@ export default function ImportUnassignedModal({ orderId, onClose, onSuccess }) {
             type="button"
             disabled={selectedItemIds.length === 0 || isImporting}
             onClick={handleImportSelected}
-            className="flex-1 py-3 px-4 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-sm"
+            className="flex-1 py-3 px-4 bg-primary hover:bg-primary-dark text-white rounded-none text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1.5 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
           >
             <Check size={16} />
             <span>併入本訂單 ({selectedItemIds.length})</span>

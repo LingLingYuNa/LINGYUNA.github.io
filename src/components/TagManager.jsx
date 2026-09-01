@@ -120,7 +120,7 @@ export default function TagManager({ onClose }) {
       <div className="absolute inset-0 md:hidden" onClick={onClose}></div>
 
       {/* 面板主體 */}
-      <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors z-10">
+      <div className="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-2xl md:h-auto md:max-h-[90vh] md:rounded-none md:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] overflow-hidden flex flex-col border border-transparent dark:border-gray-800 animate-in slide-in-from-bottom-8 duration-300 transition-colors z-10">
       
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700/80 shrink-0 transition-colors">
@@ -146,12 +146,12 @@ export default function TagManager({ onClose }) {
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             placeholder={`輸入新${activeTab === 'general' ? '記帳' : '週邊'}標籤...`}
-            className="flex-1 bg-white dark:bg-gray-800 border border-gray-250 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+            className="flex-1 bg-white dark:bg-gray-800 border border-gray-250 dark:border-gray-700 rounded-none px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           />
           <button
             type="submit"
             disabled={!newTagName.trim()}
-            className="px-4 bg-primary text-white rounded-xl flex items-center justify-center shadow-sm shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shrink-0"
+            className="px-4 bg-primary text-white rounded-none flex items-center justify-center shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all disabled:opacity-50 disabled:scale-100 shrink-0"
           >
             <Plus size={18} strokeWidth={2.5} className="mr-1" />
             <span>新增</span>
@@ -165,7 +165,7 @@ export default function TagManager({ onClose }) {
             <span>排序調整 & 操作</span>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700/80 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700/80 transition-colors">
+          <div className="bg-white dark:bg-gray-800 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] border border-gray-100 dark:border-gray-700/80 overflow-hidden divide-y divide-gray-100 dark:divide-gray-700/80 transition-colors">
             {currentCategoryTags.map((tag, index) => {
               const isEditing = editingTagId === tag.id;
               
@@ -182,7 +182,7 @@ export default function TagManager({ onClose }) {
                         maxLength={10}
                         value={editingTagName}
                         onChange={(e) => setEditingTagName(e.target.value)}
-                        className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-100"
+                        className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-none px-2.5 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-gray-800 dark:text-gray-100"
                         autoFocus
                       />
                     ) : (
@@ -200,14 +200,14 @@ export default function TagManager({ onClose }) {
                       <>
                         <button
                           onClick={() => saveEdit(tag.id)}
-                          className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg transition-colors"
+                          className="p-1.5 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-none transition-colors"
                           title="儲存"
                         >
                           <Check size={15} strokeWidth={2.5} />
                         </button>
                         <button
                           onClick={() => setEditingTagId(null)}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-none transition-colors"
                           title="取消"
                         >
                           <X size={15} strokeWidth={2.5} />
@@ -219,7 +219,7 @@ export default function TagManager({ onClose }) {
                         <button
                           onClick={() => handleMoveUp(index)}
                           disabled={index === 0}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary disabled:opacity-20 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary disabled:opacity-20 rounded-none transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                           title="上移"
                         >
                           <ChevronUp size={16} />
@@ -229,7 +229,7 @@ export default function TagManager({ onClose }) {
                         <button
                           onClick={() => handleMoveDown(index)}
                           disabled={index === currentCategoryTags.length - 1}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary disabled:opacity-20 rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary disabled:opacity-20 rounded-none transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                           title="下移"
                         >
                           <ChevronDown size={16} />
@@ -241,7 +241,7 @@ export default function TagManager({ onClose }) {
                         {/* 編輯名稱 */}
                         <button
                           onClick={() => startEdit(tag)}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary rounded-lg transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-primary-dark dark:hover:text-primary rounded-none transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
                           title="修改名稱"
                         >
                           <Pencil size={14} />
@@ -250,7 +250,7 @@ export default function TagManager({ onClose }) {
                         {/* 刪除標籤 */}
                         <button
                           onClick={() => handleDeleteTag(tag)}
-                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 rounded-lg transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
+                          className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-500 rounded-none transition-colors hover:bg-red-50 dark:hover:bg-red-950/20"
                           title="刪除標籤"
                         >
                           <Trash2 size={14} />
@@ -276,7 +276,7 @@ export default function TagManager({ onClose }) {
       <div className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700/80 p-4 pb-safe flex shrink-0 transition-colors">
         <button
           onClick={onClose}
-          className="w-full py-3.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-650 active:scale-98 transition-all"
+          className="w-full py-3.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-none font-bold hover:bg-gray-200 dark:hover:bg-gray-650 active:scale-98 transition-all"
         >
           關閉面板
         </button>
