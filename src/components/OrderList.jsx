@@ -2,10 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { STATUS_COLORS, CURRENCIES, DEFAULT_TAGS, getStatusStyle, PAYMENT_METHOD_ICONS } from '../constants';
-import { getDeadlineInfo, getItemIps } from '../utils';
-import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Calendar, Trash2, DollarSign, Search, CheckSquare, Square, Boxes, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { PackageOpen, LayoutGrid, List, X, Image as ImageIcon, Pencil, Trash2, DollarSign, Search, CheckSquare, Square, Boxes, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 import AddOrder from './AddOrder';
-import CalendarView from './CalendarView';
 import SellItem from './SellItem';
 import ReconciliationModal from './ReconciliationModal';
 import AddItem from './AddItem';
@@ -514,17 +512,6 @@ export default function OrderList({ onOrderClick, currentTab }) {
               title="圖牆模式"
             >
               <LayoutGrid size={18} strokeWidth={2.5} />
-            </button>
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`p-2 font-black transition-all border-2 ${
-                viewMode === 'calendar' 
-                  ? 'bg-[#FFE66D] text-black border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
-                  : 'border-transparent text-gray-500 hover:text-black dark:hover:text-white'
-              }`}
-              title="日曆模式"
-            >
-              <Calendar size={18} strokeWidth={2.5} />
             </button>
           </div>
         </div>
@@ -1626,10 +1613,7 @@ export default function OrderList({ onOrderClick, currentTab }) {
             </div>
           )}
         </div>
-      ) : (
-        // --- 日曆模式 ---
-        <CalendarView onOrderClick={onOrderClick} />
-      )}
+      ) : null}
 
       {/* 底部玻璃質感懸浮對帳/總計條 */}
       {isSelectMode && (
