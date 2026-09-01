@@ -242,8 +242,8 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
         </div>
       )}
 
-      {/* 頂部數據與切換區 - 電腦版 3 欄佈局，手機版維持垂直排列 */}
-      <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
+      {/* 頂部數據與切換區 - 電腦版 4 欄佈局 (月份切換 + 3 大核心數據)，手機版維持靈活網格 */}
+      <div className="space-y-6 md:space-y-0 md:grid md:grid-cols-4 md:gap-6">
         {/* 月份切換器 (Month Selector) */}
         <div className="flex items-center justify-between gap-2 bg-white dark:bg-gray-800 px-3 sm:px-4 py-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors duration-200 md:order-1">
           <button 
@@ -272,7 +272,7 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
           </button>
         </div>
 
-        {/* 核心數據區塊 (2x2 Grid) */}
+        {/* 核心數據區塊 */}
         <div className="grid grid-cols-2 gap-4 md:contents">
           {/* 本月支出 */}
           <div className="bg-[#FF6B6B] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-1deg] flex flex-col justify-between md:order-2">
@@ -286,14 +286,8 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
             <span className="text-2xl font-black mt-1 font-mono">{formatMoney(monthlyTotalIncome)}</span>
           </div>
 
-          {/* 未回款 */}
-          <div className="bg-[#FFE66D] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between md:order-5">
-            <span className="text-xs font-black uppercase tracking-wider mb-1">未回款 (PENDING)</span>
-            <span className="text-2xl font-black mt-1 font-mono">{formatMoney(pendingReturn)}</span>
-          </div>
-
           {/* 自留資產淨值 (歷史累計) */}
-          <div className="bg-[#95E1D3] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between transition-all md:order-6">
+          <div className="bg-[#95E1D3] text-black p-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between transition-all md:order-4">
             <span className="text-xs font-black uppercase tracking-wider mb-1">自留資產 (NET ASSET)</span>
             <span className="text-2xl font-black mt-1 font-mono">{formatMoney(netAssetValue)}</span>
           </div>
