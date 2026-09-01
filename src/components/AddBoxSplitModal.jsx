@@ -230,10 +230,10 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
               />
             </div>
 
-            {/* 品項熱度調價選擇 (單選) */}
+            {/* 品項熱度價差模式選擇 (單選) */}
             <div className="space-y-1.5">
-              <label className="text-xs font-black text-black dark:text-white uppercase">品項熱度調價設定 (單選)</label>
-              <div className="grid grid-cols-3 gap-2">
+              <label className="text-xs font-black text-black dark:text-white uppercase">品項熱度價差模式 (spread_mode)</label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
                   onClick={() => setPriceAdjustType('none')}
@@ -249,29 +249,42 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPriceAdjustType('normal')}
+                  onClick={() => setPriceAdjustType('low')}
                   className={`p-2.5 border-2 border-black font-black text-xs transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
-                    priceAdjustType === 'normal'
+                    priceAdjustType === 'low'
+                      ? 'bg-[#A8E6CF] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="text-sm">📉</span>
+                  <span className="font-bold mt-0.5">極小價差</span>
+                  <span className="text-[9px] font-mono text-gray-700 font-normal">low (20%內)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceAdjustType('balanced')}
+                  className={`p-2.5 border-2 border-black font-black text-xs transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                    priceAdjustType === 'balanced' || priceAdjustType === 'normal'
                       ? 'bg-[#FFE66D] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
                   <span className="text-sm">⚖️</span>
-                  <span className="font-bold mt-0.5">普通調價</span>
-                  <span className="text-[9px] font-mono text-gray-700 font-normal">小階梯 (40.35.30)</span>
+                  <span className="font-bold mt-0.5">標準階梯</span>
+                  <span className="text-[9px] font-mono text-gray-700 font-normal">balanced (等差)</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPriceAdjustType('aggressive')}
+                  onClick={() => setPriceAdjustType('high')}
                   className={`p-2.5 border-2 border-black font-black text-xs transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
-                    priceAdjustType === 'aggressive'
+                    priceAdjustType === 'high' || priceAdjustType === 'aggressive'
                       ? 'bg-[#FF6B6B] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                       : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                   }`}
                 >
                   <span className="text-sm">🔥</span>
-                  <span className="font-bold mt-0.5">暴力調價</span>
-                  <span className="text-[9px] font-mono text-white/90 font-normal">大階梯 (80.25.10)</span>
+                  <span className="font-bold mt-0.5">大價差</span>
+                  <span className="text-[9px] font-mono text-white/90 font-normal">high (次方曲線)</span>
                 </button>
               </div>
             </div>

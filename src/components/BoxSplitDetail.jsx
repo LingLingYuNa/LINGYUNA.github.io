@@ -240,52 +240,57 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const itemCount = items.length || 1;
   const unitSecondShipping = totalSecondShipping > 0 ? Math.round(totalSecondShipping / itemCount) : 0;
 
-  // 熱度調價模式 ('none' | 'normal' | 'aggressive')
-  const priceAdjustType = split?.price_adjust_type || 'none';
+  // 熱度調價價差模式 (spread_mode / price_adjust_type)
+  const spreadMode = split?.spread_mode || split?.price_adjust_type || 'none';
 
   // 算式計算：基準平均單價 (拆團總金額 / 種類總數量)
   const totalBoxAmount = Number(split?.total_amount) || 0;
   const totalStock = items.reduce((sum, i) => sum + (Number(i.stock) || 1), 0) || 1;
   const baseAvg = totalBoxAmount > 0 ? (totalBoxAmount / totalStock) : 50;
 
-  // 熱度調價階梯映射表 (四步演算法：有效均價 -> 權重斜率 -> 步長 5 取整 -> 殘差修補)
+  // 熱度調價階梯映射表 (四步演算法：有效均價 -> 權重 W[i] -> 步長 5 取整 -> 殘差修補)
   const adjustedPriceMap = React.useMemo(() => {
     if (!items || items.length === 0) return new Map();
     const map = new Map();
     const N = items.length;
-    const step = 5; // 步長限制為 5 (結尾 0 或 5)
+    const step = 5; // 步長 5 元
 
-    if (priceAdjustType === 'none' || !priceAdjustType) {
+    if (spreadMode === 'none' || !spreadMode) {
       const avg = Math.round(baseAvg);
       items.forEach(item => map.set(item.id, avg));
       return map;
     }
 
-    // 步驟 1：有效平均單價 P_avg = baseAvg
-    // 步驟 2：設定價差權重 (W_i) 與 StepScale
-    let weights = [];
-    let stepScale = 0;
+    // 步驟 1：有效平均單價 avg_price = baseAvg
+    const avg_price = baseAvg;
 
-    if (priceAdjustType === 'normal') {
-      // 普通調價：小階梯 (例如 40, 35, 30, 25, 20)
-      stepScale = Math.max(5, Math.round(baseAvg * 0.15));
-      weights = items.map((_, idx) => ((N - 1) / 2) - idx);
-    } else if (priceAdjustType === 'aggressive') {
-      // 暴力調價：大階梯 (例如 90, 30, 15, 10, 5)
-      stepScale = Math.max(10, Math.round(baseAvg * 0.35));
-      weights = items.map((_, idx) => {
-        if (idx === 0) return Math.max(3.0, (N - 1) * 1.5);
-        if (idx === 1 && N >= 4) return 0.8;
-        if (idx < N - 1) return 0.2 - idx * 0.3;
-        return -((N - 1) * 0.8);
+    // 步驟 2：建立權重 W[i]
+    const midOffset = (N - 1) / 2.0;
+    let W = [];
+
+    if (spreadMode === 'low') {
+      // 1. low (極小價差): 線性分佈 scale = 0.5
+      W = items.map((_, i) => (midOffset - i) * 0.5);
+    } else if (spreadMode === 'balanced' || spreadMode === 'normal') {
+      // 2. balanced (標準階梯): 線性分佈 scale = 1.0
+      W = items.map((_, i) => (midOffset - i) * 1.0);
+    } else if (spreadMode === 'high' || spreadMode === 'aggressive') {
+      // 3. high (大價差/熱門高承擔): 非線性次方分佈 (Power Curve)
+      W = items.map((_, i) => {
+        if (midOffset === 0) return 0;
+        const x = (midOffset - i) / midOffset; // 區間 [-1.0, 1.0]
+        const signX = Math.sign(x);
+        const absX = Math.abs(x);
+        return signX * Math.pow(absX, 1.6) * midOffset * 2.0;
       });
     }
 
-    // 步驟 3：初步計價與步長取整 (round to step = 5)
-    const priceObjects = items.map((item, idx) => {
-      const rawP = baseAvg + (weights[idx] * stepScale);
-      const roundedP = Math.max(5, Math.round(rawP / step) * step);
-      return { id: item.id, qty: Number(item.stock) || 1, price: roundedP };
+    // 步驟 3：通用公式 raw_price[i] = avg_price + (W[i] * step)
+    // quantized_price[i] = round(raw_price / step) * step
+    const priceObjects = items.map((item, i) => {
+      const raw_price = avg_price + (W[i] * step);
+      const quantized_price = Math.max(5, Math.round(raw_price / step) * step);
+      return { id: item.id, qty: Number(item.stock) || 1, price: quantized_price };
     });
 
     // 步驟 4：殘差修補 (Greedy Residual Adjustment) 確保總和無落差 (防死迴圈機制)
@@ -294,7 +299,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
       let currentSum = priceObjects.reduce((sum, p) => sum + p.price * p.qty, 0);
       let residual = targetTotal - currentSum; // R = T - sum(P_i * Q_i)
 
-      let maxSafetyCounter = 100; // 最多執行 100 次，絕不卡住
+      let maxSafetyCounter = 100; // 最多執行 100 次
       if (residual >= step) {
         let idx = 0;
         while (residual >= step && maxSafetyCounter-- > 0) {
@@ -320,7 +325,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
     priceObjects.forEach(p => map.set(p.id, p.price));
     return map;
-  }, [items, totalBoxAmount, priceAdjustType, baseAvg]);
+  }, [items, totalBoxAmount, spreadMode, baseAvg]);
 
   // 計算特定品項種類單價 (自訂單價 > 倍率 > 熱度調價 > 均價)
   const getItemUnitPrice = React.useCallback((item) => {
@@ -343,7 +348,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
   // 切換熱度調價模式 handler
   const handleTogglePriceAdjust = async (type) => {
-    await db.box_splits.update(Number(splitId), { price_adjust_type: type });
+    await db.box_splits.update(Number(splitId), { spread_mode: type, price_adjust_type: type });
   };
 
   const currentModeInfo = BOX_SPLIT_MODES.find(m => m.id === split?.mode) || BOX_SPLIT_MODES[0];
@@ -650,20 +655,20 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </div>
         </div>
 
-        {/* 熱度調價控制與說明區塊 */}
+        {/* 熱度價差模式控制與說明區塊 */}
         <div className="pt-3 border-t-2 border-black space-y-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <span className="text-xs font-black text-black dark:text-white uppercase flex items-center gap-1">
               <span>🔥</span>
-              <span>熱度調價模式：</span>
+              <span>熱度價差模式 (spread_mode)：</span>
             </span>
 
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 type="button"
                 onClick={() => handleTogglePriceAdjust('none')}
-                className={`px-3 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
-                  priceAdjustType === 'none'
+                className={`px-2.5 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  spreadMode === 'none'
                     ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                     : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
                 }`}
@@ -672,36 +677,49 @@ export default function BoxSplitDetail({ splitId, onBack }) {
               </button>
               <button
                 type="button"
-                onClick={() => handleTogglePriceAdjust('normal')}
-                className={`px-3 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
-                  priceAdjustType === 'normal'
-                    ? 'bg-[#FFE66D] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                onClick={() => handleTogglePriceAdjust('low')}
+                className={`px-2.5 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  spreadMode === 'low'
+                    ? 'bg-[#A8E6CF] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                     : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
                 }`}
-                title="普通調價：溫和階梯差價 (例如：40, 35, 30, 25, 20)"
+                title="極小價差 (low): 線性 scale=0.5，最高與最低價差控制在 20%~30% 以內"
               >
-                ⚖️ 普通調價
+                📉 極小價差 (low)
               </button>
               <button
                 type="button"
-                onClick={() => handleTogglePriceAdjust('aggressive')}
-                className={`px-3 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
-                  priceAdjustType === 'aggressive'
+                onClick={() => handleTogglePriceAdjust('balanced')}
+                className={`px-2.5 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  spreadMode === 'balanced' || spreadMode === 'normal'
+                    ? 'bg-[#FFE66D] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
+                }`}
+                title="標準階梯 (balanced): 線性 scale=1.0，各階呈均勻等差遞減"
+              >
+                ⚖️ 標準階梯 (balanced)
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTogglePriceAdjust('high')}
+                className={`px-2.5 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  spreadMode === 'high' || spreadMode === 'aggressive'
                     ? 'bg-[#FF6B6B] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
                     : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
                 }`}
-                title="暴力調價：陡峭熱度差價 (例如：80, 25, 25, 15, 10)"
+                title="大價差 (high): 非線性 Power Curve 次方分佈，頂階高承擔、底階大幅折扣"
               >
-                🔥 暴力調價
+                🔥 大價差 (high)
               </button>
             </div>
           </div>
 
           <div className="text-[11px] font-mono font-bold text-gray-700 dark:text-gray-300 flex flex-col sm:flex-row justify-between gap-1 bg-gray-50 dark:bg-gray-750 p-2 border border-black">
             <span>
-              {priceAdjustType === 'none' && '💡 均價模式：所有品項均價平攤，無熱度差價。'}
-              {priceAdjustType === 'normal' && '💡 普通調價：小階梯熱度差價 (如 40, 35, 30, 25, 20)，熱銷調高、冷門調低，總價精準保持不變。'}
-              {priceAdjustType === 'aggressive' && '💡 暴力調價：大階梯熱度差價 (如 80, 25, 25, 15, 10)，熱銷承擔大部分金額、冷門大幅補貼降價，總價精準保持不變。'}
+              {spreadMode === 'none' && '💡 均價模式：所有品項均價平攤，無熱度差價。'}
+              {spreadMode === 'low' && '💡 極小價差 (low)：線性 scale = 0.5，最高與最低階價差精準控制在平均單價 20%~30% 以內。'}
+              {(spreadMode === 'balanced' || spreadMode === 'normal') && '💡 標準階梯 (balanced)：線性 scale = 1.0，各階呈均勻等差遞減，溫和分配價差。'}
+              {(spreadMode === 'high' || spreadMode === 'aggressive') && '💡 大價差 (high)：Power Curve 次方分佈，頂階大幅拉高承擔、底階大幅打折，熱門高承擔。'}
             </span>
             <span className="shrink-0 text-black dark:text-white">均價基準: NT${Math.round(baseAvg)}</span>
           </div>
