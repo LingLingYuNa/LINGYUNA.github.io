@@ -32,6 +32,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
   const [status, setStatus] = useState(existingSplit?.status || '已喊單');
   const [totalAmount, setTotalAmount] = useState(existingSplit?.total_amount ?? '');
   const [useMultiplier, setUseMultiplier] = useState(existingSplit?.use_multiplier ?? false);
+  const [priceAdjustType, setPriceAdjustType] = useState(existingSplit?.price_adjust_type || 'none'); // 'none' | 'normal' | 'aggressive'
   const [coverImage, setCoverImage] = useState(existingSplit?.cover_image || '');
   const [urlInput, setUrlInput] = useState('');
   const [isSaving, setIsSaving] = useState(false);
@@ -77,6 +78,7 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
         status,
         total_amount: Number(totalAmount) || 0,
         use_multiplier: Boolean(useMultiplier),
+        price_adjust_type: priceAdjustType,
         cover_image: coverImage,
         date: existingSplit?.date || new Date().toISOString().split('T')[0],
         updated_at: new Date().toISOString()
@@ -213,36 +215,65 @@ export default function AddBoxSplitModal({ existingSplit, onClose, onSuccess }) 
             </div>
           </div>
 
-          {/* 總金額與倍率選項 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* 總金額與調價選項 */}
+          <div className="space-y-3">
             <div className="space-y-1.5">
-              <label className="text-sm font-bold text-gray-700 dark:text-gray-300">拆團總金額 (NT$)</label>
+              <label className="text-xs font-black text-black dark:text-white uppercase">拆團總金額 (NT$)</label>
               <input
                 type="number"
                 min="0"
                 step="1"
                 value={totalAmount}
                 onChange={(e) => setTotalAmount(e.target.value)}
-                placeholder="例如：1200"
-                className="w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-gray-800 dark:text-gray-100 placeholder:text-gray-400 font-bold"
+                placeholder="例如：1200 (會依品項金額或總價自動平攤)"
+                className="w-full bg-white dark:bg-gray-800 border-4 border-black rounded-none px-4 py-2.5 text-sm font-mono font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] focus:outline-none text-black dark:text-white placeholder:text-gray-400"
               />
             </div>
 
-            <div className="space-y-1.5 flex flex-col justify-end">
-              <label 
-                className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  checked={useMultiplier}
-                  onChange={(e) => setUseMultiplier(e.target.checked)}
-                  className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary"
-                />
-                <div className="flex flex-col">
-                  <span className="text-xs font-bold text-gray-800 dark:text-gray-200">是否以倍率計算單價</span>
-                  <span className="text-[10px] text-gray-400 font-normal">勾選後可用倍率 (如1.2x/0.8x) 調整冷熱門單價</span>
-                </div>
-              </label>
+            {/* 品項熱度調價選擇 (單選) */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-black text-black dark:text-white uppercase">品項熱度調價設定 (單選)</label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPriceAdjustType('none')}
+                  className={`p-2.5 border-2 border-black font-black text-xs transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                    priceAdjustType === 'none'
+                      ? 'bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="text-sm">🚫</span>
+                  <span className="font-bold mt-0.5">不調價</span>
+                  <span className="text-[9px] font-mono text-gray-500 font-normal">均價平攤</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceAdjustType('normal')}
+                  className={`p-2.5 border-2 border-black font-black text-xs transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                    priceAdjustType === 'normal'
+                      ? 'bg-[#FFE66D] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="text-sm">⚖️</span>
+                  <span className="font-bold mt-0.5">普通調價</span>
+                  <span className="text-[9px] font-mono text-gray-700 font-normal">小階梯 (40.35.30)</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPriceAdjustType('aggressive')}
+                  className={`p-2.5 border-2 border-black font-black text-xs transition-all flex flex-col items-center justify-center text-center cursor-pointer ${
+                    priceAdjustType === 'aggressive'
+                      ? 'bg-[#FF6B6B] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                      : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="text-sm">🔥</span>
+                  <span className="font-bold mt-0.5">暴力調價</span>
+                  <span className="text-[9px] font-mono text-white/90 font-normal">大階梯 (80.25.10)</span>
+                </button>
+              </div>
             </div>
           </div>
 

@@ -234,12 +234,60 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const itemCount = items.length || 1;
   const unitSecondShipping = totalSecondShipping > 0 ? Math.round(totalSecondShipping / itemCount) : 0;
 
-  // 算式計算：預設平均單價 (拆團總金額 / 種類總數量或種類種類數)
-  const totalBoxAmount = Number(split?.total_amount) || 0;
-  const totalItemSlots = items.length || 1;
-  const averageUnitPrice = totalBoxAmount > 0 ? totalBoxAmount / totalItemSlots : 0;
+  // 熱度調價模式 ('none' | 'normal' | 'aggressive')
+  const priceAdjustType = split?.price_adjust_type || 'none';
 
-  // 計算特定品項種類單價
+  // 算式計算：基準平均單價 (拆團總金額 / 種類總數量)
+  const totalBoxAmount = Number(split?.total_amount) || 0;
+  const totalStock = items.reduce((sum, i) => sum + (Number(i.stock) || 1), 0) || 1;
+  const baseAvg = totalBoxAmount > 0 ? (totalBoxAmount / totalStock) : 50;
+
+  // 熱度調價階梯映射表
+  const adjustedPriceMap = React.useMemo(() => {
+    if (!items || items.length === 0) return new Map();
+    const map = new Map();
+    const N = items.length;
+
+    if (priceAdjustType === 'none') {
+      items.forEach(item => map.set(item.id, Math.round(baseAvg)));
+      return map;
+    }
+
+    if (priceAdjustType === 'normal') {
+      // 普通調價：溫和階梯差價 (例如：40, 35, 30, 25, 20)
+      const step = Math.max(5, Math.round(baseAvg * 0.15));
+      const rawPrices = items.map((item, idx) => {
+        const rankOffset = ((N - 1) / 2) - idx;
+        return Math.max(5, baseAvg + rankOffset * step);
+      });
+      const rawSum = rawPrices.reduce((sum, p, idx) => sum + p * (Number(items[idx].stock) || 1), 0);
+      const scale = (totalBoxAmount > 0 && rawSum > 0) ? (totalBoxAmount / rawSum) : 1;
+      items.forEach((item, idx) => {
+        map.set(item.id, Math.round(rawPrices[idx] * scale));
+      });
+      return map;
+    }
+
+    if (priceAdjustType === 'aggressive') {
+      // 暴力調價：熱門陡峭調高，冷門大幅調低 (例如：80, 25, 25, 15, 10)
+      const rawPrices = items.map((item, idx) => {
+        if (idx === 0) return baseAvg * 2.5; // 熱門首選
+        if (idx === 1 && N >= 4) return baseAvg * 0.9;
+        if (idx < N - 1) return baseAvg * 0.7;
+        return Math.max(5, baseAvg * 0.35); // 冷門末尾
+      });
+      const rawSum = rawPrices.reduce((sum, p, idx) => sum + p * (Number(items[idx].stock) || 1), 0);
+      const scale = (totalBoxAmount > 0 && rawSum > 0) ? (totalBoxAmount / rawSum) : 1;
+      items.forEach((item, idx) => {
+        map.set(item.id, Math.round(rawPrices[idx] * scale));
+      });
+      return map;
+    }
+
+    return map;
+  }, [items, totalBoxAmount, priceAdjustType, baseAvg]);
+
+  // 計算特定品項種類單價 (自訂單價 > 倍率 > 熱度調價 > 均價)
   const getItemUnitPrice = (item) => {
     if (!item) return 0;
     if (item.manual_price !== undefined && item.manual_price !== null && item.manual_price !== '') {
@@ -247,9 +295,20 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     }
     if (split?.use_multiplier) {
       const mult = Number(item.price_multiplier) || 1.0;
-      return Math.round(averageUnitPrice * mult);
+      return Math.round(baseAvg * mult);
     }
-    return Math.round(averageUnitPrice);
+    return adjustedPriceMap.get(item.id) ?? Math.round(baseAvg);
+  };
+
+  // 拆團總金額：由所有品項金額加總求得
+  const calculatedTotalAmount = React.useMemo(() => {
+    if (!items || items.length === 0) return totalBoxAmount;
+    return items.reduce((sum, item) => sum + (getItemUnitPrice(item) * (Number(item.stock) || 1)), 0);
+  }, [items, totalBoxAmount, adjustedPriceMap, split?.use_multiplier]);
+
+  // 切換熱度調價模式 handler
+  const handleTogglePriceAdjust = async (type) => {
+    await db.box_splits.update(Number(splitId), { price_adjust_type: type });
   };
 
   if (!split) {
@@ -518,10 +577,67 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </div>
 
           <div className="text-right shrink-0">
-            <span className="text-[10px] font-black text-black dark:text-gray-400 block uppercase tracking-wider">拆團總金額</span>
+            <span className="text-[10px] font-black text-black dark:text-gray-400 block uppercase tracking-wider">拆團總金額 (品項加總)</span>
             <span className="text-2xl font-black text-black dark:text-white font-mono">
-              NT$ {split.total_amount ? Number(split.total_amount).toLocaleString() : '0'}
+              NT$ {calculatedTotalAmount.toLocaleString()}
             </span>
+          </div>
+        </div>
+
+        {/* 熱度調價控制與說明區塊 */}
+        <div className="pt-3 border-t-2 border-black space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="text-xs font-black text-black dark:text-white uppercase flex items-center gap-1">
+              <span>🔥</span>
+              <span>熱度調價模式：</span>
+            </span>
+
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => handleTogglePriceAdjust('none')}
+                className={`px-3 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  priceAdjustType === 'none'
+                    ? 'bg-black text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
+                }`}
+              >
+                🚫 不調價
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTogglePriceAdjust('normal')}
+                className={`px-3 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  priceAdjustType === 'normal'
+                    ? 'bg-[#FFE66D] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
+                }`}
+                title="普通調價：溫和階梯差價 (例如：40, 35, 30, 25, 20)"
+              >
+                ⚖️ 普通調價
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTogglePriceAdjust('aggressive')}
+                className={`px-3 py-1 border-2 border-black text-xs font-black transition-all cursor-pointer ${
+                  priceAdjustType === 'aggressive'
+                    ? 'bg-[#FF6B6B] text-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                    : 'bg-white text-black hover:bg-gray-100 dark:bg-gray-700 dark:text-white'
+                }`}
+                title="暴力調價：陡峭熱度差價 (例如：80, 25, 25, 15, 10)"
+              >
+                🔥 暴力調價
+              </button>
+            </div>
+          </div>
+
+          <div className="text-[11px] font-mono font-bold text-gray-700 dark:text-gray-300 flex flex-col sm:flex-row justify-between gap-1 bg-gray-50 dark:bg-gray-750 p-2 border border-black">
+            <span>
+              {priceAdjustType === 'none' && '💡 均價模式：所有品項均價平攤，無熱度差價。'}
+              {priceAdjustType === 'normal' && '💡 普通調價：小階梯熱度差價 (如 40, 35, 30, 25, 20)，熱銷調高、冷門調低，總價精準保持不變。'}
+              {priceAdjustType === 'aggressive' && '💡 暴力調價：大階梯熱度差價 (如 80, 25, 25, 15, 10)，熱銷承擔大部分金額、冷門大幅補貼降價，總價精準保持不變。'}
+            </span>
+            <span className="shrink-0 text-black dark:text-white">均價基準: NT${Math.round(baseAvg)}</span>
           </div>
         </div>
 
