@@ -223,7 +223,12 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
   useHardwareBack(true, onBack, 'box-split-detail');
 
-  // 二補總額更新 handler
+  // 拆團總金額 (T) 手動更新 handler
+  const handleUpdateTotalAmount = async (val) => {
+    const amount = Number(val) || 0;
+    await db.box_splits.update(Number(splitId), { total_amount: amount });
+  };
+
   const handleUpdateSecondShipping = async (val) => {
     const fee = Number(val) || 0;
     await db.box_splits.update(Number(splitId), { second_shipping_fee: fee });
@@ -603,11 +608,21 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             )}
           </div>
 
-          <div className="text-right shrink-0">
-            <span className="text-[10px] font-black text-black dark:text-gray-400 block uppercase tracking-wider">拆團總金額 (品項加總)</span>
-            <span className="text-2xl font-black text-black dark:text-white font-mono">
-              NT$ {calculatedTotalAmount.toLocaleString()}
-            </span>
+          <div className="text-right shrink-0 flex flex-col items-end">
+            <label className="text-[10px] font-black text-black dark:text-gray-400 block uppercase tracking-wider mb-1">
+              拆團總成本金額 (自填 T)
+            </label>
+            <div className="flex items-center gap-1">
+              <span className="font-black text-sm text-black dark:text-white">NT$</span>
+              <input
+                type="number"
+                min="0"
+                value={split.total_amount ?? ''}
+                onChange={(e) => handleUpdateTotalAmount(e.target.value)}
+                placeholder="(自填金額)"
+                className="w-36 bg-white dark:bg-gray-700 border-2 border-black rounded-none px-2.5 py-1 text-lg font-mono font-black text-black dark:text-white focus:outline-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-right"
+              />
+            </div>
           </div>
         </div>
 
