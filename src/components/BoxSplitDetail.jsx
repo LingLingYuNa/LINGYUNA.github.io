@@ -11,6 +11,43 @@ import { compressImage } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
 // ----------------------------------------------------------------------
+// 區域錯誤捕捉元件 (防止 Sheet 視圖崩潰造成全頁白屏)
+// ----------------------------------------------------------------------
+class LocalErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("LocalErrorBoundary caught:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-6 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-300 rounded-2xl border-2 border-red-300 text-center my-4 space-y-3">
+          <h4 className="font-black text-base">⚠️ 表格視圖繪製時發生異常</h4>
+          <p className="text-xs font-mono break-all">{this.state.error?.toString()}</p>
+          <button
+            type="button"
+            onClick={() => this.setState({ hasError: false, error: null })}
+            className="px-4 py-2 bg-red-600 text-white font-bold text-xs rounded-xl shadow-xs hover:bg-red-700 active:scale-95 transition-all"
+          >
+            重試載入
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+// ----------------------------------------------------------------------
 // 配分引擎：根據模式 (time_first, amount_first, qty_first, allin_time_first)、品項庫存 (stock)
 // 以及「無 A 則 Pass」條件進行多輪疊代配分解算
 // ----------------------------------------------------------------------
@@ -19,8 +56,8 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
   const allocatedMap = new Map(); // participantId -> allocatedQty
   const passTriggeredSet = new Set(); // participantId -> boolean (是否因無 A 則 Pass 條件被取消喊單)
 
-  const safeItems = Array.isArray(items) ? items : [];
-  const safeParticipants = Array.isArray(participants) ? participants : [];
+  const safeItems = Array.isArray(items) ? items.filter(Boolean) : [];
+  const safeParticipants = Array.isArray(participants) ? participants.filter(Boolean) : [];
 
   let activeParticipants = [...safeParticipants];
 
@@ -31,16 +68,16 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
     const buyerTotalQty = new Map();
 
     activeParticipants.forEach(p => {
-      if (!p) return;
+      if (!p || !p.buyer_name) return;
       const item = safeItems.find(i => i && i.id === p.item_id);
       if (item && typeof getItemUnitPrice === 'function') {
         const uPrice = getItemUnitPrice(item);
         const stock = Number(item.stock) || 1;
         const singleUnitPrice = stock > 0 ? (uPrice / stock) : uPrice;
-        const spend = Math.round(singleUnitPrice * (p.qty || 1));
+        const spend = Math.round(singleUnitPrice * (Number(p.qty) || 1));
 
         buyerTotalSpend.set(p.buyer_name, (buyerTotalSpend.get(p.buyer_name) || 0) + spend);
-        buyerTotalQty.set(p.buyer_name, (buyerTotalQty.get(p.buyer_name) || 0) + (p.qty || 1));
+        buyerTotalQty.set(p.buyer_name, (buyerTotalQty.get(p.buyer_name) || 0) + (Number(p.qty) || 1));
       }
     });
 
@@ -56,35 +93,42 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
       let itemParts = activeParticipants.filter(p => p && p.item_id === item.id);
 
       itemParts.sort((a, b) => {
+        if (!a || !b) return 0;
+        const idA = Number(a.id) || 0;
+        const idB = Number(b.id) || 0;
+        const bNameA = a.buyer_name || '';
+        const bNameB = b.buyer_name || '';
+
         if (mode === 'allin_time_first') {
           if (a.is_allin && !b.is_allin) return -1;
           if (!a.is_allin && b.is_allin) return 1;
-          const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
-          const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+          const spendA = buyerTotalSpend.get(bNameA) || 0;
+          const spendB = buyerTotalSpend.get(bNameB) || 0;
           if (spendB !== spendA) return spendB - spendA;
-          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (idA - idB);
         } else if (mode === 'amount_first') {
-          const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
-          const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+          const spendA = buyerTotalSpend.get(bNameA) || 0;
+          const spendB = buyerTotalSpend.get(bNameB) || 0;
           if (spendB !== spendA) return spendB - spendA;
-          const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
-          const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
+          const qtyA = buyerTotalQty.get(bNameA) || 0;
+          const qtyB = buyerTotalQty.get(bNameB) || 0;
           if (qtyB !== qtyA) return qtyB - qtyA;
-          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (idA - idB);
         } else if (mode === 'qty_first') {
-          const qtyA = buyerTotalQty.get(a.buyer_name) || 0;
-          const qtyB = buyerTotalQty.get(b.buyer_name) || 0;
+          const qtyA = buyerTotalQty.get(bNameA) || 0;
+          const qtyB = buyerTotalQty.get(bNameB) || 0;
           if (qtyB !== qtyA) return qtyB - qtyA;
-          const spendA = buyerTotalSpend.get(a.buyer_name) || 0;
-          const spendB = buyerTotalSpend.get(b.buyer_name) || 0;
+          const spendA = buyerTotalSpend.get(bNameA) || 0;
+          const spendB = buyerTotalSpend.get(bNameB) || 0;
           if (spendB !== spendA) return spendB - spendA;
-          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (idA - idB);
         } else {
-          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (a.id - b.id);
+          return (a.timestamp || a.created_at || '').localeCompare(b.timestamp || b.created_at || '') || (idA - idB);
         }
       });
 
       itemParts.forEach(p => {
+        if (!p) return;
         if (remainingStock > 0) {
           const take = Math.min(remainingStock, Number(p.qty) || 1);
           allocatedMap.set(p.id, take);
@@ -99,22 +143,22 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
     let newlyCancelledIds = new Set();
 
     activeParticipants.forEach(p => {
-      if (p.pass_rule && p.pass_rule !== 'none' && p.pass_trigger_item_id) {
+      if (p && p.pass_rule && p.pass_rule !== 'none' && p.pass_trigger_item_id) {
         // 檢查該買家是否在「品項 A (pass_trigger_item_id)」獲得中選額度
-        const triggerClaims = activeParticipants.filter(x => x.buyer_name === p.buyer_name && x.item_id === Number(p.pass_trigger_item_id));
+        const triggerClaims = activeParticipants.filter(x => x && x.buyer_name === p.buyer_name && x.item_id === Number(p.pass_trigger_item_id));
         const totalTriggerAllocated = triggerClaims.reduce((sum, x) => sum + (allocatedMap.get(x.id) || 0), 0);
 
         if (triggerClaims.length > 0 && totalTriggerAllocated === 0) {
           // 條件成立：買家未中選品項 A！執行 Pass
           if (p.pass_rule === 'pass_all') {
             // 忽略該買家在全團的所有喊單
-            activeParticipants.filter(x => x.buyer_name === p.buyer_name).forEach(x => {
+            activeParticipants.filter(x => x && x.buyer_name === p.buyer_name).forEach(x => {
               newlyCancelledIds.add(x.id);
               passTriggeredSet.add(x.id);
             });
           } else if (p.pass_rule === 'pass_item' && p.pass_target_item_id) {
             // 僅忽略該買家在特定品項 B (pass_target_item_id) 的喊單
-            activeParticipants.filter(x => x.buyer_name === p.buyer_name && x.item_id === Number(p.pass_target_item_id)).forEach(x => {
+            activeParticipants.filter(x => x && x.buyer_name === p.buyer_name && x.item_id === Number(p.pass_target_item_id)).forEach(x => {
               newlyCancelledIds.add(x.id);
               passTriggeredSet.add(x.id);
             });
@@ -128,12 +172,12 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
     }
 
     // 將被 Pass 的喊單剔除後進行下一輪重新配分
-    activeParticipants = activeParticipants.filter(p => !newlyCancelledIds.has(p.id));
+    activeParticipants = activeParticipants.filter(p => p && !newlyCancelledIds.has(p.id));
   }
 
   // 確保未在配分表中的原始參團紀錄都設為 0
   safeParticipants.forEach(p => {
-    if (!allocatedMap.has(p.id)) {
+    if (p && p.id != null && !allocatedMap.has(p.id)) {
       allocatedMap.set(p.id, 0);
     }
   });
@@ -585,31 +629,33 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
       {viewMode === 'sheet' ? (
         /* Sheet 表格試算表視圖 */
-        <BoxSplitSheetView
-          split={split}
-          items={items || []}
-          participants={participants || []}
-          allocatedMap={allocatedMap || new Map()}
-          passTriggeredSet={passTriggeredSet || new Set()}
-          getItemUnitPrice={getItemUnitPrice}
-          unitSecondShipping={unitSecondShipping || 0}
-          onEditItem={(item) => {
-            setEditingItem(item);
-            setIsAddItemOpen(true);
-          }}
-          onDeleteItem={handleDeleteItem}
-          onAddParticipant={(itemId) => {
-            setActiveItemIdForParticipant(itemId);
-            setIsAddParticipantOpen(true);
-          }}
-          onEditParticipant={(p, itemId) => {
-            setEditingParticipant(p);
-            setActiveItemIdForParticipant(itemId);
-            setIsAddParticipantOpen(true);
-          }}
-          onDeleteParticipant={handleDeleteParticipant}
-          onCopyReconciliation={handleCopyBuyerBill}
-        />
+        <LocalErrorBoundary>
+          <BoxSplitSheetView
+            split={split}
+            items={items || []}
+            participants={participants || []}
+            allocatedMap={allocatedMap || new Map()}
+            passTriggeredSet={passTriggeredSet || new Set()}
+            getItemUnitPrice={getItemUnitPrice}
+            unitSecondShipping={unitSecondShipping || 0}
+            onEditItem={(item) => {
+              setEditingItem(item);
+              setIsAddItemOpen(true);
+            }}
+            onDeleteItem={handleDeleteItem}
+            onAddParticipant={(itemId) => {
+              setActiveItemIdForParticipant(itemId);
+              setIsAddParticipantOpen(true);
+            }}
+            onEditParticipant={(p, itemId) => {
+              setEditingParticipant(p);
+              setActiveItemIdForParticipant(itemId);
+              setIsAddParticipantOpen(true);
+            }}
+            onDeleteParticipant={handleDeleteParticipant}
+            onCopyReconciliation={handleCopyBuyerBill}
+          />
+        </LocalErrorBoundary>
       ) : (
         /* 卡片視圖 */
         <div className="space-y-4">
