@@ -252,9 +252,10 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
           >
             &lt;
           </button>
-          <div className="relative flex items-center justify-center gap-1.5 cursor-pointer py-1 px-3 bg-[#4ECDC4]/20 border-2 border-black text-center min-w-0">
-            <span className="font-mono font-black text-black dark:text-white text-sm tracking-wide whitespace-nowrap text-center">
-              {selectedMonth.getFullYear()} 年 {selectedMonth.getMonth() + 1} 月
+          <div className="relative flex flex-col items-center justify-center cursor-pointer py-1 px-2.5 bg-[#4ECDC4]/20 border-2 border-black text-center min-w-0 flex-1">
+            <span className="font-mono font-black text-black dark:text-white text-sm tracking-wide text-center leading-tight block w-full">
+              <span className="inline-block sm:inline">{selectedMonth.getFullYear()} 年 </span>
+              <span className="inline-block sm:inline">{selectedMonth.getMonth() + 1} 月</span>
             </span>
             <input 
               type="month" 
