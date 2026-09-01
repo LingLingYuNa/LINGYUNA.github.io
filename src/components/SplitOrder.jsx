@@ -43,33 +43,33 @@ export default function SplitOrder() {
   const finalTwdFee = sharedForeignFee * er;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#121212]">
       {/* 頂部功能切換選項卡 (Sticky Sub-Tab) */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-150 dark:border-gray-800 sticky top-0 z-20 shadow-2xs">
-        <div className="max-w-4xl mx-auto px-4 flex justify-center">
-          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 my-2 rounded-2xl w-full max-w-md">
+      <div className="bg-[#FAF8F5] dark:bg-[#121212] border-b-4 border-black sticky top-0 z-20">
+        <div className="max-w-4xl mx-auto px-4 flex justify-center py-2">
+          <div className="flex bg-white dark:bg-gray-800 p-1 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] w-full max-w-md">
             <button
               type="button"
               onClick={() => setActiveSubTab('split_box')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 px-3 text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer uppercase ${
                 activeSubTab === 'split_box'
-                  ? 'bg-white dark:bg-gray-700 text-purple-700 dark:text-purple-300 shadow-xs'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  ? 'bg-[#FFE66D] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                  : 'text-black dark:text-white hover:bg-[#4ECDC4]/20'
               }`}
             >
-              <Package size={15} />
+              <Package size={15} strokeWidth={2.5} />
               <span>📦 揪拆團小助手</span>
             </button>
             <button
               type="button"
               onClick={() => setActiveSubTab('calculator')}
-              className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`flex-1 py-2 px-3 text-xs font-black transition-all flex items-center justify-center gap-1.5 cursor-pointer uppercase ${
                 activeSubTab === 'calculator'
-                  ? 'bg-white dark:bg-gray-700 text-purple-700 dark:text-purple-300 shadow-xs'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                  ? 'bg-[#4ECDC4] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]'
+                  : 'text-black dark:text-white hover:bg-[#FFE66D]/20'
               }`}
             >
-              <Calculator size={15} />
+              <Calculator size={15} strokeWidth={2.5} />
               <span>🧮 試算機</span>
             </button>
           </div>
@@ -80,7 +80,7 @@ export default function SplitOrder() {
       {activeSubTab === 'split_box' ? (
         <BoxSplitManager />
       ) : (
-        <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32">
+        <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 pb-32 bg-[#FAF8F5] dark:bg-[#121212]">
           {/* 標題區 */}
           <header className="px-1 mt-2 mb-4">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">🧮 專屬計算機</h1>

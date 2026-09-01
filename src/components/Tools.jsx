@@ -345,7 +345,7 @@ export default function Tools() {
 
 
   return (
-    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-[#FAF8F5] dark:bg-gray-900 min-h-screen text-black dark:text-white transition-colors duration-200 pb-32">
+    <div className="p-4 space-y-6 max-w-4xl mx-auto md:py-8 bg-[#FAF8F5] dark:bg-[#121212] min-h-screen text-black dark:text-white transition-colors duration-200 pb-32">
       {/* 標題區 */}
       <header className="px-1 mt-2 mb-4">
         <h1 className="text-3xl font-black uppercase tracking-wider text-black dark:text-white">系統工具</h1>

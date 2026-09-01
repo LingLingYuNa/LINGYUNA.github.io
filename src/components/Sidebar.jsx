@@ -10,7 +10,7 @@ export default function Sidebar({ currentTab, onTabChange }) {
   ];
 
   return (
-    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 bg-white dark:bg-gray-900 border-r-4 border-black dark:border-white transition-colors duration-200 z-30">
+    <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 md:left-0 bg-[#FAF8F5] dark:bg-[#121212] border-r-4 border-black dark:border-white transition-colors duration-200 z-30">
       {/* LOGO 區：俏皮野獸派大膽塊面與硬陰影 */}
       <div className="px-5 py-5 border-b-4 border-black dark:border-white shrink-0 bg-[#FFE66D] dark:bg-gray-800">
         <div className="flex items-center gap-3 bg-[#FF6B6B] text-black p-3 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rotate-[-1.5deg]">
