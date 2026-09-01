@@ -1,104 +1,113 @@
-# 俏皮野獸派 (Neo-Brutalist Playful) 設計規範
+# 俏皮野獸派 (Neo-Brutalist Playful) 完整設計系統與 Hard Prompt 規範
 
 style_slug: `neo-brutalist-playful`
+style_source: `/styles/neo-brutalist-playful`
 
 ---
 
 ## 📌 什麼時候使用
-- 在前端開發、組件重構或與 AI 協作時，需要統一團隊對「俏皮野獸派」風格的設計認知。
-- 交付 UI 任務前，明確限定顏色、邊框、陰影、動效與可訪問性 (Accessibility) 邊界。
-- 進行 Code Review 或 UI 設計審核時，判斷產出的介面是否符合此設計語言。
+- 當希望 AI 或前端團隊**嚴格按風格規則生成/重構代碼**時使用。它是生產介面最穩定的預設標準。
+- 把任務交給 AI 開發前，用此規範確定顏色、排版、邊框、陰影、動效與無障礙 (Accessibility) 邊界。
+- 審核產出結果時，依「絕對禁止項」與「自檢清單」確認沒有風格漂移 (Style Drift)。
 
 ---
 
-## 💡 使用指引
-1. **概覽與視覺核心**：理解俏皮野獸派的核心特徵（硬邊框、無圓角、大膽對比、微旋轉與豐富色彩）。
-2. **組件與布局邊界**：將布局與組件規則作為 Tailwind CSS 實作邊界。
-3. **自檢清單**：上線或提交 PR 前，按「交付檢查」逐條確認。
+## 🎨 概覽與設計理念
+
+Neo-Brutalist Playful（俏皮野獸派）是原版 Neo-Brutalist 的活潑變體。在保持純黑粗邊框、無圓角的硬質幾何結構基礎上，加入：
+- 傾斜微旋轉 (`rotate-[-2deg]`, `rotate-[1deg]`)
+- 多彩色塊與彩色硬影碰撞 (珊瑚紅 `#FF6B6B`、薄荷青 `#4ECDC4`、明黃 `#FFE66D` 等)
+- 具備玩具回彈感的微交互與動效 (Toy Spring, Joyful Press)
+- Lucide React 向量圖標點綴與幾何圖形裝飾
 
 ---
 
-## 🎨 概覽與設計意圖
-Neo-Brutalist Playful（俏皮野獸派）是傳統新野獸派 (Neo-Brutalism) 的活潑變體。在保留**純黑硬邊框 (border-4 border-black)**與**零圓角 (rounded-none)**的高強度幾何結構基礎上，加入多款鮮艷強調色、微幅傾斜旋轉、Lucide 圖標裝飾與高回饋感的微交互，特別適合年輕化、充滿活力與彰顯特性的數位產品。
+## 🚫 [FORBIDDEN] 絕對禁止項 (違規即重寫)
+
+| 禁止項目 | 說明與替代方案 |
+| :--- | :--- |
+| **禁止圓角** | 嚴禁 `rounded-lg`, `rounded-xl`, `rounded-2xl`, `rounded-full` 等。**統一強制 `rounded-none`** |
+| **禁止模糊陰影** | 嚴禁 `shadow-sm`, `shadow`, `shadow-md`, `shadow-lg` 等模糊陰影。**僅允許硬邊實體陰影 (Hard Cut Shadows)** |
+| **禁止漸變色** | 嚴禁 `bg-gradient-to-r`, `bg-gradient-to-b` 或漸變文字。**一律使用高飽和對比大塊純色** |
+| **禁止旋轉超過 3 度** | 元素旋轉僅限 `-2deg` 至 `+1deg` 範圍，不可過度傾斜 |
+| **禁止使用 Emoji 字符** | 嚴禁用 Emoji 做為 UI 圖標或裝飾。**一律使用 Lucide React 向量線性圖標** |
+| **禁止柔和灰暗色** | 嚴禁 `text-gray-300`, `text-gray-400`, `text-gray-500`, `bg-gray-50`, `bg-gray-100` 等沉悶中性灰 |
+| **禁止細弱字體** | 嚴禁 `font-light`, `font-thin`。標題強制 `font-black` 粗體大寫 |
+| **禁止玻璃態** | 嚴禁 `backdrop-blur` 模糊玻璃效果 |
 
 ---
 
-## 🌈 視覺系統 (Visual System)
+## 📐 Token 字典 (精確 Class 映射)
 
-- **主色 (Primary)**: `#000000` (純黑)
-- **底色/次色 (Secondary)**: `#FFFFFF` (純白)
-- **點綴強調色 (Accents)**:
-  - 珊瑚紅: `#FF6B6B`
-  - 薄荷綠: `#4ECDC4`
-  - 明亮黃: `#FFE66D`
-  - 青天綠: `#95E1D3`
-  - 蜜桃粉: `#F38181`
-- **視覺特徵標籤 (Signature Cues)**:
-  `俏皮野獸派` | `高色彩飽和度` | `傾斜旋轉` | `幾何硬質` | `粗黑邊框` | `實體陰影`
+### 1. 邊框 (Borders)
+- **邊框寬度**: `border-4`
+- **邊框顏色**: `border-black` (#000000)
+- **圓角**: `rounded-none`
 
----
+### 2. 硬陰影 (Hard Cut Shadows)
+- **小陰影**: `shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`
+- **中陰影**: `shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]`
+- **大陰影**: `shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]`
+- **珊瑚紅硬影**: `shadow-[6px_6px_0px_0px_rgba(255,107,107,1)]`
+- **薄荷青硬影**: `shadow-[6px_6px_0px_0px_rgba(78,205,196,1)]`
+- **明黃硬影**: `shadow-[6px_6px_0px_0px_rgba(255,230,109,1)]`
+- **懸停態**: `hover:shadow-none`
+- **聚焦態**: `focus:shadow-[6px_6px_0px_0px_rgba(78,205,196,1)]`
 
-## 📐 布局規則 (Layout Rules)
+### 3. 交互與動效 (Interactions & Motion)
+- **Toy Spring (玩具彈簧感)**: `transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]`
+- **Tilt Exaggeration (傾斜反轉)**: 初始 `rotate-[-1.5deg]`，懸停時切換至 `hover:rotate-[1.5deg]`
+- **悬停位移**: `hover:translate-x-[3px] hover:translate-y-[3px]` 或 `hover:-translate-y-2`
+- **懸停縮放**: `hover:scale-105`
+- **Joyful Press (壓扁按壓態)**: `:active` 狀態時 `active:scale-95 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none`
 
-| 項目 | Tailwind CSS Class 規範 | 說明 |
-| :--- | :--- | :--- |
-| **區塊垂直節奏** | `py-12 md:py-20 lg:py-28` | 大邊距與大呼吸感 |
-| **容器水平內邊距** | `px-4 md:px-8 lg:px-12` | 響應式容器邊距 |
-| **卡片內邊距** | `p-4 md:p-6` | 清晰內框間距 |
-| **預設元件間距** | `gap-4 md:gap-6` | 硬質網格分隔 |
-| **圓角規範** | `rounded-none` | **嚴格禁止任何圓角** |
-
----
-
-## 🧩 組件實作規則 (Component Rules)
-
-1. **圓角**：一律強制 `rounded-none`。
-2. **邊框**：使用顯眼的粗純黑邊框 `border-4 border-black`。
-3. **微旋轉 (Tilt)**：卡片或標籤可加上輕微傾斜，如 `rotate-[-2deg]` 或 `rotate-[1deg]`。
-4. **色彩應用**：區塊與按鈕搭配大膽的點綴色（如珊瑚紅 `#FF6B6B` 或明亮黃 `#FFE66D`）。
-5. **懸停微效 (Hover)**：
-   - 實體陰影平移：`hover:translate-x-[3px] hover:translate-y-[3px]`
-   - 放大效果：`hover:scale-105`
-6. **實體硬陰影 (Brutalist Shadow)**：
-   - 純黑硬陰影：`shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`
-   - 彩色硬陰影：`shadow-[6px_6px_0px_0px_rgba(255,107,107,1)]` 或 `shadow-[6px_6px_0px_0px_rgba(78,205,196,1)]`
-7. **圖標裝飾**：使用風格統一的向量圖標（如 Lucide React），增加視覺直覺度。
+### 4. 色彩角色 (Color Roles)
+- **背景主色**: `bg-white` (純白)
+- **背景輔色**: `bg-black` (純黑)
+- **點綴撞色**:
+  - 珊瑚紅: `bg-[#ff6b6b]` (`#FF6B6B`)
+  - 薄荷青: `bg-[#4ecdc4]` (`#4ECDC4`)
+  - 明亮黃: `bg-[#ffe66d]` (`#FFE66D`)
+  - 青天綠: `bg-[#95e1d3]` (`#95E1D3`)
+  - 蜜桃粉: `bg-[#f38181]` (`#F38181`)
+- **文字主色**: `text-black`
+- **文字輔色**: `text-white`
+- **文字弱化色**: `text-gray-700`
 
 ---
 
-## ⚡ 交互與動效 (Interactions & Motion)
+## 🧩 [REQUIRED] 必須包含的組件範本
 
-- **過渡動效 (Transition)**: `transition-all duration-300`
-- **懸停態 (Hover)**: `hover:translate-x-[3px] hover:translate-y-[3px]`
-- **按下態 (Active)**: `active:translate-x-[4px] active:translate-y-[4px]`
-- **聚焦態 (Focus)**: `focus:outline-none focus:shadow-[6px_6px_0px_0px_rgba(78,205,196,1)]`
-- **動效原則**：動效必須敏捷有反饋，嚴禁引發周圍布局大幅位移或奪走使用者焦點。
+### 1. 經典按鈕 (Button)
+```html
+<button class="rounded-none border-4 border-black font-black bg-[#ff6b6b] text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] active:scale-95 active:translate-x-[4px] active:translate-y-[4px] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]">
+  點擊行動
+</button>
+```
 
----
+### 2. 卡片 (Card)
+```html
+<div class="rounded-none border-4 border-black bg-white p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rotate-[-1deg] hover:rotate-[1deg] transition-all duration-300">
+  <h3 class="font-black uppercase text-xl md:text-2xl text-black">卡片標題</h3>
+  <p class="font-mono text-sm md:text-base text-gray-700 mt-2">卡片內容說明...</p>
+</div>
+```
 
-## ♿ 可訪問性 (Accessibility & Compliance)
-
-- **對比度要求**：文字與背景色對比度須嚴格維持在 **WCAG AA 或更高**（黑字搭亮色背景）。
-- **鍵盤焦點**：每個可互動元素（按鈕、輸入框、連結）均須保留清晰的高對比 Focus 實體框。
-- **觸控目標**：行動端點擊範圍不得小於 `44px x 44px`。
-- **動效相容**：尊重系統 `prefers-reduced-motion` 設定。
-
----
-
-## 🚫 嚴格禁止項 (Forbidden Practices)
-
-- ✕ **禁止使用任何圓角** (`rounded-lg`, `rounded-full` 等一律禁止，統一為 `rounded-none`)
-- ✕ **禁止使用柔和/模糊陰影** (`shadow-md`, `shadow-lg`, `blur-*` 一律禁止，僅允許 Hard Cut / Drop Solid Shadow)
-- ✕ **禁止使用漸變色** (`bg-gradient-*` 一律禁止，使用大塊純色撞色)
-- ✕ **禁止旋轉超過 3 度** (旋轉角度限 `rotate-[-2deg]` 至 `rotate-[2deg]`)
-- ✕ **禁止使用 Emoji 替代符號字符做為圖標** (統一使用 Lucide 向量圖標)
-- ✕ **禁止使用柔和低對比灰色** (避免灰暗無生氣的調性)
+### 3. 輸入框 (Input)
+```html
+<input 
+  class="w-full rounded-none border-4 border-black bg-white font-mono px-4 py-2.5 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:outline-none focus:shadow-[6px_6px_0px_0px_rgba(78,205,196,1)] transition-all duration-200 text-black placeholder:text-gray-500 font-bold" 
+  placeholder="請輸入文字..." 
+/>
+```
 
 ---
 
-## 🔍 交付檢查清單 (Delivery Checklist)
+## 🔍 [CHECKLIST] 交付前自檢清單
 
-- [ ] 頁面整體視覺呈現高度識別的「俏皮野獸派」大膽撞色與硬朗風格。
-- [ ] 按鈕、卡片、輸入框、空狀態與彈窗全套組件共享同一套設計語言。
-- [ ] 檢查沒有任何通用組件庫預設的「軟圓角」或「模糊陰影」殘留。
-- [ ] 鍵盤 Focus 態與 Hover 懸停態互動反饋明確順暢。
+- [ ] **無圓角確認**：全頁面沒有出現任何 `rounded-lg`, `rounded-full` 等軟圓角，統一 `rounded-none`。
+- [ ] **無模糊陰影**：沒有使用 `shadow-md`, `shadow-lg` 等模糊陰影，全為 4px/6px/8px 實體硬陰影。
+- [ ] **無漸變背景**：全頁面無 `bg-gradient-*`。
+- [ ] **無過度旋轉**：元素傾斜未超過 3 度（保持在 `-2deg` ~ `+1deg`）。
+- [ ] **無 Emoji 做圖標**：介面圖標皆採用 Lucide React 向量圖標。
+- [ ] **高對比度可訪問性**：正文文字對比度符合 WCAG AA (≥4.5:1)，且 Focus 態保留清熱硬框。
