@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { 
-  ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, Pencil, Sparkles, 
+  ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Pencil, Sparkles, 
   Copy, Check, UserPlus, DollarSign, Calculator, Image as ImageIcon, Camera, X,
   Table, LayoutGrid, Download, Settings, Package
 } from 'lucide-react';
@@ -193,6 +193,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const [editingParticipant, setEditingParticipant] = useState(null);
   const [activeItemIdForParticipant, setActiveItemIdForParticipant] = useState(null);
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
+  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
   const [copiedBuyer, setCopiedBuyer] = useState(null);
 
   // 視圖切換狀態：電腦版預設 'sheet' (Sheet 表格試算表視圖)，手機版預設 'card' (卡片視圖)
@@ -411,6 +412,23 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     await db.transaction('rw', db.box_split_items, async () => {
       await db.box_split_items.update(current.id, { sort_order: next.sort_order });
       await db.box_split_items.update(next.id, { sort_order: current.sort_order });
+    });
+  };
+
+  // 直接設定特定品項的熱度排名 (1-indexed)
+  const handleSetItemRank = async (currentIndex, targetRank) => {
+    const newRank = Math.max(1, Math.min(items.length, Number(targetRank) || 1));
+    const targetIndex = newRank - 1;
+    if (currentIndex === targetIndex) return;
+
+    const list = [...items];
+    const [movedItem] = list.splice(currentIndex, 1);
+    list.splice(targetIndex, 0, movedItem);
+
+    await db.transaction('rw', db.box_split_items, async () => {
+      for (let idx = 0; idx < list.length; idx++) {
+        await db.box_split_items.update(list[idx].id, { sort_order: idx + 1 });
+      }
     });
   };
 
@@ -734,6 +752,14 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         <div className="flex items-center gap-2 flex-wrap">
           <h2 className="text-lg font-black text-gray-900 dark:text-gray-100">品項種類清單 ({items.length})</h2>
           <button
+            onClick={() => setIsReorderModalOpen(true)}
+            className="flex items-center gap-1 text-[11px] font-black text-black bg-[#FFE66D] hover:bg-amber-300 border-2 border-black px-2.5 py-1 rounded-none shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95 cursor-pointer"
+            title="開啟自定義排序面板，調整各品項熱度高低"
+          >
+            <ArrowUpDown size={13} strokeWidth={2.5} />
+            <span>⇅ 自定義熱度排序</span>
+          </button>
+          <button
             onClick={handleAutoSortByLibrary}
             className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-950/40 hover:bg-purple-200 border border-purple-300 dark:border-purple-800 px-2.5 py-1 rounded-none transition-all active:scale-95"
             title="點擊依全域角色排序庫自動排列品項"
@@ -810,6 +836,9 @@ export default function BoxSplitDetail({ splitId, onBack }) {
               setIsAddItemOpen(true);
             }}
             onDeleteItem={handleDeleteItem}
+            onMoveItemUp={handleMoveItemUp}
+            onMoveItemDown={handleMoveItemDown}
+            onSetItemRank={handleSetItemRank}
             onAddParticipant={(itemId) => {
               setActiveItemIdForParticipant(itemId);
               setIsAddParticipantOpen(true);
@@ -842,26 +871,33 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                 {/* 種類 Header */}
                 <div className="flex items-start gap-3">
                   {/* 序號與排序按鈕 */}
-                  <div className="flex flex-col items-center justify-center shrink-0">
-                    <span className="text-lg font-black text-gray-800 dark:text-gray-100 w-7 text-center">
-                      {idx + 1}
-                    </span>
-                    <div className="flex flex-col gap-0.5 mt-1">
+                  <div className="flex flex-col items-center justify-center shrink-0 bg-amber-50 dark:bg-amber-950/40 p-1 border-2 border-black">
+                    <span className="text-[9px] font-black uppercase text-gray-500">順序</span>
+                    <input
+                      type="number"
+                      min="1"
+                      max={items.length}
+                      value={idx + 1}
+                      onChange={(e) => handleSetItemRank(idx, e.target.value)}
+                      className="w-9 h-7 text-center font-mono font-black text-xs bg-white dark:bg-gray-800 text-black dark:text-white border border-black focus:outline-none"
+                      title="自訂熱度順序 (填寫數字)"
+                    />
+                    <div className="flex items-center gap-0.5 mt-1">
                       <button
                         disabled={idx === 0}
                         onClick={() => handleMoveItemUp(idx)}
-                        className="p-1 text-gray-400 hover:text-primary disabled:opacity-20 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-0.5 text-gray-500 hover:text-black dark:hover:text-white disabled:opacity-20 transition-colors cursor-pointer"
                         title="上移"
                       >
-                        <ArrowUp size={14} />
+                        <ArrowUp size={11} />
                       </button>
                       <button
                         disabled={idx === items.length - 1}
                         onClick={() => handleMoveItemDown(idx)}
-                        className="p-1 text-gray-400 hover:text-primary disabled:opacity-20 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="p-0.5 text-gray-500 hover:text-black dark:hover:text-white disabled:opacity-20 transition-colors cursor-pointer"
                         title="下移"
                       >
-                        <ArrowDown size={14} />
+                        <ArrowDown size={11} />
                       </button>
                     </div>
                   </div>
@@ -1094,6 +1130,112 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           existingSplit={split}
           onClose={() => setIsEditModalOpen(false)}
         />
+      )}
+
+      {/* 彈窗 5：自定義熱度排序 Modal */}
+      {isReorderModalOpen && (
+        <div className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#FFFDF7] dark:bg-gray-900 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] w-full max-w-lg max-h-[85vh] flex flex-col animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="p-4 bg-[#FFE66D] border-b-4 border-black flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ArrowUpDown size={20} className="stroke-[3]" />
+                <h3 className="font-black text-base text-black uppercase">自定義品項熱度排序 ({items.length})</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsReorderModalOpen(false)}
+                className="p-1 bg-white border-2 border-black hover:bg-gray-100 text-black font-black cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Subtitle / Tip */}
+            <div className="px-4 py-2 bg-white dark:bg-gray-800 border-b-2 border-black text-xs font-mono font-bold text-gray-700 dark:text-gray-300">
+              💡 順序第 1 位為【熱門角】，末位為【冷門角】。您可直接修改數字或點擊上下鈕調整熱度排名！
+            </div>
+
+            {/* List */}
+            <div className="p-4 overflow-y-auto space-y-2 flex-1">
+              {items.map((item, idx) => {
+                const uPrice = getItemUnitPrice(item);
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between gap-3 p-3 bg-white dark:bg-gray-800 border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-xs font-black text-gray-400">#</span>
+                        <input
+                          type="number"
+                          min="1"
+                          max={items.length}
+                          value={idx + 1}
+                          onChange={(e) => handleSetItemRank(idx, e.target.value)}
+                          className="w-10 h-8 text-center font-mono font-black text-sm bg-amber-100 dark:bg-amber-950/50 text-black dark:text-white border-2 border-black focus:outline-none"
+                        />
+                      </div>
+
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className="w-10 h-10 object-cover border-2 border-black shrink-0" />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-100 dark:bg-gray-700 border-2 border-black shrink-0 flex items-center justify-center text-gray-400">
+                          <ImageIcon size={16} />
+                        </div>
+                      )}
+
+                      <div className="min-w-0">
+                        <span className="font-black text-sm text-black dark:text-white truncate block">{item.name}</span>
+                        <span className="text-xs font-mono font-bold text-purple-700 dark:text-purple-300">NT$ {uPrice}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        disabled={idx === 0}
+                        onClick={() => handleMoveItemUp(idx)}
+                        className="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 border-2 border-black text-xs font-black hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 cursor-pointer"
+                        title="往上移"
+                      >
+                        ▲ 上移
+                      </button>
+                      <button
+                        type="button"
+                        disabled={idx === items.length - 1}
+                        onClick={() => handleMoveItemDown(idx)}
+                        className="px-2.5 py-1 bg-gray-100 dark:bg-gray-700 border-2 border-black text-xs font-black hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30 cursor-pointer"
+                        title="往下移"
+                      >
+                        ▼ 下移
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 bg-gray-100 dark:bg-gray-800 border-t-4 border-black flex justify-between items-center">
+              <button
+                type="button"
+                onClick={handleAutoSortByLibrary}
+                className="px-3 py-1.5 bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300 border-2 border-black font-black text-xs hover:bg-purple-200 cursor-pointer"
+              >
+                ✨ 依全域角色庫自動排序
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsReorderModalOpen(false)}
+                className="px-5 py-1.5 bg-[#4ECDC4] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] font-black text-xs hover:bg-[#3dbdb4] cursor-pointer"
+              >
+                完成排序
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -1784,6 +1926,9 @@ function BoxSplitSheetView({
   unitSecondShipping = 0, 
   onEditItem, 
   onDeleteItem, 
+  onMoveItemUp,
+  onMoveItemDown,
+  onSetItemRank,
   onAddParticipant, 
   onEditParticipant, 
   onDeleteParticipant, 
@@ -1837,7 +1982,7 @@ function BoxSplitSheetView({
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-b border-gray-200 dark:border-gray-700 font-black whitespace-nowrap">
-                <th className="p-3 w-10 text-center">#</th>
+                <th className="p-3 w-14 text-center">熱度順序</th>
                 <th className="p-3 w-14 text-center">圖片</th>
                 <th className="p-3 min-w-[120px]">品項種類</th>
                 <th className="p-3 text-center w-16">庫存</th>
@@ -1860,7 +2005,37 @@ function BoxSplitSheetView({
 
                   return (
                     <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
-                      <td className="p-3 text-center font-bold text-gray-500">{idx + 1}</td>
+                      <td className="p-3 text-center font-bold text-gray-500">
+                        <div className="flex items-center justify-center gap-1">
+                          <input
+                            type="number"
+                            min="1"
+                            max={safeItems.length}
+                            value={idx + 1}
+                            onChange={(e) => onSetItemRank && onSetItemRank(idx, e.target.value)}
+                            className="w-7 h-6 text-center font-mono font-black text-xs bg-amber-50 dark:bg-amber-950/40 text-black dark:text-white border border-black focus:outline-none"
+                            title="填寫數字自訂熱度順序"
+                          />
+                          <div className="flex flex-col gap-0.5">
+                            <button
+                              disabled={idx === 0}
+                              onClick={() => onMoveItemUp && onMoveItemUp(idx)}
+                              className="p-0.5 text-gray-400 hover:text-black dark:hover:text-white disabled:opacity-20 transition-colors cursor-pointer"
+                              title="順序上移"
+                            >
+                              <ArrowUp size={11} />
+                            </button>
+                            <button
+                              disabled={idx === safeItems.length - 1}
+                              onClick={() => onMoveItemDown && onMoveItemDown(idx)}
+                              className="p-0.5 text-gray-400 hover:text-black dark:hover:text-white disabled:opacity-20 transition-colors cursor-pointer"
+                              title="順序下移"
+                            >
+                              <ArrowDown size={11} />
+                            </button>
+                          </div>
+                        </div>
+                      </td>
                       <td className="p-3 text-center">
                         {item.image ? (
                           <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-none border border-gray-200 inline-block" />
