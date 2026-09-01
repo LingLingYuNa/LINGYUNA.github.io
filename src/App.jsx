@@ -7,7 +7,6 @@ import SplitOrder from './components/SplitOrder';
 import Tools from './components/Tools';
 import AddOrder from './components/AddOrder';
 import OrderDetail from './components/OrderDetail';
-import QuickAddModal from './components/QuickAddModal';
 import AddChoiceModal from './components/AddChoiceModal';
 import AddItem from './components/AddItem';
 import { Plus } from 'lucide-react';
@@ -54,10 +53,8 @@ class ErrorBoundary extends React.Component {
 
 function App() {
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
-  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isAddChoiceOpen, setIsAddChoiceOpen] = useState(false);
   const [isAddStandaloneItemOpen, setIsAddStandaloneItemOpen] = useState(false);
-  const [quickAddOrderId, setQuickAddOrderId] = useState(null);
   const [currentTab, setCurrentTab] = useState('home');
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [isFabVisible, setIsFabVisible] = useState(true);
@@ -248,7 +245,6 @@ function App() {
 
   // 綁定硬體返回鍵
   const handleCloseAddOrder = useHardwareBack(isAddOrderOpen, () => setIsAddOrderOpen(false), 'add-order');
-  const handleCloseQuickAdd = useHardwareBack(isQuickAddOpen, () => { setIsQuickAddOpen(false); setQuickAddOrderId(null); }, 'quick-add');
   const handleBackOrderDetail = useHardwareBack(!!selectedOrderId, () => setSelectedOrderId(null), 'order-detail');
 
   // 統一處理分頁切換並清除所有彈窗與詳情狀態
@@ -256,8 +252,6 @@ function App() {
     setCurrentTab(tab);
     setSelectedOrderId(null);
     setIsAddOrderOpen(false);
-    setIsQuickAddOpen(false);
-    setQuickAddOrderId(null);
   };
 
   // 當切換分頁或進入/離開訂單詳情時，重置加號球為顯示狀態
@@ -269,8 +263,6 @@ function App() {
   useEffect(() => {
     setSelectedOrderId(null);
     setIsAddOrderOpen(false);
-    setIsQuickAddOpen(false);
-    setQuickAddOrderId(null);
   }, [currentTab]);
 
   const handleScroll = (e) => {
@@ -301,20 +293,9 @@ function App() {
     lastScrollTop.current = scrollTop;
   };
 
-  // 攔截訂單點擊：如果是日常記帳 (daily)，則開啟 QuickAddModal 編輯；若是週邊訂單則進入明細小票頁
-  const handleOrderClick = async (orderId) => {
-    try {
-      const order = await db.orders.get(orderId);
-      if (order && order.order_type === 'daily') {
-        setQuickAddOrderId(orderId);
-        setIsQuickAddOpen(true);
-      } else {
-        setSelectedOrderId(orderId);
-      }
-    } catch (err) {
-      console.error('讀取訂單失敗，採用預設詳情頁:', err);
-      setSelectedOrderId(orderId);
-    }
+  // 點擊訂單進入明細小票頁
+  const handleOrderClick = (orderId) => {
+    setSelectedOrderId(orderId);
   };
 
   return (
@@ -344,10 +325,6 @@ function App() {
             {currentTab === 'home' && (
               <ErrorBoundary>
                 <Dashboard 
-                  onQuickAdd={() => {
-                    setQuickAddOrderId(null);
-                    setIsQuickAddOpen(true);
-                  }} 
                   onOrderClick={handleOrderClick}
                 />
               </ErrorBoundary>
@@ -374,12 +351,15 @@ function App() {
         )}
       </main>
 
-      {/* 電腦版懸浮新增按鈕 (FAB) - 在手機版隱藏，在電腦版固定右下角 */}
-      <button 
+      {/* 浮動新增按鈕 (FAB) - 純圓形加號按鈕，滑動時自動隱藏 */}
+      <button
         onClick={() => setIsAddChoiceOpen(true)}
-        className="hidden md:flex md:fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full items-center justify-center shadow-lg shadow-primary/30 hover:bg-primary-dark active:scale-95 hover:-translate-y-1 transition-all duration-300 transform z-40"
+        className={`fixed right-6 bottom-24 md:bottom-8 z-40 w-14 h-14 bg-[#FF6B6B] text-white border-4 border-black rounded-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[2px] hover:translate-y-[2px] active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer ${
+          isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0 pointer-events-none'
+        }`}
+        title="新增功能選項"
       >
-        <Plus size={28} strokeWidth={2.5} />
+        <Plus size={28} strokeWidth={3} />
       </button>
 
       {/* 底部導覽列 */}
@@ -395,9 +375,6 @@ function App() {
               setIsAddOrderOpen(true);
             } else if (type === 'item') {
               setIsAddStandaloneItemOpen(true);
-            } else if (type === 'quick') {
-              setQuickAddOrderId(null);
-              setIsQuickAddOpen(true);
             }
           }}
         />
@@ -411,14 +388,6 @@ function App() {
       {/* 單獨新增物品彈窗 */}
       {isAddStandaloneItemOpen && (
         <AddItem onClose={() => setIsAddStandaloneItemOpen(false)} />
-      )}
-
-      {/* 快速記帳彈窗 */}
-      {isQuickAddOpen && (
-        <QuickAddModal 
-          orderId={quickAddOrderId} 
-          onClose={handleCloseQuickAdd} 
-        />
       )}
     </div>
   );

@@ -4,7 +4,7 @@ import { X, Plus, Trash2, Pencil, Check, ChevronUp, ChevronDown } from 'lucide-r
 import { db } from '../db';
 
 export default function TagManager({ onClose }) {
-  const [activeTab, setActiveTab] = useState('general'); // 'general' | 'anime'
+  const [activeTab, setActiveTab] = useState('anime'); // 'anime'
   const [newTagName, setNewTagName] = useState('');
   const [editingTagId, setEditingTagId] = useState(null);
   const [editingTagName, setEditingTagName] = useState('');
@@ -132,37 +132,7 @@ export default function TagManager({ onClose }) {
         </button>
       </div>
 
-      {/* 分類切換 Tab */}
-      <div className="px-5 pt-4 shrink-0 bg-white dark:bg-gray-800/40 border-b border-gray-100 dark:border-gray-800/50 pb-3 transition-colors">
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl transition-colors">
-          <button
-            onClick={() => {
-              setActiveTab('general');
-              setEditingTagId(null);
-            }}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'general'
-                ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            一般生活記帳標籤
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('anime');
-              setEditingTagId(null);
-            }}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-              activeTab === 'anime'
-                ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-            }`}
-          >
-            二次元週邊標籤
-          </button>
-        </div>
-      </div>
+
 
       {/* 主要內容滾動區 */}
       <div className="flex-1 overflow-y-auto p-5 pb-32 md:pb-5 space-y-4">

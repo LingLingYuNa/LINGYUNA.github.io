@@ -5,7 +5,7 @@ import { getDeadlineInfo } from '../utils';
 import { requestAuth, uploadBackup, downloadBackup, disconnectGoogleDrive } from '../utils/googleDriveSync';
 import { Cloud, RefreshCw, LogOut, Zap, Package, Inbox } from 'lucide-react';
 
-export default function Dashboard({ onQuickAdd, onOrderClick }) {
+export default function Dashboard({ onOrderClick }) {
   // 1. 新增狀態來管理當前檢視的月份，預設為當前時間
   const [selectedMonth, setSelectedMonth] = useState(new Date());
 
@@ -292,15 +292,6 @@ export default function Dashboard({ onQuickAdd, onOrderClick }) {
             <span className="text-2xl font-black mt-1 font-mono">{formatMoney(netAssetValue)}</span>
           </div>
         </div>
-
-        {/* 快速記帳按鈕 */}
-        <button 
-          onClick={onQuickAdd}
-          className="w-full bg-[#FF6B6B] text-white font-black py-4 px-4 border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] active:scale-95 active:translate-x-[4px] active:translate-y-[4px] active:shadow-none transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] flex items-center justify-center gap-2 select-none md:order-4 cursor-pointer uppercase tracking-wider text-base"
-        >
-          
-          <span>極簡生活記帳 (QUICK ADD)</span>
-        </button>
       </div>
 
       {/* 下方清單與提醒區 - 大螢幕左右並排 */}

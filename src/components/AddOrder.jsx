@@ -317,43 +317,6 @@ export default function AddOrder({ existingOrder, onClose, onSuccessCreated }) {
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 block">訂單標籤</label>
             {/* 切換大分類 */}
-            <div className="flex bg-gray-100 dark:bg-gray-800/80 p-1 rounded-xl transition-colors">
-              <button
-                type="button"
-                onClick={() => {
-                  setTagCategory('general');
-                  setSelectedTags([]);
-                  if (!existingOrder) {
-                    setPaymentMethod('現金');
-                  }
-                }}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  tagCategory === 'general'
-                    ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
-              >
-                一般生活記帳
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setTagCategory('anime');
-                  setSelectedTags([]);
-                  if (!existingOrder) {
-                    setPaymentMethod('貨到付款');
-                  }
-                }}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  tagCategory === 'anime'
-                    ? 'bg-white dark:bg-gray-700 text-primary-dark dark:text-primary-light shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                }`}
-              >
-                二次元週邊
-              </button>
-            </div>
-
             {/* 標籤徽章清單 */}
             <div className="flex flex-wrap gap-2 pt-1 max-h-32 overflow-y-auto pr-1">
               {activeTags.map((tag) => {

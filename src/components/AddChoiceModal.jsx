@@ -60,28 +60,7 @@ export default function AddChoiceModal({ onClose, onSelectChoice }) {
               </p>
             </div>
           </button>
-
-          {/* 3. 快速生活記帳 */}
-          <button
-            type="button"
-            onClick={() => onSelectChoice('quick')}
-            className="w-full p-4 rounded-2xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 text-left transition-all flex items-center gap-4 group active:scale-[0.99]"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-gray-700 dark:bg-gray-600 text-white flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
-              <Zap size={24} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-gray-800 dark:text-gray-100 text-sm">
-                極簡生活記帳
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                快速輸入日常花費金額與類別標籤（如：餐飲、交通、日用）
-              </p>
-            </div>
-          </button>
-
         </div>
-
       </div>
     </div>
   );
