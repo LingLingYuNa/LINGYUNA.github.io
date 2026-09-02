@@ -3,10 +3,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { 
   ArrowLeft, Plus, Trash2, ArrowUp, ArrowDown, ArrowUpDown, Pencil, Sparkles, 
   Copy, Check, UserPlus, DollarSign, Calculator, Image as ImageIcon, Camera, X,
-  Table, LayoutGrid, Download, Settings, Package
+  Table, LayoutGrid, Download, Settings, Package, Layers
 } from 'lucide-react';
 import { db } from '../db';
 import AddBoxSplitModal, { BOX_SPLIT_MODES } from './AddBoxSplitModal';
+import BundlingOrderModal from './BundlingOrderModal';
 import { compressImage } from '../utils';
 import { useHardwareBack } from '../hooks/useHardwareBack';
 
@@ -192,6 +193,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   const [activeItemIdForParticipant, setActiveItemIdForParticipant] = useState(null);
   const [isReconciliationOpen, setIsReconciliationOpen] = useState(false);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+  const [isBundlingOrderOpen, setIsBundlingOrderOpen] = useState(false);
   const [copiedBuyer, setCopiedBuyer] = useState(null);
 
   // 視圖切換狀態：電腦版預設 'sheet' (Sheet 表格試算表視圖)，手機版預設 'card' (卡片視圖)
@@ -394,6 +396,25 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     });
 
     alert('已成功依照角色排序庫重新排列品項順序！');
+  };
+
+  // 套用冷角自動吃綁結果到資料庫
+  const handleApplyAutomaticAllocations = async (allocations) => {
+    if (!allocations || allocations.length === 0) return;
+
+    const newRecords = allocations.map(a => ({
+      box_split_id: Number(splitId),
+      item_id: Number(a.itemId),
+      buyer_name: a.buyerName,
+      qty: 1,
+      is_bound: true,
+      note: a.note || '冷角綁定',
+      created_at: new Date().toISOString()
+    }));
+
+    if (db.box_split_participants) {
+      await db.box_split_participants.bulkAdd(newRecords);
+    }
   };
 
   // 上移品項
@@ -805,6 +826,14 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             >
               <ArrowUpDown size={14} strokeWidth={2.5} />
               <span>熱度排序</span>
+            </button>
+            <button
+              onClick={() => setIsBundlingOrderOpen(true)}
+              className="flex items-center gap-1 text-xs font-black text-black bg-[#4ECDC4] hover:bg-teal-300 border-2 border-black px-3 py-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all active:scale-95 cursor-pointer"
+              title="開啟滯銷冷角綁序分攤計算面板"
+            >
+              <Layers size={14} strokeWidth={2.5} />
+              <span>綁序分攤引擎</span>
             </button>
             <button
               onClick={handleAutoSortByLibrary}
@@ -1242,6 +1271,16 @@ export default function BoxSplitDetail({ splitId, onBack }) {
           </div>
         </div>
       )}
+
+      {/* 彈窗 6：滯銷冷角綁序分攤 Modal */}
+      <BundlingOrderModal
+        isOpen={isBundlingOrderOpen}
+        onClose={() => setIsBundlingOrderOpen(false)}
+        items={items}
+        participants={participants}
+        allocatedMap={allocatedMap}
+        onApplyAutomaticAllocations={handleApplyAutomaticAllocations}
+      />
     </div>
   );
 }
