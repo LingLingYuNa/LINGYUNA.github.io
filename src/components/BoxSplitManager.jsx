@@ -9,7 +9,19 @@ import CharacterSortModal from './CharacterSortModal';
 export default function BoxSplitManager() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' (新→舊) | 'oldest' (舊→新)
-  const [selectedSplitId, setSelectedSplitId] = useState(null);
+  const [selectedSplitId, setSelectedSplitIdState] = useState(() => {
+    const saved = localStorage.getItem('box_split_selected_id');
+    return saved ? Number(saved) : null;
+  });
+
+  const setSelectedSplitId = (id) => {
+    setSelectedSplitIdState(id);
+    if (id) {
+      localStorage.setItem('box_split_selected_id', String(id));
+    } else {
+      localStorage.removeItem('box_split_selected_id');
+    }
+  };
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isCharacterSortOpen, setIsCharacterSortOpen] = useState(false);
 

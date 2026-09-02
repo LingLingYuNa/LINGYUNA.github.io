@@ -36,11 +36,24 @@ const formatOrderDate = (dateStr) => {
 };
 
 export default function OrderList({ onOrderClick, currentTab }) {
-  const [viewMode, setViewMode] = useState('list'); // 'list' | 'gallery'
+  const [viewMode, setViewModeState] = useState(() => {
+    return localStorage.getItem('order_list_view_mode') || 'list';
+  });
+  const setViewMode = (mode) => {
+    setViewModeState(mode);
+    localStorage.setItem('order_list_view_mode', mode);
+  };
+
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [editingOrder, setEditingOrder] = useState(null);
-  const [listType, setListType] = useState('expenses'); // 'expenses' | 'incomes'
+  const [listType, setListTypeState] = useState(() => {
+    return localStorage.getItem('order_list_type') || 'expenses';
+  });
+  const setListType = (type) => {
+    setListTypeState(type);
+    localStorage.setItem('order_list_type', type);
+  };
   const [selectedSaleToEdit, setSelectedSaleToEdit] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTag, setActiveTag] = useState(null);

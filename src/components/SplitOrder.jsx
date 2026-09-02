@@ -4,7 +4,14 @@ import { EXCHANGE_RATES } from '../constants';
 import BoxSplitManager from './BoxSplitManager';
 
 export default function SplitOrder() {
-  const [activeSubTab, setActiveSubTab] = useState('split_box'); // 'split_box' | 'calculator'
+  const [activeSubTab, setActiveSubTabState] = useState(() => {
+    return localStorage.getItem('split_order_active_subtab') || 'split_box';
+  });
+
+  const setActiveSubTab = (tab) => {
+    setActiveSubTabState(tab);
+    localStorage.setItem('split_order_active_subtab', tab);
+  };
 
   // 原有計算機邏輯
   const [foreignTotal, setForeignTotal] = useState('');

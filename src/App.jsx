@@ -55,8 +55,13 @@ function App() {
   const [isAddOrderOpen, setIsAddOrderOpen] = useState(false);
   const [isAddChoiceOpen, setIsAddChoiceOpen] = useState(false);
   const [isAddStandaloneItemOpen, setIsAddStandaloneItemOpen] = useState(false);
-  const [currentTab, setCurrentTab] = useState('home');
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  const [currentTab, setCurrentTab] = useState(() => {
+    return localStorage.getItem('app_current_tab') || 'home';
+  });
+  const [selectedOrderId, setSelectedOrderId] = useState(() => {
+    const saved = localStorage.getItem('app_selected_order_id');
+    return saved ? Number(saved) : null;
+  });
   const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollTop = useRef(0);
 
@@ -245,12 +250,17 @@ function App() {
 
   // 綁定硬體返回鍵
   const handleCloseAddOrder = useHardwareBack(isAddOrderOpen, () => setIsAddOrderOpen(false), 'add-order');
-  const handleBackOrderDetail = useHardwareBack(!!selectedOrderId, () => setSelectedOrderId(null), 'order-detail');
+  const handleBackOrderDetail = useHardwareBack(!!selectedOrderId, () => {
+    setSelectedOrderId(null);
+    localStorage.removeItem('app_selected_order_id');
+  }, 'order-detail');
 
   // 統一處理分頁切換並清除所有彈窗與詳情狀態
   const handleTabChange = (tab) => {
     setCurrentTab(tab);
+    localStorage.setItem('app_current_tab', tab);
     setSelectedOrderId(null);
+    localStorage.removeItem('app_selected_order_id');
     setIsAddOrderOpen(false);
   };
 
@@ -258,12 +268,6 @@ function App() {
   useEffect(() => {
     setIsFabVisible(true);
   }, [currentTab, selectedOrderId]);
-
-  // 防呆機制：當分頁切換時，自動關閉所有全域彈窗與詳情小票
-  useEffect(() => {
-    setSelectedOrderId(null);
-    setIsAddOrderOpen(false);
-  }, [currentTab]);
 
   const handleScroll = (e) => {
     const target = e.currentTarget;
@@ -296,6 +300,7 @@ function App() {
   // 點擊訂單進入明細小票頁
   const handleOrderClick = (orderId) => {
     setSelectedOrderId(orderId);
+    localStorage.setItem('app_selected_order_id', String(orderId));
   };
 
   return (
