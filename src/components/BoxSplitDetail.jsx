@@ -1780,7 +1780,8 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
           allocatedQty,
           unitPrice: Math.round(singleUnitPrice),
           subTotal,
-          isAllocated: allocatedQty > 0
+          isAllocated: allocatedQty > 0,
+          isBound: Boolean(p.is_bound || (p.note && p.note.includes('綁定')))
         });
       }
     });
@@ -1811,7 +1812,7 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
     const allocatedItems = sum.itemSummaries.filter(i => i.isAllocated);
     if (allocatedItems.length > 0) {
       allocatedItems.forEach(i => {
-        text += `• ${i.itemName} x ${i.allocatedQty} ($${i.subTotal})\n`;
+        text += `• ${i.itemName} x ${i.allocatedQty} ($${i.subTotal})${i.isBound ? ' [冷角綁物]' : ''}\n`;
       });
     } else {
       text += `（無中選品項 / 候補中）\n`;
@@ -1917,7 +1918,12 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
                   >
                     <div>
                       <span>{item.itemName} x <strong>{item.allocatedQty}</strong></span>
-                      {item.claimedQty > item.allocatedQty && (
+                      {item.isBound && (
+                        <span className="text-[10px] font-black bg-[#FF6B6B] text-white px-1 ml-1 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] uppercase">
+                          吃綁
+                        </span>
+                      )}
+                      {item.claimedQty > item.allocatedQty && !item.isBound && (
                         <span className="text-[10px] text-gray-400 ml-1.5">(原喊 x{item.claimedQty})</span>
                       )}
                     </div>
@@ -2127,6 +2133,11 @@ function BoxSplitSheetView({
                               >
                                 <span>{p.buyer_name}</span>
                                 <strong className="text-purple-600 dark:text-purple-400">x{p.qty}</strong>
+                                {p.is_bound && (
+                                  <span className="text-[9px] text-[#FF6B6B] font-black bg-red-50 dark:bg-red-950/40 px-1 border border-red-200">
+                                    (吃綁)
+                                  </span>
+                                )}
                                 {isPass ? (
                                   <span className="text-[9px] text-purple-700 font-black">(無A則Pass)</span>
                                 ) : allocatedQty === 0 ? (
