@@ -245,8 +245,8 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
   // 算式計算：基準平均單價 (拆團總金額 / 種類總數量)
   const totalBoxAmount = Number(split?.total_amount) || 0;
-  const totalStock = items.reduce((sum, i) => sum + (i.stock != null ? Math.max(0, Number(i.stock)) : 0), 0) || 1;
-  const baseAvg = totalBoxAmount > 0 ? (totalBoxAmount / totalStock) : 50;
+  const totalStock = items.reduce((sum, i) => sum + (i.stock != null ? Math.max(0, Number(i.stock)) : 0), 0);
+  const baseAvg = (totalBoxAmount > 0 && totalStock > 0) ? (totalBoxAmount / totalStock) : 50;
 
   // 熱度調價階梯映射表 (四步演算法：有效均價 -> 權重 W[i] -> 步長 5 取整 -> 殘差修補)
   const adjustedPriceMap = React.useMemo(() => {
@@ -532,10 +532,10 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
     items.forEach((item, idx) => {
       const singleUnitPrice = getItemUnitPrice(item);
-      const stock = Number(item.stock) || 1;
+      const stock = item?.stock != null ? Math.max(0, Number(item.stock)) : 0;
       const itemParts = participants.filter(p => p.item_id === item.id);
       const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p.qty) || 0), 0);
-      const isSoldOut = totalBoughtQty >= stock;
+      const isSoldOut = stock === 0 || totalBoughtQty >= stock;
 
       const claimantsStr = itemParts.map(p => {
         const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
@@ -894,8 +894,8 @@ export default function BoxSplitDetail({ splitId, onBack }) {
             const unitPrice = getItemUnitPrice(item);
             const itemParticipants = participants.filter(p => p.item_id === item.id);
             const totalBoughtQty = itemParticipants.reduce((sum, p) => sum + (Number(p.qty) || 0), 0);
-            const stock = Number(item.stock) || 1;
-            const isSoldOut = totalBoughtQty >= stock;
+            const stock = item?.stock != null ? Math.max(0, Number(item.stock)) : 0;
+            const isSoldOut = stock === 0 || totalBoughtQty >= stock;
 
             return (
               <div 
@@ -1523,7 +1523,8 @@ function AddParticipantModal({ splitId, itemId, existingParticipant, items, onCl
   const handleToggleAllin = (checked) => {
     setIsAllin(checked);
     if (checked && currentItem) {
-      setQty(String(currentItem.stock || 1));
+      const currentStock = currentItem.stock != null ? Math.max(0, Number(currentItem.stock)) : 1;
+      setQty(String(currentStock > 0 ? currentStock : 1));
     }
   };
 
@@ -2042,10 +2043,10 @@ function BoxSplitSheetView({
                 safeItems.map((item, idx) => {
                   if (!item) return null;
                   const singleUnitPrice = safeGetUnitPrice(item);
-                  const stock = Number(item.stock) || 1;
+                  const stock = item?.stock != null ? Math.max(0, Number(item.stock)) : 0;
                   const itemParts = safeParticipants.filter(p => p && p.item_id === item.id);
                   const totalBoughtQty = itemParts.reduce((sum, p) => sum + (Number(p?.qty) || 0), 0);
-                  const isSoldOut = totalBoughtQty >= stock;
+                  const isSoldOut = stock === 0 || totalBoughtQty >= stock;
 
                   return (
                     <tr key={item.id} className="hover:bg-gray-50/80 dark:hover:bg-gray-700/50 transition-colors">
