@@ -86,7 +86,7 @@ export function computeSplitAllocations(split, items = [], participants = [], ge
     // 3. 針對每個品項分配庫存
     safeItems.forEach(item => {
       if (!item) return;
-      const stock = Number(item.stock) || 1;
+      const stock = item.stock != null ? Math.max(0, Number(item.stock)) : 0;
       let remainingStock = stock;
 
       let itemParts = activeParticipants.filter(p => p && p.item_id === item.id);
@@ -245,7 +245,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
 
   // 算式計算：基準平均單價 (拆團總金額 / 種類總數量)
   const totalBoxAmount = Number(split?.total_amount) || 0;
-  const totalStock = items.reduce((sum, i) => sum + (Number(i.stock) || 1), 0) || 1;
+  const totalStock = items.reduce((sum, i) => sum + (i.stock != null ? Math.max(0, Number(i.stock)) : 0), 0) || 1;
   const baseAvg = totalBoxAmount > 0 ? (totalBoxAmount / totalStock) : 50;
 
   // 熱度調價階梯映射表 (四步演算法：有效均價 -> 權重 W[i] -> 步長 5 取整 -> 殘差修補)
@@ -290,7 +290,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     const priceObjects = items.map((item, i) => {
       const raw_price = avg_price + (W[i] * step);
       const quantized_price = Math.max(5, Math.round(raw_price / step) * step);
-      return { id: item.id, qty: Number(item.stock) || 1, price: quantized_price };
+      return { id: item.id, qty: item.stock != null ? Math.max(0, Number(item.stock)) : 0, price: quantized_price };
     });
 
     // 步驟 4：殘差修補 (Greedy Residual Adjustment) 確保總和無落差 (防死迴圈機制)
@@ -343,7 +343,7 @@ export default function BoxSplitDetail({ splitId, onBack }) {
   // 拆團總金額：由所有品項金額加總求得
   const calculatedTotalAmount = React.useMemo(() => {
     if (!items || items.length === 0) return totalBoxAmount;
-    return items.reduce((sum, item) => sum + (getItemUnitPrice(item) * (Number(item.stock) || 1)), 0);
+    return items.reduce((sum, item) => sum + (getItemUnitPrice(item) * (item.stock != null ? Math.max(0, Number(item.stock)) : 0)), 0);
   }, [items, totalBoxAmount, getItemUnitPrice]);
 
   // 切換熱度調價模式 handler
@@ -1293,7 +1293,9 @@ function AddItemModal({ splitId, existingItem, onClose }) {
   const albumInputRef = useRef(null);
 
   const [name, setName] = useState(existingItem?.name || '');
-  const [stock, setStock] = useState(existingItem?.stock ? String(existingItem.stock) : '1');
+  const [stock, setStock] = useState(
+    existingItem?.stock !== undefined && existingItem?.stock !== null ? String(existingItem.stock) : '1'
+  );
   const [manualPrice, setManualPrice] = useState(
     existingItem?.manual_price !== undefined && existingItem?.manual_price !== null ? String(existingItem.manual_price) : ''
   );
@@ -1318,10 +1320,11 @@ function AddItemModal({ splitId, existingItem, onClose }) {
 
     setIsSaving(true);
     try {
+      const parsedStock = stock !== '' ? Math.max(0, Number(stock)) : 0;
       if (existingItem) {
         await db.box_split_items.update(existingItem.id, {
           name: name.trim(),
-          stock: Number(stock) || 1,
+          stock: parsedStock,
           manual_price: manualPrice !== '' ? Number(manualPrice) : null,
           price_multiplier: Number(priceMultiplier) || 1.0,
           image,
@@ -1334,7 +1337,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
         await db.box_split_items.add({
           box_split_id: Number(splitId),
           name: name.trim(),
-          stock: Number(stock) || 1,
+          stock: parsedStock,
           manual_price: manualPrice !== '' ? Number(manualPrice) : null,
           price_multiplier: Number(priceMultiplier) || 1.0,
           image,
@@ -1383,7 +1386,7 @@ function AddItemModal({ splitId, existingItem, onClose }) {
               <label className="text-xs font-bold text-gray-700 dark:text-gray-300">庫存 / 總數量</label>
               <input
                 type="number"
-                min="1"
+                min="0"
                 required
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
