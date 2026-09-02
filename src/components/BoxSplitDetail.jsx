@@ -1804,34 +1804,45 @@ function ReconciliationModal({ split, items, participants, allocatedMap, getItem
   // 產生一鍵複製文案
   const generateCopyText = (sum) => {
     if (!sum) return '';
-    let text = `【拆團對帳單 - ${sum.buyerName}】\n`;
-    text += `團名：${split.title}\n`;
-    text += `優先模式：${MODE_LABELS[split.mode] || '先喊先贏'}\n`;
+    let text = `【${split.title}】對帳單 - ${sum.buyerName}\n`;
     text += `------------------------\n`;
-    text += `中選配分品項：\n`;
-    const allocatedItems = sum.itemSummaries.filter(i => i.isAllocated);
-    if (allocatedItems.length > 0) {
-      allocatedItems.forEach(i => {
-        text += `• ${i.itemName} x ${i.allocatedQty} ($${i.subTotal})${i.isBound ? ' [冷角綁物]' : ''}\n`;
+
+    const claimedAllocated = sum.itemSummaries.filter(i => i.isAllocated && !i.isBound);
+    const boundAllocated = sum.itemSummaries.filter(i => i.isAllocated && i.isBound);
+    const unallocated = sum.itemSummaries.filter(i => !i.isAllocated);
+
+    if (claimedAllocated.length > 0) {
+      text += `原喊中選品項：\n`;
+      claimedAllocated.forEach(i => {
+        text += `- ${i.itemName} x ${i.allocatedQty} : $${i.subTotal}\n`;
       });
-    } else {
+    }
+
+    if (boundAllocated.length > 0) {
+      if (claimedAllocated.length > 0) text += `\n`;
+      text += `🎯 吃綁品項：\n`;
+      boundAllocated.forEach(i => {
+        text += `- ${i.itemName} x ${i.allocatedQty} : $${i.subTotal}\n`;
+      });
+    }
+
+    if (claimedAllocated.length === 0 && boundAllocated.length === 0) {
       text += `（無中選品項 / 候補中）\n`;
     }
 
-    const unallocatedItems = sum.itemSummaries.filter(i => !i.isAllocated);
-    if (unallocatedItems.length > 0) {
-      text += `未中選(候補)：\n`;
-      unallocatedItems.forEach(i => {
-        text += `• ${i.itemName} x ${i.claimedQty} ($0)\n`;
+    if (unallocated.length > 0) {
+      text += `\n未中選 (候補)：\n`;
+      unallocated.forEach(i => {
+        text += `- ${i.itemName} x ${i.claimedQty} ($0)\n`;
       });
     }
 
     text += `------------------------\n`;
-    text += `品項費用小計：NT$ ${sum.totalItemsCost}\n`;
+    text += `品項小計：$${sum.totalItemsCost}\n`;
     if (unitSecondShipping > 0 && sum.buyerSecondShipping > 0) {
-      text += `二補運費小計：NT$ ${sum.buyerSecondShipping}\n`;
+      text += `二補運費小計：$${sum.buyerSecondShipping}\n`;
     }
-    text += `應付總金額：NT$ ${sum.finalTotal}\n`;
+    text += `應付總計：$${sum.finalTotal}\n`;
     text += `------------------------\n`;
     text += `請核對明細，感謝參團！`;
     return text;
