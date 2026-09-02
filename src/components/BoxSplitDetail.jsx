@@ -473,11 +473,13 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     }
   };
 
-  // 複製單一買家對帳單
+  // 複製單一買家對帳單 (表格 2 按鈕)
   const handleCopyBuyerBill = (buyerName) => {
     const buyerParts = participants.filter(p => p.buyer_name === buyerName);
     let totalItemsCost = 0;
-    const lines = [];
+    const claimedLines = [];
+    const boundLines = [];
+    const unallocatedLines = [];
 
     buyerParts.forEach(p => {
       const item = items.find(i => i.id === p.item_id);
@@ -485,12 +487,17 @@ export default function BoxSplitDetail({ splitId, onBack }) {
         const singleUnitPrice = getItemUnitPrice(item);
         const allocatedQty = allocatedMap.get(p.id) ?? 0;
         const subTotal = Math.round(singleUnitPrice * allocatedQty);
+        const isBound = Boolean(p.is_bound || (p.note && p.note.includes('綁定')));
 
         if (allocatedQty > 0) {
           totalItemsCost += subTotal;
-          lines.push(`- ${item.name} x${allocatedQty} : $${subTotal}`);
+          if (isBound) {
+            boundLines.push(`- ${item.name} x ${allocatedQty} : $${subTotal}`);
+          } else {
+            claimedLines.push(`- ${item.name} x ${allocatedQty} : $${subTotal}`);
+          }
         } else {
-          lines.push(`- ${item.name} x${p.qty} : $0 (未配到)`);
+          unallocatedLines.push(`- ${item.name} x ${p.qty} ($0)`);
         }
       }
     });
@@ -499,15 +506,37 @@ export default function BoxSplitDetail({ splitId, onBack }) {
     const buyerSecondShipping = unitSecondShipping * allocatedKindsCount;
     const finalTotal = totalItemsCost + buyerSecondShipping;
 
-    let text = `【${split.title}】對帳單 - ${buyerName}\n`;
+    let text = `【${split?.title || '拆團'}】對帳單 - ${buyerName}\n`;
     text += `--------------------\n`;
-    text += lines.join('\n') + '\n';
+
+    if (claimedLines.length > 0) {
+      text += `原喊中選品項：\n`;
+      text += claimedLines.join('\n') + '\n';
+    }
+
+    if (boundLines.length > 0) {
+      if (claimedLines.length > 0) text += `\n`;
+      text += `🎯 吃綁品項：\n`;
+      text += boundLines.join('\n') + '\n';
+    }
+
+    if (claimedLines.length === 0 && boundLines.length === 0) {
+      text += `（無中選品項 / 候補中）\n`;
+    }
+
+    if (unallocatedLines.length > 0) {
+      text += `\n未中選 (候補)：\n`;
+      text += unallocatedLines.join('\n') + '\n';
+    }
+
     text += `--------------------\n`;
     text += `品項小計：$${totalItemsCost}\n`;
-    if (totalSecondShipping > 0) {
+    if (totalSecondShipping > 0 && buyerSecondShipping > 0) {
       text += `二補運費：$${buyerSecondShipping}\n`;
     }
     text += `應付總計：$${finalTotal}\n`;
+    text += `--------------------\n`;
+    text += `請核對明細，感謝參團！`;
 
     navigator.clipboard.writeText(text);
     setCopiedBuyer(buyerName);
