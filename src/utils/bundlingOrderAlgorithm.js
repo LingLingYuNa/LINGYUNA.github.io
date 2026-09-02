@@ -34,7 +34,8 @@ export function computeBundlingOrder({
     // 找出該品項所有獲得配分的總數
     const itemClaims = participants.filter((p) => Number(p.item_id) === Number(item.id));
     const totalAllocated = itemClaims.reduce((sum, p) => sum + (allocatedMap.get(p.id) || 0), 0);
-    const leftoverStock = Math.max(0, (item.stock || 1) - totalAllocated);
+    const stock = item?.stock != null ? Math.max(0, Number(item.stock)) : 0;
+    const leftoverStock = Math.max(0, stock - totalAllocated);
 
     for (let i = 0; i < leftoverStock; i++) {
       unallocatedItems.push({
