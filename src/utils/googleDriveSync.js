@@ -76,13 +76,13 @@ export function requestAuth(forceConsent = false) {
 }
 
 /**
- * 確保當前本地存儲的 Token 有效且未過期
- * @returns {string} 有效的 Access Token
- * @throws {Error} 若未連結帳號或 Token 已過期則拋出異常
+ * 確保當前本地存儲的 Token 有效，若已過期則嘗試靜默自動刷新
+ * @returns {Promise<string>} 有效的 Access Token
+ * @throws {Error} 若未連結帳號或靜默刷新失敗則拋出異常
  */
-export function ensureValidToken() {
+export async function ensureValidToken() {
   const isLinked = localStorage.getItem('google_drive_linked') === 'true';
-  const accessToken = localStorage.getItem('google_drive_access_token');
+  let accessToken = localStorage.getItem('google_drive_access_token');
   const expiresAt = Number(localStorage.getItem('google_drive_token_expires_at')) || 0;
 
   if (!isLinked) {
@@ -90,7 +90,13 @@ export function ensureValidToken() {
   }
 
   if (!accessToken || Date.now() > expiresAt) {
-    throw new Error('TOKEN_EXPIRED');
+    try {
+      console.log('[GoogleSync] Token 已過期，嘗試靜默自動刷新授權...');
+      accessToken = await requestAuth(false);
+    } catch (err) {
+      console.warn('[GoogleSync] 靜默自動刷新授權失敗:', err);
+      throw new Error('TOKEN_EXPIRED');
+    }
   }
 
   return accessToken;
@@ -111,7 +117,7 @@ export function disconnectGoogleDrive() {
  * @param {object} backupData 備份的 JSON 物件
  */
 export async function uploadBackup(backupData) {
-  const token = ensureValidToken();
+  const token = await ensureValidToken();
 
   // 1. 搜尋雲端硬碟中是否已存在同名備份檔
   const q = encodeURIComponent("name='CollectTrack_Backup.json' and trashed=false");
@@ -194,7 +200,7 @@ export async function uploadBackup(backupData) {
  * @returns {Promise<object|null>} 返回 JSON 備份檔案內容，若無檔案則傳回 null
  */
 export async function downloadBackup() {
-  const token = ensureValidToken();
+  const token = await ensureValidToken();
 
   // 1. 搜尋雲端硬碟中是否有 CollectTrack_Backup.json 檔案
   const q = encodeURIComponent("name='CollectTrack_Backup.json' and trashed=false");
