@@ -1054,12 +1054,15 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                         const singleUnitPrice = unitPrice;
                         const allocatedQty = allocatedMap.get(p.id) ?? p.qty;
                         const partCost = Math.round(singleUnitPrice * allocatedQty);
+                        const isBound = Boolean(p.is_bound || (p.note && p.note.includes('綁定')));
 
                         return (
                           <div
                             key={p.id}
                             className={`rounded-none p-2.5 flex items-center gap-2 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] relative group min-w-[130px] border transition-all ${
-                              allocatedQty === 0 
+                              isBound
+                                ? 'bg-red-50 dark:bg-red-950/40 border-2 border-black'
+                                : allocatedQty === 0 
                                 ? 'bg-gray-100/70 dark:bg-gray-800/50 border-dashed border-gray-300 dark:border-gray-700 opacity-60' 
                                 : 'bg-gray-50 dark:bg-gray-750 border-gray-200 dark:border-gray-700'
                             }`}
@@ -1069,6 +1072,11 @@ export default function BoxSplitDetail({ splitId, onBack }) {
                                 <span className="font-bold text-xs text-gray-900 dark:text-gray-100 truncate">
                                   {p.buyer_name}
                                 </span>
+                                {isBound && (
+                                  <span className="text-[9px] font-black bg-[#FF6B6B] text-white px-1.5 py-0.5 border border-black shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] uppercase">
+                                    吃綁
+                                  </span>
+                                )}
                                 {p.is_allin && (
                                   <span className="text-[9px] font-black bg-amber-400 text-black px-1 rounded">
                                     ALL IN
